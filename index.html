@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Betting System - Account Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Batch Betting System</h1>
+            <p class="subtitle">Account Management Dashboard</p>
+        </header>
+
+        <div id="platforms-container"></div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Account</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="edit-form">
+                <div class="form-group">
+                    <label for="edit-name">Holder Full Name</label>
+                    <input type="text" id="edit-name" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="edit-balance">Cash Balance ($)</label>
+                    <input type="number" id="edit-balance" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="edit-limit">Betting Limit ($)</label>
+                    <input type="number" id="edit-limit" step="0.01" min="0" placeholder="Leave empty for unlimited">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="edit-on-hold">
+                        Account On Hold
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="edit-tags">Colored Tags (comma-separated)</label>
+                    <input type="text" id="edit-tags" placeholder="e.g., VIP, Premium, New">
+                </div>
+                <div class="form-group">
+                    <label for="edit-notes">Custom Notes</label>
+                    <textarea id="edit-notes" rows="4"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" id="cancel-edit">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

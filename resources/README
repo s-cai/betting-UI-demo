@@ -1,0 +1,41 @@
+# Overview
+
+This repo creates some front-end demo of a batch betting system across multiple sports betting platforms.
+
+For each betting platform our system controls many separate user accounts.  On trading opportunities we may send the same bet with different amounts to
+selected accounts for the same platform.
+
+# UI description
+
+## Account view
+
+In many different interfaces (account management, betting management) we will be listing accounts available.
+
+For each account we always display
+
+- holder full name
+- cash balance
+- betting limits, only for limited accounts
+
+The following info will also be indicated graphically
+
+- phone offline: make the entire icon/avatar grey
+- on hold: use something like maybe 🚫
+- potentially colored tags 
+
+When the mouse hovers over an account, we display more info like
+
+- backup cash in the bank
+- custom notes
+
+When we right-click an account, we can opt to edit
+
+- cash balance
+- betting limits
+- whether it is on hold
+- custom colored lables
+- custom notes
+
+## Account management view
+
+For each platform, display the logo, and list associated accounts as described above.
