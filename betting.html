@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Betting System - Betting View</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="betting.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Batch Betting System</h1>
+            <p class="subtitle">Betting View</p>
+            <nav>
+                <a href="index.html" class="nav-link">Account Management</a>
+                <a href="betting.html" class="nav-link active">Betting View</a>
+            </nav>
+        </header>
+
+        <!-- Bet Configuration -->
+        <div class="bet-config">
+            <h2>Bet Configuration</h2>
+            <div class="config-info">
+                <div class="config-display">
+                    <div class="config-label">Platform:</div>
+                    <div class="config-value" id="platform-display">FanDuel</div>
+                </div>
+                <div class="config-display">
+                    <div class="config-label">Game:</div>
+                    <div class="config-value" id="game-display">Lakers vs Warriors</div>
+                </div>
+                <div class="config-display">
+                    <div class="config-label">Market:</div>
+                    <div class="config-value" id="market-display">Moneyline</div>
+                </div>
+                <div class="config-item">
+                    <label for="odds-input">Odds</label>
+                    <input type="text" id="odds-input" value="-110" placeholder="e.g., -110, +150">
+                </div>
+            </div>
+        </div>
+
+        <!-- Before Bets View -->
+        <div id="before-bets-view" class="betting-view">
+            <div class="betting-header">
+                <div class="total-bet-display">
+                    <span class="total-label">Total Bet Size:</span>
+                    <span class="total-amount" id="total-bet-amount">$0.00</span>
+                </div>
+                <button id="send-all-btn" class="btn btn-primary btn-large" disabled>Send All Bets</button>
+            </div>
+
+            <div id="accounts-list" class="accounts-list"></div>
+        </div>
+
+        <!-- After Bets View -->
+        <div id="after-bets-view" class="betting-view" style="display: none;">
+            <div class="betting-header">
+                <div class="total-bet-display">
+                    <span class="total-label">Total Succeeded:</span>
+                    <span class="total-amount" id="total-succeeded">
+                        <span id="succeeded-amount">$0.00</span> / <span id="total-sent-amount">$0.00</span>
+                    </span>
+                </div>
+                <div>
+                    <button id="demo-bets-btn" class="btn btn-secondary" style="margin-right: 10px;">Load Demo Bets</button>
+                    <button id="new-bet-btn" class="btn btn-secondary">New Bet</button>
+                </div>
+            </div>
+
+            <div id="sent-bets-list" class="sent-bets-list"></div>
+        </div>
+    </div>
+
+    <!-- Edit Modal (reused from account management) -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Account</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="edit-form">
+                <div class="form-group">
+                    <label for="edit-name">Holder Full Name</label>
+                    <input type="text" id="edit-name" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="edit-balance">Cash Balance ($)</label>
+                    <input type="number" id="edit-balance" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="edit-limit">Betting Limit ($)</label>
+                    <input type="number" id="edit-limit" step="0.01" min="0" placeholder="Leave empty for unlimited">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="edit-on-hold">
+                        Account On Hold
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="edit-tags">Colored Tags (comma-separated)</label>
+                    <input type="text" id="edit-tags" placeholder="e.g., VIP, Premium, New">
+                </div>
+                <div class="form-group">
+                    <label for="edit-notes">Custom Notes</label>
+                    <textarea id="edit-notes" rows="4"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" id="cancel-edit">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="betting.js"></script>
+</body>
+</html>
+

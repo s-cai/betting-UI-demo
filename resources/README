@@ -39,3 +39,36 @@ When we right-click an account, we can opt to edit
 ## Account management view
 
 For each platform, display the logo, and list associated accounts as described above.
+
+## Batch betting view
+
+### Before bets
+
+When we enter the betting view, we already know the platform, the game, and the market we are betting on.  There is odds associated,
+but we can optionally override it.
+
+At this point all accounts for this platform should be listed, sorted by bet size (=min(available cash, limit)), with on-hold and offline accounts
+put at the very last.
+
+The right-click and edit feature should be the same here.
+
+Now we should be able to select accounts and specify bet size for each of them.
+
+On top we display total bet size that live updates.
+
+Click a "send all" button to get these bets sent.
+
+### After bets
+
+Now no bet size should be editable.  Only the accounts for which bets are sent should be in one focused area.
+For each bet sent, we display the amount, and the current status.  Consider using the WhatsApp like logos
+for status:
+
+- sent to phone: grey single check mark
+- acked by phone：green single check mark
+- phone succeeded making the bet: green double check mark
+- phone failed: red cross
+
+Real-time update a total succeed amount out of total bet, like $3500 / $5000
+
+If we hover over failures we should be able to see error messages returned by phone.

@@ -348,10 +348,14 @@ function saveAccountChanges(e) {
     currentEditingAccount.tags = tagsValue ? tagsValue.split(',').map(t => t.trim()).filter(t => t) : [];
     currentEditingAccount.notes = document.getElementById('edit-notes').value;
     
-    // Re-render the platform section
+    // Re-render based on which page we're on
     const container = document.getElementById('platforms-container');
-    container.innerHTML = '';
-    init();
+    if (container) {
+        // Account management page
+        container.innerHTML = '';
+        init();
+    }
+    // For betting page, the reload will be handled by betting.js
     
     closeEditModal();
 }

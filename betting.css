@@ -1,0 +1,335 @@
+/* Bet Configuration */
+.bet-config {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.bet-config h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.config-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    align-items: center;
+}
+
+.config-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.config-label {
+    font-weight: 600;
+    color: #555;
+}
+
+.config-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.config-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.config-item label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.config-item input,
+.config-item select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.config-item input:focus,
+.config-item select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Betting View */
+.betting-view {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.betting-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.total-bet-display {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.total-label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #555;
+}
+
+.total-amount {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.btn-large {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Accounts List for Betting */
+.accounts-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.betting-account-card {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.betting-account-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.betting-account-card.phone-offline {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.betting-account-card.selected {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+.betting-account-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.betting-account-info {
+    flex: 1;
+}
+
+.betting-account-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.betting-account-balance {
+    font-size: 0.9rem;
+    color: #28a745;
+    font-weight: 600;
+}
+
+.betting-account-limit {
+    font-size: 0.85rem;
+    color: #dc3545;
+    margin-top: 3px;
+}
+
+.betting-account-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.bet-size-input-container {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bet-size-input-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.bet-size-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.bet-size-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.bet-size-input:disabled {
+    background: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.max-bet-size {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+/* Sent Bets List */
+.sent-bets-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.sent-bet-card {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+}
+
+.sent-bet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.sent-bet-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.sent-bet-amount {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.sent-bet-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.status-icon {
+    font-size: 1.5rem;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-icon.sent {
+    color: #6c757d;
+}
+
+.status-icon.acked {
+    color: #28a745;
+}
+
+.status-icon.succeeded {
+    color: #28a745;
+}
+
+.status-icon.failed {
+    color: #dc3545;
+    font-size: 1.2rem;
+}
+
+.status-text {
+    font-weight: 600;
+    color: #555;
+}
+
+.error-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: #dc3545;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1000;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.sent-bet-card:hover .error-tooltip {
+    opacity: 1;
+}
+
+.error-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    border: 6px solid transparent;
+    border-top-color: #dc3545;
+}
+
+/* Status animations */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.status-icon.updating {
+    animation: pulse 1.5s infinite;
+}
+
