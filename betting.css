@@ -181,9 +181,24 @@
 
 /* Accounts List for Betting */
 .accounts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Account Groups */
+.account-group {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+}
+
+.account-group:not(:last-child) {
+    margin-bottom: 10px;
 }
 
 .betting-account-card {

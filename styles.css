@@ -89,9 +89,24 @@ nav {
 }
 
 .accounts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Account Groups */
+.account-group {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
+    padding: 20px;
+    background: #f0f4ff;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+}
+
+.account-group:not(:last-child) {
+    margin-bottom: 10px;
 }
 
 .account-card {

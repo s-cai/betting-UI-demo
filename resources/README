@@ -11,6 +11,10 @@ selected accounts for the same platform.
 
 In many different interfaces (account management, betting management) we will be listing accounts available.
 
+Accounts are displayed with visual grouping by unlimited vs limited accounts. Within each group, accounts are organized as:
+- tradable accounts (not offline, not on-hold) first
+- offline and on-hold accounts at the end
+
 For each account we always display
 
 - holder full name

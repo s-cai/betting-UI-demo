@@ -222,17 +222,80 @@ function handleDistributeBets() {
 // Load and display accounts for selected platform
 function loadAccountsForPlatform(platformId) {
     const accounts = accountData[platformId] || [];
-    const sortedAccounts = sortAccountsByBetSize(accounts);
+    const groupedAccounts = groupAccountsByType(accounts);
     
     const container = document.getElementById('accounts-list');
     container.innerHTML = '';
     
-    sortedAccounts.forEach(account => {
-        const card = createBettingAccountCard(account, platformId);
-        container.appendChild(card);
-    });
+    // Render unlimited accounts group
+    if (groupedAccounts.unlimited.length > 0) {
+        const groupContainer = createAccountGroup(groupedAccounts.unlimited, platformId);
+        container.appendChild(groupContainer);
+    }
+    
+    // Render limited accounts group
+    if (groupedAccounts.limited.length > 0) {
+        const groupContainer = createAccountGroup(groupedAccounts.limited, platformId);
+        container.appendChild(groupContainer);
+    }
     
     updateTotalBetAmount();
+}
+
+// Group accounts by unlimited vs limited, then by tradability
+function groupAccountsByType(accounts) {
+    const unlimited = [];
+    const limited = [];
+    
+    accounts.forEach(account => {
+        if (account.limit === null) {
+            unlimited.push(account);
+        } else {
+            limited.push(account);
+        }
+    });
+    
+    // Sort each group: tradable unlimited, tradable limited, then offline/on-hold
+    const sortWithinGroup = (group) => {
+        return group.sort((a, b) => {
+            const aTradable = !a.phoneOffline && !a.onHold;
+            const bTradable = !b.phoneOffline && !b.onHold;
+            
+            // Tradable accounts first
+            if (aTradable && !bTradable) return -1;
+            if (!aTradable && bTradable) return 1;
+            
+            // Within tradable, sort by max bet size
+            if (aTradable && bTradable) {
+                const aMaxBet = calculateMaxBetSize(a);
+                const bMaxBet = calculateMaxBetSize(b);
+                return bMaxBet - aMaxBet;
+            }
+            
+            // Offline/on-hold at the end, sort by max bet size
+            const aMaxBet = calculateMaxBetSize(a);
+            const bMaxBet = calculateMaxBetSize(b);
+            return bMaxBet - aMaxBet;
+        });
+    };
+    
+    return {
+        unlimited: sortWithinGroup(unlimited),
+        limited: sortWithinGroup(limited)
+    };
+}
+
+// Create visual group container for accounts
+function createAccountGroup(accounts, platformId) {
+    const groupContainer = document.createElement('div');
+    groupContainer.className = 'account-group';
+    
+    accounts.forEach(account => {
+        const card = createBettingAccountCard(account, platformId);
+        groupContainer.appendChild(card);
+    });
+    
+    return groupContainer;
 }
 
 // Sort accounts by bet size (min(available cash, limit))

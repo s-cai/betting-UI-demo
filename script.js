@@ -168,6 +168,53 @@ function init() {
     });
 }
 
+// Group accounts by unlimited vs limited, then by tradability
+function groupAccountsByType(accounts) {
+    const unlimited = [];
+    const limited = [];
+    
+    accounts.forEach(account => {
+        if (account.limit === null) {
+            unlimited.push(account);
+        } else {
+            limited.push(account);
+        }
+    });
+    
+    // Sort each group: tradable (not offline, not on-hold) first, then offline/on-hold
+    const sortWithinGroup = (group) => {
+        return group.sort((a, b) => {
+            const aTradable = !a.phoneOffline && !a.onHold;
+            const bTradable = !b.phoneOffline && !b.onHold;
+            
+            // Tradable accounts first
+            if (aTradable && !bTradable) return -1;
+            if (!aTradable && bTradable) return 1;
+            
+            // Within same tradability status, sort by balance (descending)
+            return b.balance - a.balance;
+        });
+    };
+    
+    return {
+        unlimited: sortWithinGroup(unlimited),
+        limited: sortWithinGroup(limited)
+    };
+}
+
+// Create visual group container for accounts
+function createAccountGroup(accounts, platformId) {
+    const groupContainer = document.createElement('div');
+    groupContainer.className = 'account-group';
+    
+    accounts.forEach(account => {
+        const card = createAccountCard(account, platformId);
+        groupContainer.appendChild(card);
+    });
+    
+    return groupContainer;
+}
+
 // Create platform section
 function createPlatformSection(platform, accounts) {
     const section = document.createElement('div');
@@ -192,10 +239,19 @@ function createPlatformSection(platform, accounts) {
         emptyState.innerHTML = '<p>No accounts available</p>';
         grid.appendChild(emptyState);
     } else {
-        accounts.forEach(account => {
-            const card = createAccountCard(account, platform.id);
-            grid.appendChild(card);
-        });
+        const groupedAccounts = groupAccountsByType(accounts);
+        
+        // Render unlimited accounts group
+        if (groupedAccounts.unlimited.length > 0) {
+            const groupContainer = createAccountGroup(groupedAccounts.unlimited, platform.id);
+            grid.appendChild(groupContainer);
+        }
+        
+        // Render limited accounts group
+        if (groupedAccounts.limited.length > 0) {
+            const groupContainer = createAccountGroup(groupedAccounts.limited, platform.id);
+            grid.appendChild(groupContainer);
+        }
     }
     
     section.appendChild(header);
