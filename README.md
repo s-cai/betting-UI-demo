@@ -50,11 +50,11 @@ When entering the betting view, the platform, game, and market are already known
 - Accounts are sorted by bet size (=min(available cash, limit)) within each group
 - The right-click and edit feature works the same as in account management
 
-**Bet Entry Modes:**
+**Bet Entry:**
 
-1. **Individual Mode**: Select an account and enter its bet amount (original behavior)
-2. **Distribution Mode**: Select multiple accounts, enter a total amount, and click "Distribute" to automatically distribute the total across selected accounts. After distribution, bet amounts can still be customized individually.
-
+- **Individual Entry**: Select an account and enter its bet amount directly
+- **Distribution**: Select multiple accounts, enter a total amount, and click "Distribute" to automatically distribute the total across selected accounts. After distribution, bet amounts can still be customized individually
+- Both options are always available in a unified interface
 - Total bet size is displayed at the top and updates in real-time
 - Click "Send All Bets" button to send all bets
 

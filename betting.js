@@ -7,7 +7,6 @@ let currentPlatform = DEMO_PLATFORM;
 let selectedAccounts = new Map(); // accountId -> betAmount
 let sentBets = []; // Array of {account, amount, status, error}
 let betStatusInterval = null;
-let currentMode = 'individual'; // 'individual' or 'distribution'
 
 // Status constants
 const STATUS = {
@@ -22,8 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendAllBtn = document.getElementById('send-all-btn');
     const newBetBtn = document.getElementById('new-bet-btn');
     const demoBetsBtn = document.getElementById('demo-bets-btn');
-    const individualModeBtn = document.getElementById('individual-mode-btn');
-    const distributionModeBtn = document.getElementById('distribution-mode-btn');
     const distributeBtn = document.getElementById('distribute-btn');
     
     // Set display values (set by upstream)
@@ -34,8 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     sendAllBtn.addEventListener('click', handleSendAllBets);
     newBetBtn.addEventListener('click', handleNewBet);
     demoBetsBtn.addEventListener('click', handleLoadDemoBets);
-    individualModeBtn.addEventListener('click', () => switchMode('individual'));
-    distributionModeBtn.addEventListener('click', () => switchMode('distribution'));
     distributeBtn.addEventListener('click', handleDistributeBets);
     
     // Load accounts for the demo platform
@@ -91,44 +86,6 @@ function handleLoadDemoBets() {
     }, 2000);
 }
 
-// Switch between individual and distribution modes
-function switchMode(mode) {
-    currentMode = mode;
-    
-    const individualBtn = document.getElementById('individual-mode-btn');
-    const distributionBtn = document.getElementById('distribution-mode-btn');
-    const distributionControls = document.getElementById('distribution-controls');
-    
-    if (mode === 'individual') {
-        individualBtn.classList.add('active');
-        distributionBtn.classList.remove('active');
-        distributionControls.style.display = 'none';
-        
-        // Clear all selections and bet amounts
-        selectedAccounts.clear();
-        document.querySelectorAll('.bet-size-input').forEach(input => {
-            input.value = '';
-            input.disabled = true;
-        });
-        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = false;
-        });
-    } else {
-        individualBtn.classList.remove('active');
-        distributionBtn.classList.add('active');
-        distributionControls.style.display = 'block';
-        
-        // Clear bet amounts but keep checkboxes enabled for multi-select
-        selectedAccounts.clear();
-        document.querySelectorAll('.bet-size-input').forEach(input => {
-            input.value = '';
-            input.disabled = true;
-        });
-    }
-    
-    updateTotalBetAmount();
-    updateSendButton();
-}
 
 // Handle distribute bets
 function handleDistributeBets() {
@@ -425,23 +382,13 @@ function createBettingAccountCard(account, platformId) {
 // Handle account selection
 function handleAccountSelection(accountId, isSelected) {
     const betInput = document.getElementById(`bet-input-${accountId}`);
+    betInput.disabled = !isSelected;
     
-    if (currentMode === 'individual') {
-        betInput.disabled = !isSelected;
-        
-        if (!isSelected) {
-            betInput.value = '';
-            selectedAccounts.delete(accountId);
-        } else {
-            betInput.focus();
-        }
+    if (!isSelected) {
+        betInput.value = '';
+        selectedAccounts.delete(accountId);
     } else {
-        // In distribution mode, checkbox is just for selection
-        // Input remains disabled until distribution is applied
-        if (!isSelected) {
-            betInput.value = '';
-            selectedAccounts.delete(accountId);
-        }
+        betInput.focus();
     }
     
     updateTotalBetAmount();
@@ -690,8 +637,7 @@ function handleNewBet() {
         betStatusInterval = null;
     }
     
-    // Reset mode to individual
-    switchMode('individual');
+    // Clear distribution input
     document.getElementById('distribution-total').value = '';
     
     // Switch back to before-bets view
