@@ -56,6 +56,10 @@ Now we should be able to select accounts and specify bet size for each of them.
 
 On top we display total bet size that live updates.
 
+We have two modes for entering bet sizes:
+- Individual mode: Select an account and enter its bet amount (original behavior)
+- Distribution mode: Select multiple accounts, enter a total amount, and click "Distribute" to automatically distribute the total across selected accounts. After distribution, bet amounts can still be customized individually.
+
 Click a "send all" button to get these bets sent.
 
 ### After bets

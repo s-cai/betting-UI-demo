@@ -7,6 +7,7 @@ let currentPlatform = DEMO_PLATFORM;
 let selectedAccounts = new Map(); // accountId -> betAmount
 let sentBets = []; // Array of {account, amount, status, error}
 let betStatusInterval = null;
+let currentMode = 'individual'; // 'individual' or 'distribution'
 
 // Status constants
 const STATUS = {
@@ -21,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendAllBtn = document.getElementById('send-all-btn');
     const newBetBtn = document.getElementById('new-bet-btn');
     const demoBetsBtn = document.getElementById('demo-bets-btn');
+    const individualModeBtn = document.getElementById('individual-mode-btn');
+    const distributionModeBtn = document.getElementById('distribution-mode-btn');
+    const distributeBtn = document.getElementById('distribute-btn');
     
     // Set display values (set by upstream)
     document.getElementById('platform-display').textContent = 'FanDuel';
@@ -30,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
     sendAllBtn.addEventListener('click', handleSendAllBets);
     newBetBtn.addEventListener('click', handleNewBet);
     demoBetsBtn.addEventListener('click', handleLoadDemoBets);
+    individualModeBtn.addEventListener('click', () => switchMode('individual'));
+    distributionModeBtn.addEventListener('click', () => switchMode('distribution'));
+    distributeBtn.addEventListener('click', handleDistributeBets);
     
     // Load accounts for the demo platform
     loadAccountsForPlatform(DEMO_PLATFORM);
@@ -82,6 +89,134 @@ function handleLoadDemoBets() {
             updateTotalSucceeded();
         }
     }, 2000);
+}
+
+// Switch between individual and distribution modes
+function switchMode(mode) {
+    currentMode = mode;
+    
+    const individualBtn = document.getElementById('individual-mode-btn');
+    const distributionBtn = document.getElementById('distribution-mode-btn');
+    const distributionControls = document.getElementById('distribution-controls');
+    
+    if (mode === 'individual') {
+        individualBtn.classList.add('active');
+        distributionBtn.classList.remove('active');
+        distributionControls.style.display = 'none';
+        
+        // Clear all selections and bet amounts
+        selectedAccounts.clear();
+        document.querySelectorAll('.bet-size-input').forEach(input => {
+            input.value = '';
+            input.disabled = true;
+        });
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    } else {
+        individualBtn.classList.remove('active');
+        distributionBtn.classList.add('active');
+        distributionControls.style.display = 'block';
+        
+        // Clear bet amounts but keep checkboxes enabled for multi-select
+        selectedAccounts.clear();
+        document.querySelectorAll('.bet-size-input').forEach(input => {
+            input.value = '';
+            input.disabled = true;
+        });
+    }
+    
+    updateTotalBetAmount();
+    updateSendButton();
+}
+
+// Handle distribute bets
+function handleDistributeBets() {
+    const totalAmount = parseFloat(document.getElementById('distribution-total').value);
+    if (!totalAmount || totalAmount <= 0) {
+        alert('Please enter a valid total amount to distribute');
+        return;
+    }
+    
+    // Get all selected accounts (checked checkboxes)
+    const selectedAccountIds = [];
+    document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+        const accountId = checkbox.id.replace('bet-checkbox-', '');
+        selectedAccountIds.push(accountId);
+    });
+    
+    if (selectedAccountIds.length === 0) {
+        alert('Please select at least one account to distribute bets across');
+        return;
+    }
+    
+    // Get accounts and their max bet sizes
+    const accountsWithMax = selectedAccountIds.map(accountId => {
+        const account = findAccountById(accountId);
+        if (!account) return null;
+        const maxBet = calculateMaxBetSize(account);
+        return { account, accountId, maxBet };
+    }).filter(item => item !== null);
+    
+    if (accountsWithMax.length === 0) return;
+    
+    // Distribute evenly, respecting max bet limits
+    const perAccount = totalAmount / accountsWithMax.length;
+    let remaining = totalAmount;
+    const distribution = new Map();
+    
+    // First pass: assign up to max for each account
+    accountsWithMax.forEach(({ accountId, maxBet }) => {
+        const amount = Math.min(perAccount, maxBet);
+        distribution.set(accountId, amount);
+        remaining -= amount;
+    });
+    
+    // Second pass: distribute remaining to accounts that haven't hit their max
+    if (remaining > 0) {
+        let iterations = 0;
+        const maxIterations = 100; // Safety limit
+        
+        while (remaining > 0.01 && iterations < maxIterations) {
+            iterations++;
+            const availableAccounts = accountsWithMax.filter(({ accountId, maxBet }) => {
+                const currentAmount = distribution.get(accountId) || 0;
+                return currentAmount < maxBet;
+            });
+            
+            if (availableAccounts.length === 0) break;
+            
+            const perRemaining = remaining / availableAccounts.length;
+            let distributed = false;
+            
+            availableAccounts.forEach(({ accountId, maxBet }) => {
+                const currentAmount = distribution.get(accountId) || 0;
+                const canAdd = Math.min(perRemaining, maxBet - currentAmount);
+                if (canAdd > 0.01) {
+                    distribution.set(accountId, currentAmount + canAdd);
+                    remaining -= canAdd;
+                    distributed = true;
+                }
+            });
+            
+            if (!distributed) break;
+        }
+    }
+    
+    // Apply distribution to UI
+    distribution.forEach((amount, accountId) => {
+        selectedAccounts.set(accountId, amount);
+        const input = document.getElementById(`bet-input-${accountId}`);
+        const checkbox = document.getElementById(`bet-checkbox-${accountId}`);
+        if (input && checkbox) {
+            input.value = amount.toFixed(2);
+            input.disabled = false;
+            checkbox.checked = true;
+        }
+    });
+    
+    updateTotalBetAmount();
+    updateSendButton();
 }
 
 // Load and display accounts for selected platform
@@ -227,13 +362,23 @@ function createBettingAccountCard(account, platformId) {
 // Handle account selection
 function handleAccountSelection(accountId, isSelected) {
     const betInput = document.getElementById(`bet-input-${accountId}`);
-    betInput.disabled = !isSelected;
     
-    if (!isSelected) {
-        betInput.value = '';
-        selectedAccounts.delete(accountId);
+    if (currentMode === 'individual') {
+        betInput.disabled = !isSelected;
+        
+        if (!isSelected) {
+            betInput.value = '';
+            selectedAccounts.delete(accountId);
+        } else {
+            betInput.focus();
+        }
     } else {
-        betInput.focus();
+        // In distribution mode, checkbox is just for selection
+        // Input remains disabled until distribution is applied
+        if (!isSelected) {
+            betInput.value = '';
+            selectedAccounts.delete(accountId);
+        }
     }
     
     updateTotalBetAmount();
@@ -481,6 +626,10 @@ function handleNewBet() {
         clearInterval(betStatusInterval);
         betStatusInterval = null;
     }
+    
+    // Reset mode to individual
+    switchMode('individual');
+    document.getElementById('distribution-total').value = '';
     
     // Switch back to before-bets view
     document.getElementById('before-bets-view').style.display = 'block';
