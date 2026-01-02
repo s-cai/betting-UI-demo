@@ -53,8 +53,9 @@ When entering the betting view, the platform, game, and market are already known
 **Bet Entry:**
 
 - **Individual Entry**: Select an account and enter its bet amount directly
+- **Tag-Based Selection**: Select all accounts with a specific tag (e.g., VIP, Premium, New) with one click. Available tags for the current platform are displayed as clickable buttons
 - **Distribution**: Select multiple accounts, enter a total amount, and click "Distribute" to automatically distribute the total across selected accounts. After distribution, bet amounts can still be customized individually
-- Both options are always available in a unified interface
+- All options are always available in a unified interface
 - Total bet size is displayed at the top and updates in real-time
 - Click "Send All Bets" button to send all bets
 

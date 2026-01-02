@@ -172,6 +172,9 @@ function handleDistributeBets() {
         }
     });
     
+    // Update tag button states
+    updateTagButtonStates();
+    
     updateTotalBetAmount();
     updateSendButton();
 }
@@ -196,7 +199,96 @@ function loadAccountsForPlatform(platformId) {
         container.appendChild(groupContainer);
     }
     
+    // Update tag buttons
+    updateTagButtons(platformId);
+    
     updateTotalBetAmount();
+}
+
+// Get unique tags for a platform
+function getUniqueTagsForPlatform(platformId) {
+    const accounts = accountData[platformId] || [];
+    const tagSet = new Set();
+    
+    accounts.forEach(account => {
+        if (account.tags && account.tags.length > 0) {
+            account.tags.forEach(tag => tagSet.add(tag));
+        }
+    });
+    
+    return Array.from(tagSet).sort();
+}
+
+// Update tag buttons for current platform
+function updateTagButtons(platformId) {
+    const tagButtonsContainer = document.getElementById('tag-buttons');
+    tagButtonsContainer.innerHTML = '';
+    
+    const tags = getUniqueTagsForPlatform(platformId);
+    
+    if (tags.length === 0) {
+        const noTagsMsg = document.createElement('span');
+        noTagsMsg.textContent = 'No tags available for this platform';
+        noTagsMsg.style.color = '#6c757d';
+        noTagsMsg.style.fontStyle = 'italic';
+        tagButtonsContainer.appendChild(noTagsMsg);
+        return;
+    }
+    
+    tags.forEach(tag => {
+        const tagButton = document.createElement('button');
+        tagButton.type = 'button';
+        tagButton.className = 'tag-button';
+        tagButton.textContent = tag;
+        tagButton.dataset.tag = tag;
+        tagButton.addEventListener('click', () => handleTagSelection(tag, tagButton));
+        tagButtonsContainer.appendChild(tagButton);
+    });
+}
+
+// Handle tag-based selection
+function handleTagSelection(tag, tagButton) {
+    const accounts = accountData[currentPlatform] || [];
+    const accountsWithTag = accounts.filter(account => 
+        account.tags && account.tags.includes(tag)
+    );
+    
+    if (accountsWithTag.length === 0) return;
+    
+    // Check if all accounts with this tag are already selected
+    const allSelected = accountsWithTag.every(account => {
+        const checkbox = document.getElementById(`bet-checkbox-${account.id}`);
+        return checkbox && checkbox.checked;
+    });
+    
+    // Toggle selection: if all selected, deselect all; otherwise select all
+    const shouldSelect = !allSelected;
+    
+    accountsWithTag.forEach(account => {
+        const checkbox = document.getElementById(`bet-checkbox-${account.id}`);
+        const betInput = document.getElementById(`bet-input-${account.id}`);
+        
+        if (checkbox) {
+            checkbox.checked = shouldSelect;
+            
+            if (betInput) {
+                betInput.disabled = !shouldSelect;
+                
+                if (!shouldSelect) {
+                    betInput.value = '';
+                    selectedAccounts.delete(account.id);
+                } else {
+                    betInput.focus();
+                }
+            }
+        }
+    });
+    
+    // Update all tag button states
+    updateTagButtonStates();
+    
+    updateTotalBetAmount();
+    updateSendButton();
 }
 
 // Group accounts by unlimited vs limited, then by tradability
@@ -391,8 +483,38 @@ function handleAccountSelection(accountId, isSelected) {
         betInput.focus();
     }
     
+    // Update tag button states
+    updateTagButtonStates();
+    
     updateTotalBetAmount();
     updateSendButton();
+}
+
+// Update tag button active states based on current selections
+function updateTagButtonStates() {
+    const accounts = accountData[currentPlatform] || [];
+    const tagButtons = document.querySelectorAll('.tag-button');
+    
+    tagButtons.forEach(tagButton => {
+        const tag = tagButton.dataset.tag;
+        const accountsWithTag = accounts.filter(account => 
+            account.tags && account.tags.includes(tag)
+        );
+        
+        if (accountsWithTag.length === 0) {
+            tagButton.classList.remove('active');
+            return;
+        }
+        
+        // Check if all accounts with this tag are selected
+        const allSelected = accountsWithTag.every(account => {
+            const checkbox = document.getElementById(`bet-checkbox-${account.id}`);
+            return checkbox && checkbox.checked;
+        });
+        
+        // Tag button is active if all accounts with that tag are selected
+        tagButton.classList.toggle('active', allSelected);
+    });
 }
 
 // Handle bet amount change
@@ -644,7 +766,7 @@ function handleNewBet() {
     document.getElementById('before-bets-view').style.display = 'block';
     document.getElementById('after-bets-view').style.display = 'none';
     
-    // Reload accounts
+    // Reload accounts (this will also reset tag buttons)
     if (currentPlatform) {
         loadAccountsForPlatform(currentPlatform);
     }
