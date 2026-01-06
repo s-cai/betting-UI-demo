@@ -694,34 +694,44 @@ function getStatusText(status) {
 
 // Simulate bet status updates
 function simulateBetStatusUpdates() {
-    let updateIndex = 0;
-    
-    betStatusInterval = setInterval(() => {
-        if (updateIndex >= sentBets.length) {
-            clearInterval(betStatusInterval);
-            return;
-        }
-        
-        const bet = sentBets[updateIndex];
-        
-        // Simulate status progression
-        if (bet.status === STATUS.SENT) {
-            bet.status = STATUS.ACKED;
-        } else if (bet.status === STATUS.ACKED) {
-            // 80% success rate
-            if (Math.random() > 0.2) {
-                bet.status = STATUS.SUCCEEDED;
-            } else {
-                bet.status = STATUS.FAILED;
-                bet.error = getRandomErrorMessage();
+    // First phase: Update all bets from SENT to ACKED
+    // Stagger the ACKED updates slightly for visual effect
+    sentBets.forEach((bet, index) => {
+        setTimeout(() => {
+            if (bet.status === STATUS.SENT) {
+                bet.status = STATUS.ACKED;
+                renderSentBets();
+                updateTotalSucceeded();
             }
-        }
-        
-        renderSentBets();
-        updateTotalSucceeded();
-        
-        updateIndex++;
-    }, 1500); // Update every 1.5 seconds
+        }, 500 + (index * 200)); // Stagger by 200ms per bet
+    });
+    
+    // Second phase: After all bets are ACKED, continue to SUCCEEDED/FAILED
+    // Wait for all ACKED updates to complete, then start final phase
+    const ackDelay = 500 + (sentBets.length * 200) + 1000; // Wait for all ACKs + 1 second
+    
+    setTimeout(() => {
+        // Process each bet from ACKED to final status
+        sentBets.forEach((bet, index) => {
+            if (bet.status === STATUS.ACKED) {
+                // Random delay for each bet's final status (1-3 seconds)
+                const finalDelay = 1000 + Math.random() * 2000;
+                
+                setTimeout(() => {
+                    // 85% success rate, 15% failure rate
+                    if (Math.random() > 0.15) {
+                        bet.status = STATUS.SUCCEEDED;
+                    } else {
+                        bet.status = STATUS.FAILED;
+                        bet.error = getRandomErrorMessage();
+                    }
+                    
+                    renderSentBets();
+                    updateTotalSucceeded();
+                }, finalDelay);
+            }
+        });
+    }, ackDelay);
 }
 
 // Get random error message
