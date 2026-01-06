@@ -44,6 +44,127 @@ const accountData = {
             tags: [],
             backupCash: 1000.00,
             notes: 'Account on hold pending verification'
+        },
+        {
+            id: 'fd5',
+            name: 'Thomas Anderson',
+            balance: 3500.00,
+            limit: null,
+            phoneOffline: false,
+            onHold: false,
+            tags: ['VIP', 'Active'],
+            backupCash: 20000.00,
+            notes: 'Very active bettor, high volume'
+        },
+        {
+            id: 'fd6',
+            name: 'Maria Rodriguez',
+            balance: 980.00,
+            limit: 1500.00,
+            phoneOffline: false,
+            onHold: false,
+            tags: ['Premium'],
+            backupCash: 4000.00,
+            notes: 'Regular customer, prefers basketball'
+        },
+        {
+            id: 'fd7',
+            name: 'Kevin Thompson',
+            balance: 2200.50,
+            limit: null,
+            phoneOffline: false,
+            onHold: false,
+            tags: ['VIP'],
+            backupCash: 12000.00,
+            notes: 'Top tier customer, excellent track record'
+        },
+        {
+            id: 'fd8',
+            name: 'Jessica White',
+            balance: 650.75,
+            limit: 800.00,
+            phoneOffline: false,
+            onHold: false,
+            tags: ['New', 'Active'],
+            backupCash: 2500.00,
+            notes: 'New account, showing good activity'
+        },
+        {
+            id: 'fd9',
+            name: 'Daniel Kim',
+            balance: 1800.25,
+            limit: null,
+            phoneOffline: false,
+            onHold: false,
+            tags: ['Premium', 'Active'],
+            backupCash: 7500.00,
+            notes: 'Consistent bettor, multiple sports'
+        },
+        {
+            id: 'fd10',
+            name: 'Rachel Green',
+            balance: 420.00,
+            limit: 300.00,
+            phoneOffline: false,
+            onHold: false,
+            tags: ['New'],
+            backupCash: 1500.00,
+            notes: 'Recently opened account'
+        },
+        {
+            id: 'fd11',
+            name: 'Mark Johnson',
+            balance: 2750.00,
+            limit: null,
+            phoneOffline: true,
+            onHold: false,
+            tags: ['VIP', 'Premium'],
+            backupCash: 15000.00,
+            notes: 'Phone offline, check connection'
+        },
+        {
+            id: 'fd12',
+            name: 'Sophia Martinez',
+            balance: 1100.50,
+            limit: 1200.00,
+            phoneOffline: false,
+            onHold: false,
+            tags: ['Premium'],
+            backupCash: 3500.00,
+            notes: 'Steady customer, prefers baseball'
+        },
+        {
+            id: 'fd13',
+            name: 'Ryan O\'Connor',
+            balance: 1950.00,
+            limit: null,
+            phoneOffline: false,
+            onHold: false,
+            tags: ['VIP', 'Active'],
+            backupCash: 9000.00,
+            notes: 'High activity, multiple bets daily'
+        },
+        {
+            id: 'fd14',
+            name: 'Olivia Brown',
+            balance: 750.25,
+            limit: 1000.00,
+            phoneOffline: false,
+            onHold: true,
+            tags: ['Warning'],
+            backupCash: 2000.00,
+            notes: 'Account on hold for review'
+        },
+        {
+            id: 'fd15',
+            name: 'William Taylor',
+            balance: 3200.75,
+            limit: null,
+            phoneOffline: false,
+            onHold: false,
+            tags: ['VIP', 'Premium', 'Active'],
+            backupCash: 18000.00,
+            notes: 'Premium customer, excellent standing'
         }
     ],
     betmgm: [
