@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    base: process.env.NODE_ENV === 'production' ? '/betting-UI-demo/' : '/',
     server: {
       host: "0.0.0.0", // Bind to all IPv4 interfaces - Chrome localhost fix
       port: 8080,

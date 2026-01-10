@@ -351,6 +351,32 @@ npm run dev
    - **Bet History**: View recent betting activity
    - **Settings**: Access application settings
 
+## Deployment
+
+### GitHub Pages
+
+This application is automatically deployed to GitHub Pages using GitHub Actions.
+
+**Live Site**: [https://s-cai.github.io/betting-UI-demo/](https://s-cai.github.io/betting-UI-demo/)
+
+**How it works:**
+- Every push to the `master` or `main` branch triggers an automatic build and deployment
+- The workflow builds the production bundle and deploys it to GitHub Pages
+- The site is available at `https://[username].github.io/betting-UI-demo/`
+
+**Manual Deployment:**
+You can also trigger a manual deployment by:
+1. Going to the "Actions" tab in your GitHub repository
+2. Selecting the "Deploy to GitHub Pages" workflow
+3. Clicking "Run workflow"
+
+**Local Production Build:**
+To test the production build locally:
+```bash
+npm run build
+npm run preview
+```
+
 ### Using the Application
 
 #### Account Management View
