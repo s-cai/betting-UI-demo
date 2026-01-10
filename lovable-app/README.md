@@ -10,7 +10,7 @@ This is a professional-grade betting interface designed for arbitrage betting an
 
 ### 🎯 Core Functionality
 
-- **Multi-Sportsbook Odds Comparison**: Compare odds across 8+ sportsbooks (DraftKings, FanDuel, BetMGM, Caesars, PointsBet, Bet365, Betway, Pinnacle)
+- **Multi-Sportsbook Odds Comparison**: Compare odds across 8+ sportsbooks (DraftKings, FanDuel, BetMGM, Caesars, PointsBet, Bet365, Unibet, WynnBET)
 - **Real-Time Match Tracking**: Live and pre-match games with scores, innings/quarters, and status indicators
 - **Multi-Sport Support**: Football (NFL, NCAAF) and Basketball (NBA, NCAAB)
 - **Bet History Tracking**: View recent bets with status indicators (won/lost/pending) and payout information
@@ -137,24 +137,32 @@ This is a professional-grade betting interface designed for arbitrage betting an
 
 #### `AccountOverviewBar.tsx`
 - **Location**: `src/components/panels/AccountOverviewBar.tsx`
-- **Purpose**: Multi-account balance and status overview
+- **Purpose**: Multi-platform account balance and status aggregation
 - **Features**:
-  - Expandable/collapsible bar (128px expanded, 40px collapsed)
-  - Total balance across all accounts
-  - Account status counts (online/limited/offline)
-  - Individual account cards with:
-    - Platform name
-    - Balance display
-    - Status indicator dots
-    - Device information
-  - Color-coded by status (green/yellow/gray)
+  - Expandable/collapsible bar (auto height when expanded, 40px when collapsed)
+  - **Header Summary**:
+    - Total balance across all platforms and accounts
+    - Total account counts by status (online/limited/offline)
+  - **Platform Summary Cards**: One card per platform showing:
+    - Platform logo and name
+    - **Online Accounts**: Balance and count for accounts that are not phone offline and not on hold
+    - **Limited Accounts**: Balance and count for accounts that are on hold
+    - **Offline Accounts**: Balance and count for accounts with phone offline status
+    - Each status shows formatted dollar balance and account count in parentheses
+  - **Real-time Updates**: Automatically recalculates when account data changes in the Accounts page
+  - **Data Source**: Aggregates from all demo accounts defined in `Accounts.tsx`
+  - **Status Logic**:
+    - **Online**: `!phoneOffline && !onHold` (green indicator)
+    - **Limited**: `onHold === true` (yellow/warning indicator)
+    - **Offline**: `phoneOffline === true` (gray indicator)
+  - **Supported Platforms**: FanDuel, BetMGM, DraftKings, Caesars, PointsBet, Bet365, Unibet, WynnBET
 
 #### `Accounts.tsx` (Account Management Page)
 - **Location**: `src/pages/Accounts.tsx`
 - **Purpose**: Full-featured account management interface
 - **Access**: Click the Accounts icon (Users) in the left sidebar
 - **Features**:
-  - **Platform Selection**: Left sidebar allows switching between platforms (FanDuel, BetMGM, DraftKings)
+  - **Platform Selection**: Left sidebar allows switching between platforms (FanDuel, BetMGM, DraftKings, Caesars, PointsBet, Bet365, Unibet, WynnBET)
   - **Single Platform View**: Displays accounts for only the selected platform at a time
   - **Account Cards**: Each account displays:
     - Holder full name with avatar (initials)
@@ -226,7 +234,11 @@ The application uses shadcn/ui components built on Radix UI primitives:
    - Status updates: SENT → ACKED → SUCCEEDED/FAILED (with 40% failure rate)
    - User can close dialog to return to odds view
 4. **Notifications**: Filtered by type using local state in `NotificationsPanel`
-5. **Account Status**: Calculated from mock data arrays in `AccountOverviewBar`
+5. **Account Status**: 
+   - Account data managed in `AccountsContext` (React Context)
+   - `AccountOverviewBar` aggregates account data from the shared context
+   - Updates automatically when accounts are edited in the Accounts page
+   - Calculates per-platform summaries for online/limited/offline statuses
 
 ### Styling System
 
@@ -355,7 +367,12 @@ lovable-app/
 │   └── resources/         # Platform logos
 │       ├── fanduel-logo.svg
 │       ├── betmgm-logo.svg
-│       └── draftkings-logo.svg
+│       ├── draftkings-logo.svg
+│       ├── caesars-logo.svg
+│       ├── pointsbet-logo.svg
+│       ├── bet365-logo.svg
+│       ├── unibet-logo.svg
+│       └── wynnbet-logo.svg
 ├── src/
 │   ├── components/
 │   │   ├── layout/         # Layout components
@@ -368,6 +385,8 @@ lovable-app/
 │   │   │   ├── OddsComparisonGrid.tsx
 │   │   │   └── SportsPanel.tsx
 │   │   └── ui/             # shadcn/ui components
+│   ├── contexts/           # React Context providers
+│   │   └── AccountsContext.tsx  # Shared account state
 │   ├── hooks/              # Custom React hooks
 │   │   ├── use-mobile.tsx
 │   │   └── use-toast.ts
@@ -450,9 +469,26 @@ Tags use consistent color coding throughout the interface:
 ### Editing Accounts
 
 - Right-click any account card to open the edit modal
-- Changes are saved to the in-memory state and persist until page refresh
+- Changes are saved to the shared `AccountsContext` state
+- **Real-time Updates**: Account edits immediately reflect in:
+  - The Accounts page (local view updates)
+  - The AccountOverviewBar (aggregates recalculate automatically)
 - All account fields are editable except the holder name (read-only)
 - Tag editing supports comma-separated values
+- Changes persist in memory until page refresh
+
+### Account Summary Logic
+
+The `AccountOverviewBar` component aggregates account data across all platforms:
+
+1. **Data Source**: Reads from `AccountsContext` which is shared with the Accounts page
+2. **Per-Platform Aggregation**: For each platform, calculates:
+   - **Online**: Sum of balances and count of accounts where `!phoneOffline && !onHold`
+   - **Limited**: Sum of balances and count of accounts where `onHold === true`
+   - **Offline**: Sum of balances and count of accounts where `phoneOffline === true`
+3. **Total Summary**: Header shows combined totals across all platforms
+4. **Automatic Updates**: Uses `useMemo` with `accounts` dependency to recalculate when account data changes
+5. **Display Format**: Each platform card shows status breakdowns with formatted dollar amounts and account counts
 
 ## Future Enhancements
 
