@@ -186,18 +186,37 @@ const allMatches: Match[] = [
 
 export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps) {
   const [activeCategory, setActiveCategory] = useState<SportCategory>("football");
-  const [activeLeague, setActiveLeague] = useState<League>("NFL");
-  const [statusFilter, setStatusFilter] = useState<"LIVE" | "PRE">("LIVE");
+  const [activeLeague, setActiveLeague] = useState<League | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"LIVE" | "PRE" | null>(null);
   
   const getMatchesForLeague = (league: League): Match[] => {
     return allMatches.filter(m => m.league === league);
   };
 
-  const leagueMatches = getMatchesForLeague(activeLeague);
-  const matches = leagueMatches.filter(m => m.status === statusFilter);
+  // Filter by category first
+  const categoryMatches = allMatches.filter(m => {
+    if (activeCategory === "football") {
+      return m.league === "NFL" || m.league === "NCAAF";
+    } else {
+      return m.league === "NBA" || m.league === "NCAAB";
+    }
+  });
 
-  const getLeagueCounts = (league: League, status: "LIVE" | "PRE"): number => {
+  // Then filter by league if selected
+  const leagueMatches = activeLeague 
+    ? categoryMatches.filter(m => m.league === activeLeague)
+    : categoryMatches;
+
+  // Finally filter by status if selected
+  const matches = statusFilter
+    ? leagueMatches.filter(m => m.status === statusFilter)
+    : leagueMatches;
+
+  const getLeagueCounts = (league: League, status: "LIVE" | "PRE" | null): number => {
     const leagueMatches = getMatchesForLeague(league);
+    if (status === null) {
+      return leagueMatches.length;
+    }
     return leagueMatches.filter(m => m.status === status).length;
   };
 
@@ -215,7 +234,8 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
 
   const handleCategoryChange = (category: SportCategory) => {
     setActiveCategory(category);
-    setActiveLeague(categoryLeagues[category][0]);
+    // Reset league filter when changing category to show all leagues
+    setActiveLeague(null);
   };
 
   return (
@@ -251,6 +271,17 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
 
       {/* League Subcategory Tabs */}
       <div className="flex items-center gap-1 px-3 py-2 border-b border-panel-border bg-panel-header/30">
+        <button
+          onClick={() => setActiveLeague(null)}
+          className={cn(
+            "px-3 py-1.5 text-xs font-medium rounded transition-colors",
+            activeLeague === null
+              ? "bg-accent text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+          )}
+        >
+          All
+        </button>
         {categoryLeagues[activeCategory].map((league) => (
           <button
             key={league}
@@ -275,7 +306,7 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
       <div className="flex items-center justify-between px-3 py-2 border-b border-panel-border">
         <div className="flex items-center gap-2">
           <button 
-            onClick={() => setStatusFilter("LIVE")}
+            onClick={() => setStatusFilter(statusFilter === "LIVE" ? null : "LIVE")}
             className={cn(
               "flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded transition-colors",
               statusFilter === "LIVE"
@@ -289,7 +320,7 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
             Live Now
           </button>
           <button 
-            onClick={() => setStatusFilter("PRE")}
+            onClick={() => setStatusFilter(statusFilter === "PRE" ? null : "PRE")}
             className={cn(
               "px-2.5 py-1 text-xs font-medium rounded transition-colors",
               statusFilter === "PRE"
@@ -305,8 +336,16 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
       {/* League Header */}
       <div className="px-3 py-2 bg-panel-header border-b border-panel-border">
         <span className="text-xs font-medium flex items-center gap-1.5">
-          <LeagueLogo league={activeLeague} className="w-4 h-4" />
-          {activeLeague}
+          {activeLeague ? (
+            <>
+              <LeagueLogo league={activeLeague} className="w-4 h-4" />
+              {activeLeague}
+            </>
+          ) : (
+            <>
+              {activeCategory === "football" ? "🏈" : "🏀"} All {activeCategory === "football" ? "Football" : "Basketball"}
+            </>
+          )}
         </span>
       </div>
 

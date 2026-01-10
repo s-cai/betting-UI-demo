@@ -28,6 +28,16 @@ const mockBookOdds: BookOdds[] = [
 
 const marketTabs = ["Main Lines", "Team Markets", "First X Innings", "Innings", "Batter Props", "Pitcher Props"];
 
+// Get team logo emoji based on league (same as SportsPanel)
+const getTeamLogoEmoji = (league: string): string => {
+  if (league === "NFL" || league === "NCAAF") {
+    return "🏈";
+  } else if (league === "NBA" || league === "NCAAB") {
+    return "🏀";
+  }
+  return "📊"; // fallback
+};
+
 export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
   if (!match) {
     return (
@@ -48,6 +58,30 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
         <span className="font-medium text-foreground">
           {match.awayTeam} vs {match.homeTeam}
         </span>
+        {/* Game Status */}
+        <div className="flex items-center gap-2">
+          {match.status === "LIVE" ? (
+            match.timeout ? (
+              <span className="text-xs">⏰</span>
+            ) : (
+              <span className="w-1.5 h-1.5 rounded-full bg-signal-negative animate-pulse" />
+            )
+          ) : (
+            <span className="text-xs">⏳</span>
+          )}
+          <span className="text-xs font-medium text-muted-foreground">
+            {match.status === "LIVE" 
+              ? match.timeout 
+                ? `Timeout - ${match.inning || "LIVE"}`
+                : match.inning || "LIVE"
+              : match.status}
+          </span>
+          {match.score && (
+            <span className="text-xs font-mono text-muted-foreground">
+              {match.score.away} - {match.score.home}
+            </span>
+          )}
+        </div>
         <Info className="w-3.5 h-3.5 text-muted-foreground" />
       </div>
 
@@ -96,7 +130,9 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
                   {mockBookOdds[0].hasOpen && (
                     <span className="text-[10px] px-1.5 py-0.5 bg-signal-positive-muted text-signal-positive rounded">Open</span>
                   )}
-                  <span className="w-5 h-5 bg-muted rounded flex items-center justify-center text-[10px]">📊</span>
+                  <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
+                    <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(match.league)}</span>
+                  </div>
                   {match.awayTeam}
                 </div>
               </td>
@@ -127,7 +163,9 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
                   {mockBookOdds[0].hasOpen && (
                     <span className="text-[10px] px-1.5 py-0.5 bg-signal-positive-muted text-signal-positive rounded">Open</span>
                   )}
-                  <span className="w-5 h-5 bg-muted rounded flex items-center justify-center text-[10px]">📊</span>
+                  <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
+                    <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(match.league)}</span>
+                  </div>
                   {match.homeTeam}
                 </div>
               </td>
@@ -163,7 +201,9 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               <td className="text-xs font-medium">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] px-1.5 py-0.5 bg-signal-positive-muted text-signal-positive rounded">Open</span>
-                  <span className="w-5 h-5 bg-muted rounded flex items-center justify-center text-[10px]">📊</span>
+                  <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
+                    <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(match.league)}</span>
+                  </div>
                   {match.awayTeam}
                 </div>
               </td>
@@ -192,7 +232,9 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               <td className="text-xs font-medium">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] px-1.5 py-0.5 bg-signal-positive-muted text-signal-positive rounded">Open</span>
-                  <span className="w-5 h-5 bg-muted rounded flex items-center justify-center text-[10px]">📊</span>
+                  <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
+                    <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(match.league)}</span>
+                  </div>
                   {match.homeTeam}
                 </div>
               </td>
