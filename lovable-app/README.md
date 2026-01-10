@@ -12,7 +12,7 @@ This is a professional-grade betting interface designed for arbitrage betting an
 
 - **Multi-Sportsbook Odds Comparison**: Compare odds across 8+ sportsbooks (DraftKings, FanDuel, BetMGM, Caesars, PointsBet, Bet365, Betway, Pinnacle)
 - **Real-Time Match Tracking**: Live and pre-match games with scores, innings/quarters, and status indicators
-- **Multi-Sport Support**: Baseball (MLB), Football (NFL), and Basketball (NBA)
+- **Multi-Sport Support**: Football (NFL, NCAAF) and Basketball (NBA, NCAAB)
 - **Bet History Tracking**: View recent bets with status indicators (won/lost/pending) and payout information
 - **Account Management**: Monitor multiple betting account balances and statuses across platforms
 - **Smart Notifications**: Real-time alerts for arbitrage opportunities, line movements, game events, and account warnings
@@ -49,12 +49,21 @@ This is a professional-grade betting interface designed for arbitrage betting an
 - **Location**: `src/components/panels/SportsPanel.tsx`
 - **Purpose**: Displays list of matches/games with odds summary
 - **Features**:
-  - Sport filtering (Baseball, Football, Basketball)
+  - Sport category filtering (Football 🏈, Basketball 🏀)
+  - League subcategories: NFL, NCAAF (under Football), NBA, NCAAB (under Basketball)
   - Live/Prematch toggle
   - Match selection with highlighting
-  - Inning/quarter grouping for live games
+  - Each game displayed as a single unit with both teams and game status
   - Best odds indicators per market (spread, moneyline, total)
   - Score display for live games
+- **Logo/Emoji Usage**:
+  - **Category buttons**: Football and Basketball use emojis (🏈 and 🏀)
+  - **League logos**: Only NFL and NBA display official league logos
+  - **NCAA leagues**: NCAAF and NCAAB use emojis (🏈 and 🏀 respectively)
+- **Game Status Indicators**:
+  - ⏳ Hourglass emoji for PRE (prematch) games
+  - ⏰ Clock emoji for timeout status during LIVE games
+  - Red pulsing dot for normal LIVE games
 - **Data Structure**: `Match` interface with spread, moneyline, and total odds
 
 #### `OddsComparisonGrid.tsx`
