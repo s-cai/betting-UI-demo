@@ -73,9 +73,43 @@ This is a professional-grade betting interface designed for arbitrage betting an
   - Market tabs (Main Lines, Team Markets, First X Innings, etc.)
   - Side-by-side comparison of 6+ sportsbooks
   - Best odds and average odds columns
-  - Clickable odds cells for betting actions
+  - Clickable odds cells for betting actions (opens BettingDialog)
   - "Open" status indicators for available markets
   - Sticky table headers for scrolling
+
+#### `BettingDialog.tsx`
+- **Location**: `src/components/panels/BettingDialog.tsx`
+- **Purpose**: Modal dialog for placing bets across multiple accounts
+- **Features**:
+  - **Pre-filled Information**: Automatically populated with:
+    - Game name (from selected match)
+    - Platform (from clicked odds column)
+    - Market type (Moneyline, Spread, Total)
+    - Side (away/home, over/under)
+    - Default odds (from clicked odds cell)
+  - **Before Bet View**:
+    - Account selection with checkboxes
+    - Bet amount inputs for each selected account
+    - Tag-based account selection (color-coded tags)
+    - Distribution tool: Enter total amount and distribute across selected accounts
+    - Total bet size calculation
+    - "Send All Bets" button
+  - **After Bet View**:
+    - Status progression tracking: SENT → ACKED → SUCCEEDED/FAILED
+    - Real-time status updates with staggered timing
+    - Total succeeded vs total sent amount display
+    - Individual bet cards showing:
+      - Account name and avatar
+      - Bet amount
+      - Status icon and text
+      - Error messages for failed bets
+    - Status indicators:
+      - ✓ (gray) - Sent to phone
+      - ✓ (green) - Acknowledged by phone
+      - ✓✓ (green) - Bet succeeded
+      - ✕ (red) - Bet failed (with error message)
+  - **Failure Rate**: 40% failure rate, 60% success rate for testing
+  - **Error Messages**: Random error messages for failed bets (Insufficient funds, Bet limit exceeded, Connection timeout, etc.)
 
 #### `NotificationsPanel.tsx`
 - **Location**: `src/components/panels/NotificationsPanel.tsx`
@@ -183,8 +217,16 @@ The application uses shadcn/ui components built on Radix UI primitives:
 
 1. **Match Selection**: User clicks match in `SportsPanel` → updates `selectedMatch` state in `Index.tsx`
 2. **Odds Display**: `OddsComparisonGrid` receives `selectedMatch` prop and displays detailed odds
-3. **Notifications**: Filtered by type using local state in `NotificationsPanel`
-4. **Account Status**: Calculated from mock data arrays in `AccountOverviewBar`
+3. **Betting Flow**:
+   - User clicks on any odds cell in `OddsComparisonGrid`
+   - `BettingDialog` opens with pre-filled game, platform, market, side, and odds
+   - User selects accounts and enters bet amounts (or uses distribution tool)
+   - User clicks "Send All Bets"
+   - Dialog switches to "After Bet View" showing status progression
+   - Status updates: SENT → ACKED → SUCCEEDED/FAILED (with 40% failure rate)
+   - User can close dialog to return to odds view
+4. **Notifications**: Filtered by type using local state in `NotificationsPanel`
+5. **Account Status**: Calculated from mock data arrays in `AccountOverviewBar`
 
 ### Styling System
 
@@ -321,6 +363,7 @@ lovable-app/
 │   │   ├── panels/         # Main feature panels
 │   │   │   ├── AccountOverviewBar.tsx
 │   │   │   ├── BetHistoryBar.tsx
+│   │   │   ├── BettingDialog.tsx
 │   │   │   ├── NotificationsPanel.tsx
 │   │   │   ├── OddsComparisonGrid.tsx
 │   │   │   └── SportsPanel.tsx
@@ -423,7 +466,8 @@ Potential areas for expansion:
 - **Multi-language Support**: Internationalization
 - **Mobile Responsive**: Optimized mobile layout
 - **Dark/Light Theme Toggle**: Theme switching capability
-- **Batch Betting View**: Integration of betting view functionality into the React app
+- **Bet History Integration**: Link placed bets to bet history tracking
+- **Real-time Account Updates**: Update account balances after successful bets
 
 ## License
 

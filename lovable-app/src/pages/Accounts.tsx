@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAccounts } from "@/contexts/AccountsContext";
 
-interface Account {
+export interface Account {
   id: string;
   name: string;
   balance: number;
@@ -24,13 +25,18 @@ interface Platform {
   logo: string;
 }
 
-const platforms: Platform[] = [
+export const platforms: Platform[] = [
   { id: 'fanduel', name: 'FanDuel', logo: '/resources/fanduel-logo.svg' },
   { id: 'betmgm', name: 'BetMGM', logo: '/resources/betmgm-logo.svg' },
-  { id: 'draftkings', name: 'DraftKings', logo: '/resources/draftkings-logo.svg' }
+  { id: 'draftkings', name: 'DraftKings', logo: '/resources/draftkings-logo.svg' },
+  { id: 'caesars', name: 'Caesars', logo: '/resources/caesars-logo.svg' },
+  { id: 'pointsbet', name: 'PointsBet', logo: '/resources/pointsbet-logo.svg' },
+  { id: 'bet365', name: 'Bet365', logo: '/resources/bet365-logo.svg' },
+  { id: 'unibet', name: 'Unibet', logo: '/resources/unibet-logo.svg' },
+  { id: 'wynnbet', name: 'WynnBET', logo: '/resources/wynnbet-logo.svg' }
 ];
 
-const accountData: Record<string, Account[]> = {
+export const accountData: Record<string, Account[]> = {
   fanduel: [
     { id: 'fd1', name: 'John Smith', balance: 1250.50, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Premium'], backupCash: 5000.00, notes: 'High-value customer, prefers football bets' },
     { id: 'fd2', name: 'Sarah Johnson', balance: 850.25, limit: 500.00, phoneOffline: false, onHold: false, tags: ['New'], backupCash: 2000.00, notes: 'New account, monitor activity' },
@@ -59,6 +65,48 @@ const accountData: Record<string, Account[]> = {
     { id: 'dk3', name: 'Amanda Wilson', balance: 525.50, limit: 500.00, phoneOffline: false, onHold: true, tags: ['Warning'], backupCash: 1500.00, notes: 'Account flagged for review' },
     { id: 'dk4', name: 'James Lee', balance: 2100.00, limit: null, phoneOffline: true, onHold: false, tags: ['Premium'], backupCash: 12000.00, notes: 'Phone offline, check connectivity' },
     { id: 'dk5', name: 'Patricia Garcia', balance: 750.25, limit: null, phoneOffline: false, onHold: false, tags: ['New'], backupCash: 2500.00, notes: 'New account setup last week' }
+  ],
+  caesars: [
+    { id: 'cz1', name: 'Alexander Hamilton', balance: 15890.00, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Premium', 'Active'], backupCash: 50000.00, notes: 'High roller, frequent large bets' },
+    { id: 'cz2', name: 'Victoria Sterling', balance: 4200.50, limit: null, phoneOffline: false, onHold: false, tags: ['Premium'], backupCash: 15000.00, notes: 'Regular customer, prefers horse racing' },
+    { id: 'cz3', name: 'Nathaniel Black', balance: 2750.25, limit: 5000.00, phoneOffline: false, onHold: false, tags: ['Active'], backupCash: 10000.00, notes: 'Active bettor, multiple sports' },
+    { id: 'cz4', name: 'Isabella Rose', balance: 1800.75, limit: null, phoneOffline: true, onHold: false, tags: ['Premium'], backupCash: 8000.00, notes: 'Phone offline, needs attention' },
+    { id: 'cz5', name: 'Benjamin Grant', balance: 3200.00, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Active'], backupCash: 20000.00, notes: 'Top tier customer, excellent standing' },
+    { id: 'cz6', name: 'Charlotte Moore', balance: 950.50, limit: 1500.00, phoneOffline: false, onHold: false, tags: ['New'], backupCash: 3000.00, notes: 'New account, monitor activity' },
+    { id: 'cz7', name: 'Henry Ford', balance: 5100.25, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Premium'], backupCash: 25000.00, notes: 'Very active, high volume customer' }
+  ],
+  pointsbet: [
+    { id: 'pb1', name: 'Emma Watson', balance: 3200.00, limit: null, phoneOffline: false, onHold: false, tags: ['Premium', 'Active'], backupCash: 12000.00, notes: 'Regular bettor, prefers live betting' },
+    { id: 'pb2', name: 'Lucas Martinez', balance: 1850.75, limit: 2500.00, phoneOffline: false, onHold: false, tags: ['Active'], backupCash: 6000.00, notes: 'Active customer, multiple daily bets' },
+    { id: 'pb3', name: 'Grace Chen', balance: 750.50, limit: 1000.00, phoneOffline: true, onHold: false, tags: ['New'], backupCash: 2500.00, notes: 'Phone offline, check connection' },
+    { id: 'pb4', name: 'Oliver Stone', balance: 2200.25, limit: null, phoneOffline: false, onHold: false, tags: ['Premium'], backupCash: 8000.00, notes: 'Steady customer, prefers football' },
+    { id: 'pb5', name: 'Lily Anderson', balance: 450.00, limit: 500.00, phoneOffline: false, onHold: true, tags: ['Warning'], backupCash: 1500.00, notes: 'Account on hold for verification' }
+  ],
+  bet365: [
+    { id: 'b3651', name: 'George Washington', balance: 22100.00, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Premium', 'Active'], backupCash: 75000.00, notes: 'Top customer, very high volume' },
+    { id: 'b3652', name: 'Martha Jefferson', balance: 8500.50, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Premium'], backupCash: 30000.00, notes: 'High-value customer, excellent track record' },
+    { id: 'b3653', name: 'Thomas Adams', balance: 4200.75, limit: 10000.00, phoneOffline: false, onHold: false, tags: ['Premium', 'Active'], backupCash: 15000.00, notes: 'Active bettor, multiple sports' },
+    { id: 'b3654', name: 'Abigail Franklin', balance: 1800.25, limit: null, phoneOffline: false, onHold: false, tags: ['Premium'], backupCash: 7000.00, notes: 'Regular customer, prefers basketball' },
+    { id: 'b3655', name: 'John Quincy', balance: 3200.00, limit: null, phoneOffline: true, onHold: false, tags: ['VIP'], backupCash: 18000.00, notes: 'Phone offline, investigate' },
+    { id: 'b3656', name: 'Eleanor Roosevelt', balance: 1950.50, limit: 3000.00, phoneOffline: false, onHold: false, tags: ['Active'], backupCash: 5000.00, notes: 'Active account, monitor closely' },
+    { id: 'b3657', name: 'Franklin Pierce', balance: 2750.75, limit: null, phoneOffline: false, onHold: false, tags: ['Premium', 'Active'], backupCash: 11000.00, notes: 'Consistent bettor, good standing' },
+    { id: 'b3658', name: 'Harriet Tubman', balance: 1100.00, limit: 2000.00, phoneOffline: false, onHold: false, tags: ['New'], backupCash: 3500.00, notes: 'New account, showing promise' }
+  ],
+  unibet: [
+    { id: 'ub1', name: 'Sophie Laurent', balance: 6750.00, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Premium', 'Active'], backupCash: 25000.00, notes: 'Very active, multiple daily bets' },
+    { id: 'ub2', name: 'Pierre Dubois', balance: 3200.50, limit: null, phoneOffline: false, onHold: false, tags: ['Premium'], backupCash: 12000.00, notes: 'Regular customer, prefers soccer' },
+    { id: 'ub3', name: 'Marie Leclerc', balance: 1850.25, limit: 3000.00, phoneOffline: false, onHold: false, tags: ['Active'], backupCash: 6000.00, notes: 'Active bettor, good activity' },
+    { id: 'ub4', name: 'Jean Moreau', balance: 950.75, limit: 1500.00, phoneOffline: true, onHold: false, tags: ['New'], backupCash: 3000.00, notes: 'Phone offline, check status' },
+    { id: 'ub5', name: 'Camille Bernard', balance: 2200.00, limit: null, phoneOffline: false, onHold: false, tags: ['Premium', 'Active'], backupCash: 8000.00, notes: 'Steady customer, multiple sports' },
+    { id: 'ub6', name: 'Antoine Martin', balance: 1400.50, limit: null, phoneOffline: false, onHold: false, tags: ['Active'], backupCash: 4500.00, notes: 'Active account, monitor activity' }
+  ],
+  wynnbet: [
+    { id: 'wb1', name: 'Steven Wynn', balance: 4500.00, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Premium'], backupCash: 20000.00, notes: 'Premium customer, high value' },
+    { id: 'wb2', name: 'Jennifer Las Vegas', balance: 2200.75, limit: 5000.00, phoneOffline: false, onHold: false, tags: ['Premium', 'Active'], backupCash: 9000.00, notes: 'Active bettor, prefers casino games' },
+    { id: 'wb3', name: 'Michael Casino', balance: 1800.50, limit: null, phoneOffline: false, onHold: false, tags: ['Active'], backupCash: 7000.00, notes: 'Regular customer, steady activity' },
+    { id: 'wb4', name: 'Sarah Bellagio', balance: 950.25, limit: 2000.00, phoneOffline: true, onHold: false, tags: ['New'], backupCash: 3000.00, notes: 'Phone offline, needs attention' },
+    { id: 'wb5', name: 'David Strip', balance: 3200.00, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Active'], backupCash: 15000.00, notes: 'Top tier customer, excellent standing' },
+    { id: 'wb6', name: 'Amanda Resort', balance: 1250.75, limit: null, phoneOffline: false, onHold: false, tags: ['Premium'], backupCash: 5000.00, notes: 'Good customer, monitor closely' }
   ]
 };
 
@@ -233,19 +281,14 @@ function EditModal({ account, platformId, onClose, onSave }: EditModalProps) {
 }
 
 export function Accounts() {
-  const [accounts, setAccounts] = useState<Record<string, Account[]>>(accountData);
+  const { accounts, updateAccount } = useAccounts();
   const [editingAccount, setEditingAccount] = useState<{ account: Account; platformId: string } | null>(null);
   const [selectedPlatform, setSelectedPlatform] = useState<string>(platforms[0].id);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [showLimited, setShowLimited] = useState<boolean | null>(null); // null = all, true = limited only, false = unlimited only
 
   const handleSaveAccount = (updatedAccount: Account, platformId: string) => {
-    setAccounts(prev => ({
-      ...prev,
-      [platformId]: prev[platformId].map(acc => 
-        acc.id === updatedAccount.id ? updatedAccount : acc
-      )
-    }));
+    updateAccount(platformId, updatedAccount.id, updatedAccount);
   };
 
   const handleAccountRightClick = (e: React.MouseEvent, account: Account, platformId: string) => {

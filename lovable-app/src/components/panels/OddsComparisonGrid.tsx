@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Info } from "lucide-react";
 import type { Match } from "./SportsPanel";
+import { BettingDialog } from "./BettingDialog";
 
 interface OddsComparisonGridProps {
   match: Match | null;
@@ -39,6 +41,30 @@ const getTeamLogoEmoji = (league: string): string => {
 };
 
 export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
+  const [bettingDialog, setBettingDialog] = useState<{
+    isOpen: boolean;
+    platform: string;
+    market: string;
+    side: string;
+    odds: string;
+  }>({
+    isOpen: false,
+    platform: '',
+    market: '',
+    side: '',
+    odds: ''
+  });
+
+  const handleOddsClick = (platform: string, market: string, side: string, odds: string) => {
+    setBettingDialog({
+      isOpen: true,
+      platform,
+      market,
+      side,
+      odds
+    });
+  };
+
   if (!match) {
     return (
       <div className="flex-1 flex items-center justify-center bg-panel">
@@ -146,10 +172,13 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               </td>
               {mockBookOdds.slice(0, 6).map((odds) => (
                 <td key={odds.book} className="text-center">
-                  <button className={cn(
-                    "odds-cell font-mono text-xs",
-                    odds.moneyline.best && "odds-cell-best"
-                  )}>
+                  <button 
+                    onClick={() => handleOddsClick(odds.book, 'Moneyline', 'away', odds.moneyline.away)}
+                    className={cn(
+                      "odds-cell font-mono text-xs",
+                      odds.moneyline.best && "odds-cell-best"
+                    )}
+                  >
                     {odds.moneyline.away}
                   </button>
                 </td>
@@ -179,7 +208,10 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               </td>
               {mockBookOdds.slice(0, 6).map((odds) => (
                 <td key={odds.book} className="text-center">
-                  <button className="odds-cell font-mono text-xs">
+                  <button 
+                    onClick={() => handleOddsClick(odds.book, 'Moneyline', 'home', odds.moneyline.home)}
+                    className="odds-cell font-mono text-xs"
+                  >
                     {odds.moneyline.home}
                   </button>
                 </td>
@@ -217,10 +249,13 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               </td>
               {mockBookOdds.slice(0, 6).map((odds) => (
                 <td key={odds.book} className="text-center">
-                  <button className={cn(
-                    "odds-cell font-mono text-[10px]",
-                    odds.spread.best && "odds-cell-best"
-                  )}>
+                  <button 
+                    onClick={() => handleOddsClick(odds.book, 'Spread', 'away', odds.spread.away)}
+                    className={cn(
+                      "odds-cell font-mono text-[10px]",
+                      odds.spread.best && "odds-cell-best"
+                    )}
+                  >
                     {odds.spread.away}
                   </button>
                 </td>
@@ -248,7 +283,10 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               </td>
               {mockBookOdds.slice(0, 6).map((odds) => (
                 <td key={odds.book} className="text-center">
-                  <button className="odds-cell font-mono text-[10px]">
+                  <button 
+                    onClick={() => handleOddsClick(odds.book, 'Spread', 'home', odds.spread.home)}
+                    className="odds-cell font-mono text-[10px]"
+                  >
                     {odds.spread.home}
                   </button>
                 </td>
@@ -275,10 +313,13 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               </td>
               {mockBookOdds.slice(0, 6).map((odds) => (
                 <td key={odds.book} className="text-center">
-                  <button className={cn(
-                    "odds-cell font-mono text-xs",
-                    odds.total.best && "odds-cell-best"
-                  )}>
+                  <button 
+                    onClick={() => handleOddsClick(odds.book, 'Total', 'over', odds.total.over)}
+                    className={cn(
+                      "odds-cell font-mono text-xs",
+                      odds.total.best && "odds-cell-best"
+                    )}
+                  >
                     {odds.total.over}
                   </button>
                 </td>
@@ -298,7 +339,10 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               </td>
               {mockBookOdds.slice(0, 6).map((odds) => (
                 <td key={odds.book} className="text-center">
-                  <button className="odds-cell font-mono text-xs">
+                  <button 
+                    onClick={() => handleOddsClick(odds.book, 'Total', 'under', odds.total.under)}
+                    className="odds-cell font-mono text-xs"
+                  >
                     {odds.total.under}
                   </button>
                 </td>
@@ -307,6 +351,17 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Betting Dialog */}
+      <BettingDialog
+        isOpen={bettingDialog.isOpen}
+        onClose={() => setBettingDialog({ ...bettingDialog, isOpen: false })}
+        match={match}
+        platform={bettingDialog.platform}
+        market={bettingDialog.market}
+        side={bettingDialog.side}
+        odds={bettingDialog.odds}
+      />
     </div>
   );
 }
