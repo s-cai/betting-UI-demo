@@ -5,6 +5,7 @@ import { SportsPanel, type Match } from "@/components/panels/SportsPanel";
 import { OddsComparisonGrid } from "@/components/panels/OddsComparisonGrid";
 import { BetHistoryBar } from "@/components/panels/BetHistoryBar";
 import { AccountOverviewBar } from "@/components/panels/AccountOverviewBar";
+import { Accounts } from "./Accounts";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("odds");
@@ -17,29 +18,43 @@ const Index = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Section */}
-        <div className="flex-1 flex min-h-0">
-          {/* Center Area - Notifications + Odds Grid */}
-          <div className="flex-1 flex flex-col min-w-0">
-            {/* Notifications/Alerts Panel (replaces chart) */}
-            <NotificationsPanel />
-
-            {/* Odds Comparison Grid */}
-            <OddsComparisonGrid match={selectedMatch} />
+        {activeSection === "accounts" ? (
+          /* Accounts View - Full width with BetHistoryBar on right */
+          <div className="flex-1 flex min-h-0 overflow-hidden">
+            <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
+              <Accounts />
+            </div>
+            {/* Bet History Bar (Right) */}
+            <BetHistoryBar />
           </div>
+        ) : (
+          /* Default Odds View */
+          <>
+            {/* Top Section */}
+            <div className="flex-1 flex min-h-0">
+              {/* Center Area - Notifications + Odds Grid */}
+              <div className="flex-1 flex flex-col min-w-0">
+                {/* Notifications/Alerts Panel (replaces chart) */}
+                <NotificationsPanel />
 
-          {/* Right Side - Sports Panel (match list) */}
-          <SportsPanel 
-            onMatchSelect={setSelectedMatch} 
-            selectedMatchId={selectedMatch?.id}
-          />
+                {/* Odds Comparison Grid */}
+                <OddsComparisonGrid match={selectedMatch} />
+              </div>
 
-          {/* Bet History Bar (Far Right) */}
-          <BetHistoryBar />
-        </div>
+              {/* Right Side - Sports Panel (match list) */}
+              <SportsPanel 
+                onMatchSelect={setSelectedMatch} 
+                selectedMatchId={selectedMatch?.id}
+              />
 
-        {/* Account Overview Bar (Bottom) */}
-        <AccountOverviewBar />
+              {/* Bet History Bar (Far Right) */}
+              <BetHistoryBar />
+            </div>
+
+            {/* Account Overview Bar (Bottom) */}
+            <AccountOverviewBar />
+          </>
+        )}
       </div>
     </div>
   );
