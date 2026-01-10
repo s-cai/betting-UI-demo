@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 * {
     margin: 0;
     padding: 0;
@@ -5,11 +7,13 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Inter', system-ui, sans-serif;
+    background: hsl(220, 20%, 6%);
     min-height: 100vh;
     padding: 20px;
-    color: #333;
+    color: hsl(210, 20%, 90%);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .container {
@@ -19,19 +23,20 @@ body {
 
 header {
     text-align: center;
-    color: white;
+    color: hsl(210, 20%, 90%);
     margin-bottom: 40px;
 }
 
 header h1 {
     font-size: 2.5rem;
     margin-bottom: 10px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+    color: hsl(210, 20%, 90%);
 }
 
 .subtitle {
     font-size: 1.2rem;
-    opacity: 0.9;
+    color: hsl(215, 15%, 55%);
 }
 
 nav {
@@ -43,28 +48,32 @@ nav {
 
 .nav-link {
     padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+    background: hsl(220, 15%, 12%);
+    color: hsl(210, 20%, 75%);
     text-decoration: none;
-    border-radius: 6px;
-    transition: all 0.3s;
+    border-radius: 0.375rem;
+    border: 1px solid hsl(220, 15%, 18%);
+    transition: all 0.15s;
 }
 
 .nav-link:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: hsl(220, 15%, 18%);
+    color: hsl(210, 20%, 90%);
 }
 
 .nav-link.active {
-    background: rgba(255, 255, 255, 0.4);
+    background: hsl(220, 15%, 18%);
+    color: hsl(210, 100%, 52%);
     font-weight: 600;
+    border-color: hsl(210, 100%, 52%);
 }
 
 .platform-section {
-    background: white;
-    border-radius: 12px;
+    background: hsl(220, 18%, 8%);
+    border: 1px solid hsl(220, 15%, 18%);
+    border-radius: 0.375rem;
     padding: 30px;
     margin-bottom: 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .platform-header {
@@ -72,7 +81,7 @@ nav {
     align-items: center;
     margin-bottom: 25px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 1px solid hsl(220, 15%, 18%);
 }
 
 .platform-logo {
@@ -85,7 +94,7 @@ nav {
 .platform-title {
     font-size: 1.8rem;
     font-weight: 600;
-    color: #333;
+    color: hsl(210, 20%, 90%);
 }
 
 .accounts-grid {
@@ -100,9 +109,9 @@ nav {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
     padding: 20px;
-    background: #f0f4ff;
-    border-radius: 8px;
-    border: 2px solid #e9ecef;
+    background: hsl(220, 18%, 7%);
+    border-radius: 0.375rem;
+    border: 1px solid hsl(220, 15%, 15%);
 }
 
 .account-group:not(:last-child) {
@@ -110,19 +119,18 @@ nav {
 }
 
 .account-card {
-    background: #f8f9fa;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
+    background: hsl(220, 18%, 8%);
+    border: 1px solid hsl(220, 15%, 18%);
+    border-radius: 0.375rem;
     padding: 20px;
     position: relative;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.15s ease;
 }
 
 .account-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    border-color: #667eea;
+    background: hsl(220, 15%, 18%);
+    border-color: hsl(210, 100%, 52%);
 }
 
 .account-card.phone-offline {
@@ -144,7 +152,7 @@ nav {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: hsl(210, 100%, 52%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -162,7 +170,7 @@ nav {
 .account-name {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #333;
+    color: hsl(210, 20%, 90%);
     margin-bottom: 5px;
 }
 
@@ -180,13 +188,15 @@ nav {
 .account-balance {
     font-size: 1.3rem;
     font-weight: 700;
-    color: #28a745;
+    font-family: 'JetBrains Mono', monospace;
+    color: hsl(142, 71%, 45%);
     margin: 10px 0;
 }
 
 .account-limit {
     font-size: 0.9rem;
-    color: #dc3545;
+    font-family: 'JetBrains Mono', monospace;
+    color: hsl(0, 72%, 51%);
     margin-top: 5px;
 }
 
@@ -199,34 +209,34 @@ nav {
 
 .tag {
     padding: 4px 10px;
-    border-radius: 12px;
+    border-radius: 0.375rem;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
 }
 
 .tag.vip {
-    background: #ffd700;
-    color: #333;
+    background: hsl(38, 92%, 50%);
+    color: hsl(220, 20%, 6%);
 }
 
 .tag.premium {
-    background: #9b59b6;
+    background: hsl(210, 100%, 52%);
     color: white;
 }
 
 .tag.new {
-    background: #2ecc71;
+    background: hsl(142, 71%, 45%);
     color: white;
 }
 
 .tag.active {
-    background: #3498db;
+    background: hsl(210, 100%, 52%);
     color: white;
 }
 
 .tag.warning {
-    background: #f39c12;
+    background: hsl(38, 92%, 50%);
     color: white;
 }
 
@@ -236,10 +246,11 @@ nav {
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%) translateY(-10px);
-    background: #2c3e50;
-    color: white;
+    background: hsl(220, 18%, 10%);
+    color: hsl(210, 20%, 90%);
     padding: 12px 16px;
-    border-radius: 8px;
+    border-radius: 0.375rem;
+    border: 1px solid hsl(220, 15%, 18%);
     font-size: 0.9rem;
     white-space: nowrap;
     opacity: 0;
@@ -247,7 +258,7 @@ nav {
     transition: opacity 0.3s, transform 0.3s;
     z-index: 1000;
     margin-bottom: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .account-tooltip::after {
@@ -257,7 +268,7 @@ nav {
     left: 50%;
     transform: translateX(-50%);
     border: 6px solid transparent;
-    border-top-color: #2c3e50;
+    border-top-color: hsl(220, 18%, 10%);
 }
 
 .account-card:hover .account-tooltip {
@@ -283,18 +294,19 @@ nav {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
 }
 
 .modal-content {
-    background-color: white;
+    background-color: hsl(220, 18%, 8%);
+    border: 1px solid hsl(220, 15%, 18%);
     margin: 5% auto;
     padding: 0;
-    border-radius: 12px;
+    border-radius: 0.375rem;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     animation: modalSlideIn 0.3s ease;
 }
 
@@ -314,16 +326,17 @@ nav {
     justify-content: space-between;
     align-items: center;
     padding: 20px 30px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid hsl(220, 15%, 18%);
+    background: hsl(220, 18%, 10%);
 }
 
 .modal-header h2 {
     margin: 0;
-    color: #333;
+    color: hsl(210, 20%, 90%);
 }
 
 .close {
-    color: #aaa;
+    color: hsl(215, 15%, 55%);
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
@@ -331,7 +344,7 @@ nav {
 }
 
 .close:hover {
-    color: #333;
+    color: hsl(210, 20%, 90%);
 }
 
 #edit-form {
@@ -346,7 +359,7 @@ nav {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    color: #555;
+    color: hsl(210, 20%, 75%);
 }
 
 .form-group input[type="text"],
@@ -354,22 +367,26 @@ nav {
 .form-group textarea {
     width: 100%;
     padding: 10px;
-    border: 2px solid #e9ecef;
-    border-radius: 6px;
+    background: hsl(220, 15%, 15%);
+    border: 1px solid hsl(220, 15%, 18%);
+    border-radius: 0.375rem;
     font-size: 1rem;
-    transition: border-color 0.3s;
+    color: hsl(210, 20%, 90%);
+    transition: border-color 0.15s;
+    font-family: 'Inter', system-ui, sans-serif;
 }
 
 .form-group input[type="text"]:focus,
 .form-group input[type="number"]:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: hsl(210, 100%, 52%);
 }
 
 .form-group input[readonly] {
-    background-color: #f8f9fa;
+    background-color: hsl(220, 15%, 12%);
     cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .form-group input[type="checkbox"] {
@@ -387,40 +404,71 @@ nav {
 .btn {
     padding: 12px 24px;
     border: none;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.15s;
+    font-family: 'Inter', system-ui, sans-serif;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: hsl(210, 100%, 52%);
     color: white;
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    background: hsl(210, 100%, 45%);
+}
+
+.btn-primary:disabled {
+    background: hsl(220, 15%, 15%);
+    color: hsl(215, 15%, 55%);
+    cursor: not-allowed;
 }
 
 .btn-secondary {
-    background: #6c757d;
-    color: white;
+    background: hsl(220, 15%, 12%);
+    color: hsl(210, 20%, 90%);
+    border: 1px solid hsl(220, 15%, 18%);
 }
 
 .btn-secondary:hover {
-    background: #5a6268;
+    background: hsl(220, 15%, 18%);
 }
 
 /* Empty state */
 .empty-state {
     text-align: center;
     padding: 40px;
-    color: #6c757d;
+    color: hsl(215, 15%, 55%);
 }
 
 .empty-state p {
     font-size: 1.1rem;
+}
+
+/* Terminal-style scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(220, 15%, 15%) hsl(220, 20%, 6%);
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+    background: hsl(220, 20%, 6%);
+}
+
+*::-webkit-scrollbar-thumb {
+    background: hsl(220, 15%, 15%);
+    border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: hsl(220, 15%, 20%);
 }
 

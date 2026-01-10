@@ -187,18 +187,25 @@ const allMatches: Match[] = [
 export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps) {
   const [activeCategory, setActiveCategory] = useState<SportCategory>("football");
   const [activeLeague, setActiveLeague] = useState<League>("NFL");
+  const [statusFilter, setStatusFilter] = useState<"LIVE" | "PRE">("LIVE");
   
   const getMatchesForLeague = (league: League): Match[] => {
     return allMatches.filter(m => m.league === league);
   };
 
-  const matches = getMatchesForLeague(activeLeague);
+  const leagueMatches = getMatchesForLeague(activeLeague);
+  const matches = leagueMatches.filter(m => m.status === statusFilter);
+
+  const getLeagueCounts = (league: League, status: "LIVE" | "PRE"): number => {
+    const leagueMatches = getMatchesForLeague(league);
+    return leagueMatches.filter(m => m.status === status).length;
+  };
 
   const leagueCounts: Record<League, number> = {
-    NFL: mockNFLMatches.length,
-    NCAAF: mockNCAAFMatches.length,
-    NBA: mockNBAMatches.length,
-    NCAAB: mockNCAABMatches.length,
+    NFL: getLeagueCounts("NFL", statusFilter),
+    NCAAF: getLeagueCounts("NCAAF", statusFilter),
+    NBA: getLeagueCounts("NBA", statusFilter),
+    NCAAB: getLeagueCounts("NCAAB", statusFilter),
   };
 
   const categoryLeagues: Record<SportCategory, League[]> = {
@@ -213,19 +220,6 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
 
   return (
     <div className="w-[420px] flex flex-col bg-panel border-l border-panel-border shrink-0">
-      {/* Live Now / Prematch Toggle */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-panel-border">
-        <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-signal-negative text-white rounded">
-            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-            Live Now
-          </button>
-          <button className="px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground">
-            Prematch
-          </button>
-        </div>
-      </div>
-
       {/* Sport Category Tabs */}
       <div className="flex items-center gap-1 px-3 py-2 border-b border-panel-border">
         <button
@@ -275,6 +269,37 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
             </span>
           </button>
         ))}
+      </div>
+
+      {/* Live Now / Prematch Toggle */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-panel-border">
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => setStatusFilter("LIVE")}
+            className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded transition-colors",
+              statusFilter === "LIVE"
+                ? "bg-signal-negative text-white"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+            )}
+          >
+            {statusFilter === "LIVE" && (
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+            )}
+            Live Now
+          </button>
+          <button 
+            onClick={() => setStatusFilter("PRE")}
+            className={cn(
+              "px-2.5 py-1 text-xs font-medium rounded transition-colors",
+              statusFilter === "PRE"
+                ? "bg-accent text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+            )}
+          >
+            Prematch
+          </button>
+        </div>
       </div>
 
       {/* League Header */}
@@ -338,6 +363,9 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
                 <div className="grid grid-cols-12 gap-1">
                   {/* Away Team */}
                   <div className="col-span-5 flex items-center gap-2">
+                    <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
+                      <span className="text-[8px] text-muted-foreground">🏈</span>
+                    </div>
                     <span className="text-xs font-medium truncate">{match.awayTeam}</span>
                   </div>
                   <div className="col-span-2 flex items-center justify-center">
@@ -367,6 +395,9 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
 
                   {/* Home Team */}
                   <div className="col-span-5 flex items-center gap-2">
+                    <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
+                      <span className="text-[8px] text-muted-foreground">🏈</span>
+                    </div>
                     <span className="text-xs font-medium truncate">{match.homeTeam}</span>
                   </div>
                   <div className="col-span-2 flex items-center justify-center">
