@@ -18,8 +18,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     server: {
-      host: "::",
+      host: "0.0.0.0", // Bind to all IPv4 interfaces - Chrome localhost fix
       port: 8080,
+      strictPort: false,
     },
     plugins,
     resolve: {
