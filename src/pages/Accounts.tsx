@@ -25,6 +25,7 @@ interface Platform {
   logo: string;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const platforms: Platform[] = [
   { id: 'fanduel', name: 'FanDuel', logo: '/resources/fanduel-logo.svg' },
   { id: 'betmgm', name: 'BetMGM', logo: '/resources/betmgm-logo.svg' },
@@ -36,6 +37,7 @@ export const platforms: Platform[] = [
   { id: 'wynnbet', name: 'WynnBET', logo: '/resources/wynnbet-logo.svg' }
 ];
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const accountData: Record<string, Account[]> = {
   fanduel: [
     { id: 'fd1', name: 'John Smith', balance: 1250.50, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Premium'], backupCash: 5000.00, notes: 'High-value customer, prefers football bets' },

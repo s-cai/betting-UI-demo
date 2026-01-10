@@ -1,5 +1,4 @@
 import { User } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export function Settings() {
   // Mock trader name - in real app this would come from user context/API

@@ -1,0 +1,8 @@
+# Run lint-staged for staged files
+npx lint-staged
+
+# Run TypeScript type check on entire project
+npm run type-check
+
+# Run build to catch any build-time errors (matches GH Actions)
+npm run build

@@ -80,7 +80,6 @@ const platformNames: Record<string, string> = {
   fanduel: 'FanDuel',
   betmgm: 'BetMGM',
   draftkings: 'DraftKings',
-  'draftkings': 'DraftKings',
   'fan duel': 'FanDuel',
   'bet mgm': 'BetMGM'
 };
@@ -143,10 +142,10 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   const [distributionTotal, setDistributionTotal] = useState<string>('');
   const [sentBets, setSentBets] = useState<SentBet[]>([]);
   const [viewMode, setViewMode] = useState<'before' | 'after'>('before');
-  const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
+  const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const platformId = getPlatformId(platform);
-  const platformAccounts = accountData[platformId] || [];
+  const platformAccounts = useMemo(() => accountData[platformId] || [], [platformId]);
   const groupedAccounts = useMemo(() => groupAccountsByType(platformAccounts), [platformAccounts]);
 
   // Get unique tags for the platform
@@ -370,17 +369,18 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     simulateBetStatusUpdates(newSentBets);
   };
 
-  const handleNewBet = () => {
-    // Clear all timeouts
-    timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
-    timeoutRefs.current = [];
-    
-    // Reset state
-    setSentBets([]);
-    setSelectedAccounts(new Map());
-    setDistributionTotal('');
-    setViewMode('before');
-  };
+  // Function to reset for a new bet (currently unused but kept for future use)
+  // const handleNewBet = () => {
+  //   // Clear all timeouts
+  //   timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
+  //   timeoutRefs.current = [];
+  //   
+  //   // Reset state
+  //   setSentBets([]);
+  //   setSelectedAccounts(new Map());
+  //   setDistributionTotal('');
+  //   setViewMode('before');
+  // };
 
   const handleClose = () => {
     // Clear all timeouts
