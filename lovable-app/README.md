@@ -14,7 +14,7 @@ This is a professional-grade betting interface designed for arbitrage betting an
 - **Real-Time Match Tracking**: Live and pre-match games with scores, innings/quarters, and status indicators
 - **Multi-Sport Support**: Football (NFL, NCAAF) and Basketball (NBA, NCAAB)
 - **Bet History Tracking**: View recent bets with status indicators (won/lost/pending) and payout information
-- **Account Management**: Monitor multiple betting account balances and statuses across platforms
+- **Account Management**: Comprehensive account management system with platform selection, filtering, and editing capabilities
 - **Smart Notifications**: Real-time alerts for arbitrage opportunities, line movements, game events, and account warnings
 
 ### 🎨 User Interface
@@ -114,6 +114,51 @@ This is a professional-grade betting interface designed for arbitrage betting an
     - Status indicator dots
     - Device information
   - Color-coded by status (green/yellow/gray)
+
+#### `Accounts.tsx` (Account Management Page)
+- **Location**: `src/pages/Accounts.tsx`
+- **Purpose**: Full-featured account management interface
+- **Access**: Click the Accounts icon (Users) in the left sidebar
+- **Features**:
+  - **Platform Selection**: Left sidebar allows switching between platforms (FanDuel, BetMGM, DraftKings)
+  - **Single Platform View**: Displays accounts for only the selected platform at a time
+  - **Account Cards**: Each account displays:
+    - Holder full name with avatar (initials)
+    - Cash balance (in green, monospace font)
+    - Betting limits (for limited accounts, displayed in red)
+    - Visual indicators:
+      - **Phone Offline**: Entire card is greyed out with grayscale filter
+      - **On Hold**: 🚫 emoji badge displayed
+      - **Colored Tags**: Visual tags with color coding (VIP, Premium, New, Active, Warning)
+  - **Account Grouping**: Accounts are visually grouped by:
+    - Unlimited accounts (no betting limit)
+    - Limited accounts (with betting limits)
+    - Within each group, sorted by tradability (tradable accounts first, then offline/on-hold)
+    - Then sorted by balance (descending)
+  - **Interactive Features**:
+    - **Hover Tooltip**: When hovering over an account card, displays:
+      - Backup cash in the bank
+      - Custom notes
+    - **Right-Click Edit**: Right-click any account card to open an edit modal where you can modify:
+      - Cash balance
+      - Betting limits (leave empty for unlimited)
+      - On hold status (checkbox)
+      - Custom colored labels/tags (comma-separated)
+      - Custom notes
+  - **Filtering System**:
+    - **Tag Filtering**: Dynamic tag filters showing only tags available for the selected platform
+      - Tags are color-coded to match account card tag colors
+      - Multiple tag selection supported
+      - Selected tags show checkmark indicator
+    - **Limit Status Filtering**: Filter by account limit status
+      - All Accounts (default)
+      - Unlimited Only
+      - Limited Only
+    - **Clear Filters**: Button to reset all filters
+  - **Layout**:
+    - Left sidebar (256px) with platform selection and filters
+    - Main content area showing filtered accounts in a responsive grid
+    - Right side maintains the Bet History Bar for quick reference
 
 ### UI Components
 
@@ -264,7 +309,11 @@ lovable-app/
 ├── public/                 # Static assets
 │   ├── favicon.ico
 │   ├── placeholder.svg
-│   └── robots.txt
+│   ├── robots.txt
+│   └── resources/         # Platform logos
+│       ├── fanduel-logo.svg
+│       ├── betmgm-logo.svg
+│       └── draftkings-logo.svg
 ├── src/
 │   ├── components/
 │   │   ├── layout/         # Layout components
@@ -283,6 +332,7 @@ lovable-app/
 │   │   └── utils.ts
 │   ├── pages/              # Page components
 │   │   ├── Index.tsx       # Main dashboard
+│   │   ├── Accounts.tsx    # Account management page
 │   │   └── NotFound.tsx
 │   ├── App.tsx             # Root component
 │   ├── main.tsx            # Entry point
@@ -325,6 +375,42 @@ The application uses a **dashboard-style layout** optimized for information dens
 - **Efficient Scrolling**: Custom scrollbars and virtual scrolling ready
 - **Memoization Ready**: Components structured for React.memo optimization
 
+## Account Management Details
+
+### Account Data Structure
+
+Each account contains:
+- **Basic Info**: ID, holder name, platform association
+- **Financial**: Cash balance, betting limit (null for unlimited), backup cash
+- **Status**: Phone offline status, on-hold flag
+- **Metadata**: Tags array, custom notes
+
+### Account Display Logic
+
+1. **Platform Filtering**: Only accounts from the selected platform are displayed
+2. **Tag Filtering**: If tags are selected, only accounts with at least one matching tag are shown
+3. **Limit Status Filtering**: Filters accounts by whether they have betting limits
+4. **Grouping**: Accounts are grouped into unlimited and limited sections
+5. **Sorting**: Within each group, accounts are sorted by:
+   - Tradability (tradable accounts first)
+   - Balance (descending)
+
+### Tag Color System
+
+Tags use consistent color coding throughout the interface:
+- **VIP**: Warning yellow background (`--signal-warning`) with dark text
+- **Premium**: Primary blue background with white text
+- **New**: Positive green background (`--signal-positive`) with white text
+- **Active**: Primary blue background with white text
+- **Warning**: Warning yellow background with white text
+
+### Editing Accounts
+
+- Right-click any account card to open the edit modal
+- Changes are saved to the in-memory state and persist until page refresh
+- All account fields are editable except the holder name (read-only)
+- Tag editing supports comma-separated values
+
 ## Future Enhancements
 
 Potential areas for expansion:
@@ -332,11 +418,12 @@ Potential areas for expansion:
 - **Real-time Data**: WebSocket integration for live odds updates
 - **Bet Placement**: Integration with sportsbook APIs
 - **Arbitrage Calculator**: Automatic ROI calculations
-- **Account Management**: Full CRUD operations for accounts
+- **Account Persistence**: Backend integration for saving account changes
 - **Historical Analysis**: Betting performance analytics
 - **Multi-language Support**: Internationalization
 - **Mobile Responsive**: Optimized mobile layout
 - **Dark/Light Theme Toggle**: Theme switching capability
+- **Batch Betting View**: Integration of betting view functionality into the React app
 
 ## License
 

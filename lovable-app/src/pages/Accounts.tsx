@@ -328,14 +328,15 @@ export function Accounts() {
     );
   };
 
-  // Get all unique tags from all accounts
-  const allTags = useMemo(() => {
+  // Get unique tags from accounts in the selected platform only
+  const availableTags = useMemo(() => {
     const tagSet = new Set<string>();
-    Object.values(accounts).flat().forEach(account => {
+    const platformAccounts = accounts[selectedPlatform] || [];
+    platformAccounts.forEach(account => {
       account.tags.forEach(tag => tagSet.add(tag));
     });
     return Array.from(tagSet).sort();
-  }, [accounts]);
+  }, [accounts, selectedPlatform]);
 
   // Filter accounts based on selected platform, tags, and limit status
   const filteredAccounts = useMemo(() => {
@@ -370,6 +371,22 @@ export function Accounts() {
       }
       return newSet;
     });
+  };
+
+  const getTagColors = (tag: string) => {
+    const tagLower = tag.toLowerCase();
+    if (tagLower === 'vip') {
+      return "bg-[hsl(var(--signal-warning))] text-[hsl(var(--background))] border-[hsl(var(--signal-warning))]";
+    } else if (tagLower === 'premium') {
+      return "bg-primary text-primary-foreground border-primary";
+    } else if (tagLower === 'new') {
+      return "bg-[hsl(var(--signal-positive))] text-white border-[hsl(var(--signal-positive))]";
+    } else if (tagLower === 'active') {
+      return "bg-primary text-primary-foreground border-primary";
+    } else if (tagLower === 'warning') {
+      return "bg-[hsl(var(--signal-warning))] text-white border-[hsl(var(--signal-warning))]";
+    }
+    return "bg-[hsl(var(--card))] text-muted-foreground border-[hsl(var(--border))]";
   };
 
   const renderPlatformSection = () => {
@@ -484,26 +501,27 @@ export function Accounts() {
           </div>
 
           {/* Tag Filters */}
-          {allTags.length > 0 && (
+          {availableTags.length > 0 && (
             <div>
               <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                 Tags
               </div>
               <div className="space-y-2">
-                {allTags.map(tag => (
+                {availableTags.map(tag => (
                   <button
                     key={tag}
                     onClick={() => toggleTag(tag)}
                     className={cn(
-                      "w-full px-3 py-2 text-sm rounded-md border transition-all text-left flex items-center justify-between",
+                      "w-full px-3 py-2 text-sm rounded-md border transition-all text-left flex items-center justify-between font-semibold uppercase",
+                      getTagColors(tag),
                       selectedTags.has(tag)
-                        ? "bg-accent border-primary text-foreground"
-                        : "bg-[hsl(var(--card))] border-[hsl(var(--border))] text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                        ? "opacity-100"
+                        : "opacity-50 hover:opacity-75"
                     )}
                   >
                     <span>{tag}</span>
                     {selectedTags.has(tag) && (
-                      <span className="text-primary">✓</span>
+                      <span className="text-current">✓</span>
                     )}
                   </button>
                 ))}
