@@ -6,6 +6,7 @@ import { OddsComparisonGrid } from "@/components/panels/OddsComparisonGrid";
 import { BetHistoryBar } from "@/components/panels/BetHistoryBar";
 import { AccountOverviewBar } from "@/components/panels/AccountOverviewBar";
 import { Accounts } from "./Accounts";
+import { Settings } from "./Settings";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("odds");
@@ -18,19 +19,25 @@ const Index = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {activeSection === "accounts" ? (
-          /* Accounts View - Full width with BetHistoryBar on right */
-          <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* Top Section - Content varies by active section */}
+        <div className="flex-1 flex min-h-0 overflow-hidden">
+          {activeSection === "accounts" ? (
+            /* Accounts View */
             <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
               <Accounts />
             </div>
-            {/* Bet History Bar (Right) */}
-            <BetHistoryBar />
-          </div>
-        ) : (
-          /* Default Odds View */
-          <>
-            {/* Top Section */}
+          ) : activeSection === "settings" ? (
+            /* Settings View */
+            <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
+              <Settings />
+            </div>
+          ) : activeSection === "history" ? (
+            /* Bet History View - TBD, for now show placeholder */
+            <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden items-center justify-center">
+              <div className="text-muted-foreground">Bet History View - Coming Soon</div>
+            </div>
+          ) : (
+            /* Default Odds View */
             <div className="flex-1 flex min-h-0">
               {/* Center Area - Notifications + Odds Grid */}
               <div className="flex-1 flex flex-col min-w-0">
@@ -46,15 +53,15 @@ const Index = () => {
                 onMatchSelect={setSelectedMatch} 
                 selectedMatchId={selectedMatch?.id}
               />
-
-              {/* Bet History Bar (Far Right) */}
-              <BetHistoryBar />
             </div>
+          )}
 
-            {/* Account Overview Bar (Bottom) */}
-            <AccountOverviewBar />
-          </>
-        )}
+          {/* Bet History Bar (Right) - Always visible on all pages */}
+          <BetHistoryBar />
+        </div>
+
+        {/* Account Overview Bar (Bottom) - Always visible */}
+        <AccountOverviewBar />
       </div>
     </div>
   );
