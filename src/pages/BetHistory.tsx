@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { History, CheckCircle, XCircle, Clock, Filter, Search, ArrowLeft, Calendar } from "lucide-react";
+import { History, CheckCircle, XCircle, Clock, Filter, Search, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBetHistory, type Bet, type League } from "@/contexts/BetHistoryContext";
 import { Input } from "@/components/ui/input";
@@ -200,20 +200,60 @@ export function BetHistory() {
         </div>
       </div>
 
-      {/* Bet List or Details View */}
-      <div className="flex-1 overflow-y-auto terminal-scrollbar p-6">
-        {selectedBet ? (
-          // Details View
-          <div className="max-w-4xl mx-auto">
-            <button
-              onClick={() => setSelectedBet(null)}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to List
-            </button>
-            
-            <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6">
+      {/* Bet List and Details View - Side by Side */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* Left Side - Bet Listing (Scrollable) */}
+        <div className="w-96 border-r border-[hsl(var(--border))] flex flex-col shrink-0">
+          <div className="flex-1 overflow-y-auto terminal-scrollbar p-4">
+            {Object.keys(groupedBets).length === 0 ? (
+              <div className="text-center text-muted-foreground py-12">
+                <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No bets found</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {Object.entries(groupedBets).map(([date, dateBets]) => (
+                  <div key={date}>
+                    <div className="text-xs font-semibold text-muted-foreground mb-2 px-2 sticky top-0 bg-background py-1">
+                      {date}
+                    </div>
+                    <div className="space-y-2">
+                      {dateBets.map((bet) => (
+                        <div
+                          key={bet.id}
+                          onClick={() => setSelectedBet(bet)}
+                          className={cn(
+                            "bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-3 hover:bg-accent/50 transition-colors cursor-pointer",
+                            selectedBet?.id === bet.id && "bg-accent border-primary"
+                          )}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            {getStatusIcon(bet.status)}
+                            {bet.league && <LeagueLogo league={bet.league} className="w-3.5 h-3.5" />}
+                            <span className="font-semibold text-sm text-foreground truncate flex-1">{bet.match}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground mb-1">{bet.type}</div>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-mono text-foreground">
+                              ${bet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                            <span className="text-muted-foreground">{formatTimeAgo(bet.timestamp)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Side - Bet Details */}
+        <div className="flex-1 overflow-y-auto terminal-scrollbar p-6">
+          {selectedBet ? (
+            <div className="max-w-3xl">
+              <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6">
               <div className="flex items-start justify-between mb-6 pb-4 border-b border-[hsl(var(--border))]">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -288,6 +328,16 @@ export function BetHistory() {
                     </div>
                   </div>
                 )}
+                <div>
+                  <div className="text-xs text-muted-foreground mb-1">Bet ID</div>
+                  <div className="text-sm font-mono text-foreground">{selectedBet.id}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground mb-1">Potential Return</div>
+                  <div className="text-sm font-mono text-foreground">
+                    {selectedBet.status === "pending" ? "Calculating..." : selectedBet.payout ? `$${(selectedBet.stake + selectedBet.payout).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `$${selectedBet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  </div>
+                </div>
               </div>
 
               {selectedBet.errorScreenshot && (
@@ -300,78 +350,17 @@ export function BetHistory() {
                   />
                 </div>
               )}
-            </div>
-          </div>
-        ) : (
-          // List View
-          Object.keys(groupedBets).length === 0 ? (
-            <div className="text-center text-muted-foreground py-12">
-              <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No bets found</p>
+              </div>
             </div>
           ) : (
-            <div className="max-w-6xl mx-auto space-y-6">
-              {Object.entries(groupedBets).map(([date, dateBets]) => (
-                <div key={date}>
-                  <div className="text-sm font-semibold text-muted-foreground mb-3 px-2">
-                    {date}
-                  </div>
-                  <div className="space-y-2">
-                    {dateBets.map((bet) => (
-                      <div
-                        key={bet.id}
-                        onClick={() => setSelectedBet(bet)}
-                        className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-4 hover:bg-accent/50 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            {getStatusIcon(bet.status)}
-                            {bet.league && <LeagueLogo league={bet.league} className="w-4 h-4" />}
-                            <span className="font-semibold text-foreground">{bet.match}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {formatTimeAgo(bet.timestamp)}
-                            </span>
-                          </div>
-                          {(bet.awayTeam || bet.homeTeam) && (
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                              {bet.league && (
-                                <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
-                                  <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(bet.league)}</span>
-                                </div>
-                              )}
-                              {bet.awayTeam && <span>{bet.awayTeam}</span>}
-                              {bet.awayTeam && bet.homeTeam && <span>@</span>}
-                              {bet.homeTeam && <span>{bet.homeTeam}</span>}
-                            </div>
-                          )}
-                            <div className="text-sm text-muted-foreground">{bet.type}</div>
-                            {bet.platform && (
-                              <div className="text-xs text-muted-foreground mt-1">
-                                {bet.platform}{bet.accountName && ` • ${bet.accountName}`}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <div className="font-mono text-sm font-semibold text-foreground mb-1">
-                              ${bet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </div>
-                            <div className="text-xs text-muted-foreground">Odds: {bet.odds}</div>
-                            {bet.payout && bet.status === "won" && (
-                              <div className="text-xs font-mono text-[hsl(var(--signal-positive))] mt-1">
-                                +${bet.payout.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center text-muted-foreground">
+                <History className="w-16 h-16 mx-auto mb-4 opacity-30" />
+                <p className="text-sm">Select a bet to view details</p>
+              </div>
             </div>
-          )
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

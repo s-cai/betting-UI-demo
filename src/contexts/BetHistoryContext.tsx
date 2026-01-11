@@ -37,14 +37,14 @@ const loadBetsFromStorage = (): Bet[] => {
   } catch {
     // Ignore errors
   }
-  // Return mock bets as initial data
+  // Return mock bets as initial data with full details
   return [
-    { id: "1", match: "LAL @ BOS", type: "Spread +2.5", odds: "-110", stake: 500, status: "pending", timestamp: Date.now() - 120000 },
-    { id: "2", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 1000, status: "won", timestamp: Date.now() - 900000, payout: 571 },
-    { id: "3", match: "GSW @ PHX", type: "O 232.5", odds: "-108", stake: 750, status: "pending", timestamp: Date.now() - 1320000 },
-    { id: "4", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 400, status: "lost", timestamp: Date.now() - 3600000 },
-    { id: "5", match: "MIA @ NYK", type: "Spread -1.5", odds: "-110", stake: 600, status: "won", timestamp: Date.now() - 7200000, payout: 545 },
-    { id: "6", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 300, status: "pending", timestamp: Date.now() - 10800000 },
+    { id: "1", match: "LAL @ BOS", type: "Spread +2.5", odds: "-110", stake: 500, status: "pending", timestamp: Date.now() - 120000, platform: "DraftKings", accountName: "John Smith", league: "NBA" as League, awayTeam: "LA Lakers", homeTeam: "Boston Celtics" },
+    { id: "2", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 1000, status: "won", timestamp: Date.now() - 900000, payout: 571, platform: "FanDuel", accountName: "Sarah Johnson", league: "NFL" as League, awayTeam: "KC Chiefs", homeTeam: "Buffalo Bills" },
+    { id: "3", match: "GSW @ PHX", type: "O 232.5", odds: "-108", stake: 750, status: "pending", timestamp: Date.now() - 1320000, platform: "BetMGM", accountName: "Michael Chen", league: "NBA" as League, awayTeam: "GS Warriors", homeTeam: "Phoenix Suns" },
+    { id: "4", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 400, status: "lost", timestamp: Date.now() - 3600000, platform: "Caesars", accountName: "Emily Davis", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
+    { id: "5", match: "MIA @ NYK", type: "Spread -1.5", odds: "-110", stake: 600, status: "won", timestamp: Date.now() - 7200000, payout: 545, platform: "PointsBet", accountName: "Thomas Anderson", league: "NBA" as League, awayTeam: "Miami Heat", homeTeam: "Milwaukee Bucks" },
+    { id: "6", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 300, status: "pending", timestamp: Date.now() - 10800000, platform: "Bet365", accountName: "Maria Rodriguez", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
   ];
 };
 
