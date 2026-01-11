@@ -21,6 +21,7 @@ interface SentBet {
   status: BetStatus;
   error: string | null;
   errorScreenshot?: string;
+  betId?: string; // Store the bet ID from history for updates
 }
 
 interface Account {
@@ -140,13 +141,14 @@ function groupAccountsByType(accounts: Account[]) {
 }
 
 export function BettingDialog({ isOpen, onClose, match, platform, market, side, odds }: BettingDialogProps) {
-  const { addBet } = useBetHistory();
+  const { bets, addBet, updateBet } = useBetHistory();
   const [selectedAccounts, setSelectedAccounts] = useState<Map<string, number>>(new Map());
   const [betAmountInputs, setBetAmountInputs] = useState<Map<string, string>>(new Map()); // Store raw input strings
   const [distributionTotal, setDistributionTotal] = useState<string>('');
   const [sentBets, setSentBets] = useState<SentBet[]>([]);
   const [viewMode, setViewMode] = useState<'before' | 'after'>('before');
   const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const recentBetIdsRef = useRef<Map<string, string>>(new Map()); // Track accountId -> betId for recently added bets
 
   const platformId = getPlatformId(platform);
   const platformAccounts = useMemo(() => accountData[platformId] || [], [platformId]);
@@ -461,40 +463,37 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
               if (Math.random() > 0.2) {
                 const updatedBet = { ...b, status: STATUS.SUCCEEDED, error: null };
                 
-                // Add to bet history when succeeded
-                addBet({
-                  match: formatMatchName(),
-                  type: formatBetType(),
-                  odds: odds,
-                  stake: bet.amount,
-                  status: "pending", // New bets start as pending
-                  platform: platformNames[platformId] || platform,
-                  accountName: bet.account.name,
-                  league: match?.league,
-                  awayTeam: match?.awayTeam,
-                  homeTeam: match?.homeTeam,
-                });
+                // Update bet in history to "won" status
+                const betId = bet.betId || recentBetIdsRef.current.get(bet.account.id);
+                if (betId) {
+                  // Calculate payout based on odds
+                  let payout = bet.amount;
+                  if (odds.startsWith('+')) {
+                    payout = bet.amount + (bet.amount * parseFloat(odds) / 100);
+                  } else {
+                    payout = bet.amount + (bet.amount * 100 / Math.abs(parseFloat(odds)));
+                  }
+                  
+                  updateBet(betId, {
+                    status: "won",
+                    payout: Math.round(payout * 100) / 100
+                  });
+                }
                 
                 return updatedBet;
               } else {
                 const errorMessage = getRandomErrorMessage();
                 const errorScreenshot = generateErrorScreenshot(errorMessage, bet.amount, bet.account.name);
                 
-                // Add failed bet to history with screenshot and error message
-                addBet({
-                  match: formatMatchName(),
-                  type: formatBetType(),
-                  odds: odds,
-                  stake: bet.amount,
-                  status: "lost", // Failed bets are marked as lost
-                  platform: platformNames[platformId] || platform,
-                  accountName: bet.account.name,
-                  error: errorMessage,
-                  errorScreenshot: errorScreenshot,
-                  league: match?.league,
-                  awayTeam: match?.awayTeam,
-                  homeTeam: match?.homeTeam,
-                });
+                // Update bet in history to "lost" status with error
+                const betId = bet.betId || recentBetIdsRef.current.get(bet.account.id);
+                if (betId) {
+                  updateBet(betId, {
+                    status: "lost",
+                    error: errorMessage,
+                    errorScreenshot: errorScreenshot
+                  });
+                }
                 
                 return { ...b, status: STATUS.FAILED, error: errorMessage, errorScreenshot: errorScreenshot };
               }
@@ -511,11 +510,31 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   const handleSendAllBets = () => {
     if (selectedAccounts.size === 0) return;
     
-    // Create sent bets array
+    // Create sent bets array and add all bets to history immediately
     const newSentBets: SentBet[] = [];
+    const matchName = formatMatchName();
+    const betType = formatBetType();
+    const platformName = platformNames[platformId] || platform;
+    recentBetIdsRef.current.clear(); // Clear previous tracking
+    
     selectedAccounts.forEach((amount, accountId) => {
       const account = platformAccounts.find(acc => acc.id === accountId);
-      if (account) {
+      if (account && amount > 0) {
+        // Add bet to history immediately with "pending" status
+        addBet({
+          match: matchName,
+          type: betType,
+          odds: odds,
+          stake: amount,
+          status: "pending",
+          platform: platformName,
+          accountName: account.name,
+          league: match?.league,
+          awayTeam: match?.awayTeam,
+          homeTeam: match?.homeTeam,
+        });
+        
+        // Store sent bet - we'll find the bet ID after state updates
         newSentBets.push({
           account: account,
           amount: amount,
@@ -528,8 +547,37 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     setSentBets(newSentBets);
     setViewMode('after');
     
-    // Simulate status updates
-    simulateBetStatusUpdates(newSentBets);
+    // Find bet IDs after a short delay to allow state to update
+    setTimeout(() => {
+      const updatedSentBets = newSentBets.map(sentBet => {
+        // Find the most recent pending bet matching this account and criteria
+        const matchingBets = bets.filter(b => 
+          b.accountName === sentBet.account.name &&
+          b.match === matchName &&
+          b.type === betType &&
+          b.odds === odds &&
+          b.platform === platformName &&
+          Math.abs(b.stake - sentBet.amount) < 0.01 && // Account for floating point
+          b.status === "pending"
+        );
+        // Get the most recent one (highest timestamp)
+        const foundBet = matchingBets.sort((a, b) => b.timestamp - a.timestamp)[0];
+        
+        if (foundBet) {
+          recentBetIdsRef.current.set(sentBet.account.id, foundBet.id);
+        }
+        
+        return {
+          ...sentBet,
+          betId: foundBet?.id
+        };
+      });
+      
+      setSentBets(updatedSentBets);
+      
+      // Now simulate status updates with the correct bet IDs
+      simulateBetStatusUpdates(updatedSentBets);
+    }, 200);
   };
 
   // Function to reset for a new bet (currently unused but kept for future use)
