@@ -10,21 +10,34 @@ interface OddsComparisonGridProps {
 
 interface BookOdds {
   book: string;
-  logo: string;
+  logo: string; // Logo path or text fallback
+  logoPath?: string; // Path to logo image
   hasOpen?: boolean;
   spread: { away: string; home: string; best?: boolean };
   moneyline: { away: string; home: string; best?: boolean };
   total: { over: string; under: string; best?: boolean };
 }
 
+// Map book names to logo paths
+const bookLogoMap: Record<string, string> = {
+  "DraftKings": "/resources/draftkings-logo.svg",
+  "FanDuel": "/resources/fanduel-logo.svg",
+  "BetMGM": "/resources/betmgm-logo.svg",
+  "Caesars": "/resources/caesars-logo.svg",
+  "PointsBet": "/resources/pointsbet-logo.svg",
+  "Bet365": "/resources/bet365-logo.svg",
+  "Unibet": "/resources/unibet-logo.svg",
+  "WynnBET": "/resources/wynnbet-logo.svg",
+};
+
 const mockBookOdds: BookOdds[] = [
-  { book: "DraftKings", logo: "DK", hasOpen: true, spread: { away: "+1.5 (-195)", home: "-1.5 (+160)" }, moneyline: { away: "+123", home: "-140", best: true }, total: { over: "-103", under: "+100" } },
+  { book: "DraftKings", logo: "DK", logoPath: bookLogoMap["DraftKings"], hasOpen: true, spread: { away: "+1.5 (-195)", home: "-1.5 (+160)" }, moneyline: { away: "+123", home: "-140", best: true }, total: { over: "-103", under: "+100" } },
   { book: "Pinnacle", logo: "P", spread: { away: "-1.5 (+150)", home: "+1.5 (-170)" }, moneyline: { away: "+109", home: "-125" }, total: { over: "-102", under: "-105" } },
-  { book: "FanDuel", logo: "FD", spread: { away: "+1 (-129)", home: "-1 (+105)" }, moneyline: { away: "+102", home: "-119" }, total: { over: "-108", under: "-112" } },
-  { book: "BetMGM", logo: "M", spread: { away: "+1 (-125)", home: "-1 (+100)", best: true }, moneyline: { away: "+100", home: "-120" }, total: { over: "-105", under: "-115", best: true } },
-  { book: "Caesars", logo: "C", spread: { away: "+1.5 (-180)", home: "-1.5 (+150)" }, moneyline: { away: "+100", home: "-125" }, total: { over: "-110", under: "-110" } },
-  { book: "PointsBet", logo: "PB", spread: { away: "+1.5 (-175)", home: "-1.5 (+145)" }, moneyline: { away: "+100", home: "-120" }, total: { over: "-112", under: "-108" } },
-  { book: "Bet365", logo: "365", spread: { away: "+1.5 (-210)", home: "-1.5 (+160)" }, moneyline: { away: "+110", home: "-126" }, total: { over: "-110", under: "-110" } },
+  { book: "FanDuel", logo: "FD", logoPath: bookLogoMap["FanDuel"], spread: { away: "+1 (-129)", home: "-1 (+105)" }, moneyline: { away: "+102", home: "-119" }, total: { over: "-108", under: "-112" } },
+  { book: "BetMGM", logo: "M", logoPath: bookLogoMap["BetMGM"], spread: { away: "+1 (-125)", home: "-1 (+100)", best: true }, moneyline: { away: "+100", home: "-120" }, total: { over: "-105", under: "-115", best: true } },
+  { book: "Caesars", logo: "C", logoPath: bookLogoMap["Caesars"], spread: { away: "+1.5 (-180)", home: "-1.5 (+150)" }, moneyline: { away: "+100", home: "-125" }, total: { over: "-110", under: "-110" } },
+  { book: "PointsBet", logo: "PB", logoPath: bookLogoMap["PointsBet"], spread: { away: "+1.5 (-175)", home: "-1.5 (+145)" }, moneyline: { away: "+100", home: "-120" }, total: { over: "-112", under: "-108" } },
+  { book: "Bet365", logo: "365", logoPath: bookLogoMap["Bet365"], spread: { away: "+1.5 (-210)", home: "-1.5 (+160)" }, moneyline: { away: "+110", home: "-126" }, total: { over: "-110", under: "-110" } },
   { book: "Betway", logo: "BW", spread: { away: "+1.5 (-155)", home: "-1.5 (+130)" }, moneyline: { away: "+100", home: "-130" }, total: { over: "-112", under: "-108" } },
 ];
 
@@ -140,9 +153,17 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               {mockBookOdds.slice(0, 6).map((odds) => (
                 <th key={odds.book} className="text-center w-16">
                   <div className="flex items-center justify-center gap-1">
-                    <span className="w-5 h-5 bg-muted rounded text-[10px] font-bold flex items-center justify-center">
-                      {odds.logo}
-                    </span>
+                    {odds.logoPath ? (
+                      <img 
+                        src={odds.logoPath} 
+                        alt={`${odds.book} Logo`} 
+                        className="h-5 w-auto object-contain max-w-[40px]"
+                      />
+                    ) : (
+                      <span className="w-5 h-5 bg-muted rounded text-[10px] font-bold flex items-center justify-center">
+                        {odds.logo}
+                      </span>
+                    )}
                   </div>
                 </th>
               ))}
