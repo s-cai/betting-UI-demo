@@ -454,8 +454,8 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
         const timeout = setTimeout(() => {
           setSentBets(prev => prev.map(b => {
             if (b.account.id === bet.account.id && b.status === STATUS.ACKED) {
-              // Increased failure rate: 40% failure, 60% success
-              if (Math.random() > 0.4) {
+              // Failure rate: 20% failure, 80% success
+              if (Math.random() > 0.2) {
                 const updatedBet = { ...b, status: STATUS.SUCCEEDED, error: null };
                 
                 // Add to bet history when succeeded
