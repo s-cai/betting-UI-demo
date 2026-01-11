@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { NotificationsPanel } from "@/components/panels/NotificationsPanel";
-import { SportsPanel, type Match } from "@/components/panels/SportsPanel";
+import { SportsPanel, type Match, allMatches } from "@/components/panels/SportsPanel";
 import { OddsComparisonGrid } from "@/components/panels/OddsComparisonGrid";
 import { BetHistoryBar } from "@/components/panels/BetHistoryBar";
 import { AccountOverviewBar } from "@/components/panels/AccountOverviewBar";
@@ -9,8 +9,40 @@ import { Accounts } from "./Accounts";
 import { Settings } from "./Settings";
 
 const Index = () => {
-  const [activeSection, setActiveSection] = useState("odds");
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  // Load persisted state from localStorage
+  const [activeSection, setActiveSection] = useState(() => {
+    const saved = localStorage.getItem('betting-ui-active-section');
+    return saved || "odds";
+  });
+  
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(() => {
+    const saved = localStorage.getItem('betting-ui-selected-match');
+    if (saved) {
+      try {
+        const matchData = JSON.parse(saved);
+        // Find the match in allMatches to ensure it's up to date
+        const foundMatch = allMatches.find(m => m.id === matchData.id);
+        return foundMatch || matchData;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  // Persist activeSection changes
+  useEffect(() => {
+    localStorage.setItem('betting-ui-active-section', activeSection);
+  }, [activeSection]);
+
+  // Persist selectedMatch changes
+  useEffect(() => {
+    if (selectedMatch) {
+      localStorage.setItem('betting-ui-selected-match', JSON.stringify(selectedMatch));
+    } else {
+      localStorage.removeItem('betting-ui-selected-match');
+    }
+  }, [selectedMatch]);
 
   return (
     <div className="h-screen flex bg-background overflow-hidden">

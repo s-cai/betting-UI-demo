@@ -177,7 +177,7 @@ const LeagueLogo = ({ league, className = "w-4 h-4" }: { league: League; classNa
   );
 };
 
-const allMatches: Match[] = [
+export const allMatches: Match[] = [
   ...mockNFLMatches,
   ...mockNCAAFMatches,
   ...mockNBAMatches,
