@@ -57,37 +57,37 @@ const formatTimeAgo = (timestamp: number): string => {
   return `${days}d ago`;
 };
 
+// Batch Trade represents a conceptual big trade: game x line x platform
+interface BatchTrade {
+  key: string; // Unique identifier: match|type|odds|platform|timeWindow
+  match: string;
+  type: string;
+  odds: string;
+  platform: string;
+  timestamp: number; // Earliest timestamp in the batch
+  bets: Bet[]; // All individual account bets in this batch
+  totalStake: number;
+  totalSucceeded: number;
+  accountCount: number;
+  status: "won" | "lost" | "pending"; // Aggregate status
+  league?: League;
+  awayTeam?: string;
+  homeTeam?: string;
+}
+
 export function BetHistory() {
   const { bets } = useBetHistory();
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "won" | "lost">("all");
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Get filtered and sorted bets for selection
-  const filteredBets = useMemo(() => {
-    const filtered = bets.filter(bet => {
-      if (statusFilter !== "all" && bet.status !== statusFilter) return false;
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          bet.match.toLowerCase().includes(query) ||
-          bet.type.toLowerCase().includes(query) ||
-          bet.platform?.toLowerCase().includes(query) ||
-          bet.accountName?.toLowerCase().includes(query)
-        );
-      }
-      return true;
-    });
-    return [...filtered].sort((a, b) => b.timestamp - a.timestamp);
-  }, [bets, statusFilter, searchQuery]);
-  
-  // Group bets that were placed together (same match, type, odds, platform, within 2 minutes)
-  // Each group represents a batch event on game x line x platform
-  const groupedBetSets = useMemo(() => {
+  // Group bets into batch trades (game x line x platform)
+  // Each batch trade represents a conceptual big trade spread across multiple accounts
+  const batchTrades = useMemo(() => {
     const groups: Map<string, Bet[]> = new Map();
     
     bets.forEach(bet => {
       // Create a key based on match, type, odds, platform, and rounded timestamp (2 minute window)
-      const timeWindow = Math.floor(bet.timestamp / 120000) * 120000; // Round to 2 minute window
+      const timeWindow = Math.floor(bet.timestamp / 120000) * 120000;
       const platform = bet.platform || 'Unknown';
       const key = `${bet.match}|${bet.type}|${bet.odds}|${platform}|${timeWindow}`;
       
@@ -97,63 +97,88 @@ export function BetHistory() {
       groups.get(key)!.push(bet);
     });
     
-    return groups;
+    // Convert groups to BatchTrade objects
+    const trades: BatchTrade[] = [];
+    groups.forEach((batchBets, key) => {
+      const firstBet = batchBets[0];
+      const totalStake = batchBets.reduce((sum, bet) => sum + bet.stake, 0);
+      const totalSucceeded = batchBets
+        .filter(bet => bet.status === "won" || bet.status === "pending")
+        .reduce((sum, bet) => sum + bet.stake, 0);
+      
+      // Determine aggregate status: if any pending, it's pending; else if any won, it's won; else lost
+      let aggregateStatus: "won" | "lost" | "pending" = "lost";
+      if (batchBets.some(b => b.status === "pending")) {
+        aggregateStatus = "pending";
+      } else if (batchBets.some(b => b.status === "won")) {
+        aggregateStatus = "won";
+      }
+      
+      trades.push({
+        key,
+        match: firstBet.match,
+        type: firstBet.type,
+        odds: firstBet.odds,
+        platform: firstBet.platform || 'Unknown',
+        timestamp: Math.min(...batchBets.map(b => b.timestamp)),
+        bets: batchBets,
+        totalStake,
+        totalSucceeded,
+        accountCount: batchBets.length,
+        status: aggregateStatus,
+        league: firstBet.league,
+        awayTeam: firstBet.awayTeam,
+        homeTeam: firstBet.homeTeam,
+      });
+    });
+    
+    return trades.sort((a, b) => b.timestamp - a.timestamp);
   }, [bets]);
 
-  // Select first bet by default, or maintain selection if it's still in filtered list
-  const [selectedBet, setSelectedBet] = useState<Bet | null>(() => {
-    if (filteredBets.length > 0) {
-      return filteredBets[0];
+  // Filter batch trades
+  const filteredBatchTrades = useMemo(() => {
+    return batchTrades.filter(trade => {
+      if (statusFilter !== "all" && trade.status !== statusFilter) return false;
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return (
+          trade.match.toLowerCase().includes(query) ||
+          trade.type.toLowerCase().includes(query) ||
+          trade.platform.toLowerCase().includes(query)
+        );
+      }
+      return true;
+    });
+  }, [batchTrades, statusFilter, searchQuery]);
+
+  // Select first batch trade by default
+  const [selectedBatchTrade, setSelectedBatchTrade] = useState<BatchTrade | null>(() => {
+    if (filteredBatchTrades.length > 0) {
+      return filteredBatchTrades[0];
     }
     return null;
   });
 
-  // Get all bets in the same group as the selected bet (same match, type, odds, platform)
-  const selectedBetGroup = useMemo(() => {
-    if (!selectedBet) return [];
-    
-    const timeWindow = Math.floor(selectedBet.timestamp / 120000) * 120000;
-    const platform = selectedBet.platform || 'Unknown';
-    const key = `${selectedBet.match}|${selectedBet.type}|${selectedBet.odds}|${platform}|${timeWindow}`;
-    return groupedBetSets.get(key) || [selectedBet];
-  }, [selectedBet, groupedBetSets]);
-
-  // Get the platform for the selected bet group (all bets in a group have the same platform)
-  const selectedBetPlatform = useMemo(() => {
-    return selectedBetGroup[0]?.platform || 'Unknown';
-  }, [selectedBetGroup]);
-
-  // Calculate totals for the selected bet group
-  const groupTotals = useMemo(() => {
-    const totalSent = selectedBetGroup.reduce((sum, bet) => sum + bet.stake, 0);
-    const totalSucceeded = selectedBetGroup
-      .filter(bet => bet.status === "won" || bet.status === "pending")
-      .reduce((sum, bet) => sum + bet.stake, 0);
-    return { totalSent, totalSucceeded };
-  }, [selectedBetGroup]);
-  
-  // Update selected bet when filters change
+  // Update selected batch trade when filters change
   useEffect(() => {
-    if (filteredBets.length > 0) {
-      // If current selection is still in filtered list, keep it; otherwise select first
-      setSelectedBet(prev => {
-        const currentSelectedStillAvailable = prev && filteredBets.some(b => b.id === prev.id);
-        if (!currentSelectedStillAvailable) {
-          return filteredBets[0];
+    if (filteredBatchTrades.length > 0) {
+      setSelectedBatchTrade(prev => {
+        const currentStillAvailable = prev && filteredBatchTrades.some(t => t.key === prev.key);
+        if (!currentStillAvailable) {
+          return filteredBatchTrades[0];
         }
         return prev;
       });
     } else {
-      setSelectedBet(null);
+      setSelectedBatchTrade(null);
     }
-  }, [filteredBets]);
+  }, [filteredBatchTrades]);
 
-  // Group bets by date (using filteredBets)
-  const groupedBets = useMemo(() => {
-    // Group by date
-    const groups: Record<string, Bet[]> = {};
-    filteredBets.forEach(bet => {
-      const date = new Date(bet.timestamp).toLocaleDateString('en-US', {
+  // Group batch trades by date
+  const groupedBatchTrades = useMemo(() => {
+    const groups: Record<string, BatchTrade[]> = {};
+    filteredBatchTrades.forEach(trade => {
+      const date = new Date(trade.timestamp).toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric'
@@ -161,22 +186,24 @@ export function BetHistory() {
       if (!groups[date]) {
         groups[date] = [];
       }
-      groups[date].push(bet);
+      groups[date].push(trade);
     });
-
     return groups;
-  }, [filteredBets]);
+  }, [filteredBatchTrades]);
 
+  // Stats based on batch trades (conceptual big trades), not individual account bets
   const stats = useMemo(() => {
     return {
-      total: bets.length,
-      pending: bets.filter(b => b.status === "pending").length,
-      won: bets.filter(b => b.status === "won").length,
-      lost: bets.filter(b => b.status === "lost").length,
-      totalStake: bets.reduce((sum, b) => sum + b.stake, 0),
-      totalPayout: bets.filter(b => b.status === "won" && b.payout).reduce((sum, b) => sum + (b.payout || 0), 0),
+      total: batchTrades.length,
+      pending: batchTrades.filter(t => t.status === "pending").length,
+      won: batchTrades.filter(t => t.status === "won").length,
+      lost: batchTrades.filter(t => t.status === "lost").length,
+      totalStake: batchTrades.reduce((sum, t) => sum + t.totalStake, 0),
+      totalPayout: batchTrades.reduce((sum, t) => 
+        sum + t.bets.filter(b => b.status === "won" && b.payout).reduce((s, b) => s + (b.payout || 0), 0), 0
+      ),
     };
-  }, [bets]);
+  }, [batchTrades]);
 
   const getStatusIcon = (status: Bet['status']) => {
     switch (status) {
@@ -270,73 +297,72 @@ export function BetHistory() {
 
       {/* Bet List and Details View - Side by Side */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* Left Side - Bet Listing (Scrollable) */}
+        {/* Left Side - Batch Trade Listing (Scrollable) */}
         <div className="w-96 border-r border-[hsl(var(--border))] flex flex-col shrink-0">
           <div className="flex-1 overflow-y-auto terminal-scrollbar p-4">
-            {Object.keys(groupedBets).length === 0 ? (
+            {Object.keys(groupedBatchTrades).length === 0 ? (
               <div className="text-center text-muted-foreground py-12">
                 <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No bets found</p>
+                <p>No batch trades found</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {Object.entries(groupedBets).map(([date, dateBets]) => (
+                {Object.entries(groupedBatchTrades).map(([date, dateTrades]) => (
                   <div key={date}>
                     <div className="text-xs font-semibold text-muted-foreground mb-2 px-2 sticky top-0 bg-background py-1">
                       {date}
                     </div>
                     <div className="space-y-2">
-                      {dateBets.map((bet) => (
+                      {dateTrades.map((trade) => (
                         <div
-                          key={bet.id}
-                          onClick={() => setSelectedBet(bet)}
+                          key={trade.key}
+                          onClick={() => setSelectedBatchTrade(trade)}
                           className={cn(
                             "bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-3 hover:bg-accent/50 transition-colors cursor-pointer",
-                            selectedBet?.id === bet.id && "bg-accent border-primary"
+                            selectedBatchTrade?.key === trade.key && "bg-accent border-primary"
                           )}
                         >
                           <div className="flex items-center gap-2 mb-1">
-                            {getStatusIcon(bet.status)}
-                            {bet.league && <LeagueLogo league={bet.league} className="w-3.5 h-3.5" />}
-                            {(bet.awayTeam || bet.homeTeam) ? (
+                            {getStatusIcon(trade.status)}
+                            {trade.league && <LeagueLogo league={trade.league} className="w-3.5 h-3.5" />}
+                            {(trade.awayTeam || trade.homeTeam) ? (
                               <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                {bet.awayTeam && (
+                                {trade.awayTeam && (
                                   <>
-                                    {bet.league && (
+                                    {trade.league && (
                                       <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
-                                        <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(bet.league)}</span>
+                                        <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(trade.league)}</span>
                                       </div>
                                     )}
-                                    <span className="font-semibold text-sm text-foreground truncate">{bet.awayTeam}</span>
+                                    <span className="font-semibold text-sm text-foreground truncate">{trade.awayTeam}</span>
                                   </>
                                 )}
-                                {bet.awayTeam && bet.homeTeam && <span className="text-xs text-muted-foreground">@</span>}
-                                {bet.homeTeam && (
+                                {trade.awayTeam && trade.homeTeam && <span className="text-xs text-muted-foreground">@</span>}
+                                {trade.homeTeam && (
                                   <>
-                                    {bet.league && (
+                                    {trade.league && (
                                       <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
-                                        <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(bet.league)}</span>
+                                        <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(trade.league)}</span>
                                       </div>
                                     )}
-                                    <span className="font-semibold text-sm text-foreground truncate">{bet.homeTeam}</span>
+                                    <span className="font-semibold text-sm text-foreground truncate">{trade.homeTeam}</span>
                                   </>
                                 )}
                               </div>
                             ) : (
-                              <span className="font-semibold text-sm text-foreground truncate flex-1">{bet.match}</span>
+                              <span className="font-semibold text-sm text-foreground truncate flex-1">{trade.match}</span>
                             )}
                           </div>
-                          <div className="text-xs text-muted-foreground mb-1">{bet.type}</div>
+                          <div className="text-xs text-muted-foreground mb-1">{trade.type} • {trade.odds}</div>
                           <div className="flex items-center justify-between text-xs mb-1">
-                            {bet.platform && (
-                              <span className="text-xs font-medium text-primary">{bet.platform}</span>
-                            )}
-                            <span className="text-muted-foreground">{formatTimeAgo(bet.timestamp)}</span>
+                            <span className="text-xs font-medium text-primary">{trade.platform}</span>
+                            <span className="text-muted-foreground">{formatTimeAgo(trade.timestamp)}</span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
                             <span className="font-mono text-foreground">
-                              ${bet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${trade.totalStake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
+                            <span className="text-xs text-muted-foreground">{trade.accountCount} accounts</span>
                           </div>
                         </div>
                       ))}
@@ -348,51 +374,49 @@ export function BetHistory() {
           </div>
         </div>
 
-        {/* Right Side - After-Bet View */}
+        {/* Right Side - After-Bet View (Reused from BettingDialog) */}
         <div className="flex-1 overflow-y-auto terminal-scrollbar p-6">
-          {selectedBet && selectedBetGroup.length > 0 ? (
+          {selectedBatchTrade ? (
             <div className="max-w-5xl">
               {/* Match Info Header with Platform at Top Level */}
               <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6 mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    {selectedBet.league && <LeagueLogo league={selectedBet.league} className="w-5 h-5" />}
-                    <h2 className="text-xl font-semibold text-foreground">{selectedBet.match}</h2>
+                    {selectedBatchTrade.league && <LeagueLogo league={selectedBatchTrade.league} className="w-5 h-5" />}
+                    <h2 className="text-xl font-semibold text-foreground">{selectedBatchTrade.match}</h2>
                   </div>
-                  {selectedBetPlatform && (
-                    <div className="text-lg font-semibold text-primary">{selectedBetPlatform}</div>
-                  )}
+                  <div className="text-lg font-semibold text-primary">{selectedBatchTrade.platform}</div>
                 </div>
-                {(selectedBet.awayTeam || selectedBet.homeTeam) && (
+                {(selectedBatchTrade.awayTeam || selectedBatchTrade.homeTeam) && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                    {selectedBet.awayTeam && (
+                    {selectedBatchTrade.awayTeam && (
                       <>
-                        {selectedBet.league && (
+                        {selectedBatchTrade.league && (
                           <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
-                            <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBet.league)}</span>
+                            <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBatchTrade.league)}</span>
                           </div>
                         )}
-                        <span>{selectedBet.awayTeam}</span>
+                        <span>{selectedBatchTrade.awayTeam}</span>
                       </>
                     )}
-                    {selectedBet.awayTeam && selectedBet.homeTeam && <span>@</span>}
-                    {selectedBet.homeTeam && (
+                    {selectedBatchTrade.awayTeam && selectedBatchTrade.homeTeam && <span>@</span>}
+                    {selectedBatchTrade.homeTeam && (
                       <>
-                        {selectedBet.league && (
+                        {selectedBatchTrade.league && (
                           <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
-                            <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBet.league)}</span>
+                            <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBatchTrade.league)}</span>
                           </div>
                         )}
-                        <span>{selectedBet.homeTeam}</span>
+                        <span>{selectedBatchTrade.homeTeam}</span>
                       </>
                     )}
                   </div>
                 )}
-                <div className="text-sm text-muted-foreground mb-2">{selectedBet.type} • {selectedBet.odds}</div>
+                <div className="text-sm text-muted-foreground mb-2">{selectedBatchTrade.type} • {selectedBatchTrade.odds}</div>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    {new Date(selectedBet.timestamp).toLocaleString('en-US', {
+                    {new Date(selectedBatchTrade.timestamp).toLocaleString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',
@@ -400,23 +424,23 @@ export function BetHistory() {
                       minute: '2-digit'
                     })}
                   </div>
-                  <span>{formatTimeAgo(selectedBet.timestamp)}</span>
+                  <span>{formatTimeAgo(selectedBatchTrade.timestamp)}</span>
                 </div>
               </div>
 
-              {/* After Bet View Header - Total Succeeded / Total Sent */}
+              {/* After Bet View Header - Total Succeeded / Total Sent (Reused from BettingDialog) */}
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-[hsl(var(--border))]">
                 <div className="flex items-center gap-4">
                   <span className="text-sm font-medium text-muted-foreground">Total Succeeded:</span>
                   <span className="text-2xl font-bold font-mono text-primary">
-                    ${groupTotals.totalSucceeded.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / ${groupTotals.totalSent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${selectedBatchTrade.totalSucceeded.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / ${selectedBatchTrade.totalStake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
 
-              {/* Account Bets Grid - Reusing After-Bet View Style */}
+              {/* Account Bets Grid - Reusing After-Bet View Style from BettingDialog */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {selectedBetGroup.map((bet) => {
+                {selectedBatchTrade.bets.map((bet) => {
                   const initials = bet.accountName?.split(' ').map(n => n[0]).join('') || '?';
                   const getBetStatusIcon = (status: Bet['status']) => {
                     switch (status) {
@@ -511,7 +535,7 @@ export function BetHistory() {
             <div className="flex items-center justify-center h-full">
               <div className="text-center text-muted-foreground">
                 <History className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                <p className="text-sm">Select a bet to view details</p>
+                <p className="text-sm">Select a batch trade to view account details</p>
               </div>
             </div>
           )}

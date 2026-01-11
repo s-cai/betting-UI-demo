@@ -13,7 +13,7 @@ This is a professional-grade betting interface designed for arbitrage betting an
 - **Multi-Sportsbook Odds Comparison**: Compare odds across 8+ sportsbooks (DraftKings, FanDuel, BetMGM, Caesars, PointsBet, Bet365, Unibet, WynnBET)
 - **Real-Time Match Tracking**: Live and pre-match games with scores, innings/quarters, and status indicators
 - **Multi-Sport Support**: Football (NFL, NCAAF) and Basketball (NBA, NCAAB)
-- **Bet History Tracking**: View recent bets with status indicators (won/lost/pending) and payout information
+- **Bet History Tracking**: View batch trades (conceptual big trades) with account-level details. Each batch trade represents a game × line × platform combination, showing all accounts that participated in that trade.
 - **Account Management**: Comprehensive account management system with platform selection, filtering, and editing capabilities
 - **Smart Notifications**: Real-time alerts for arbitrage opportunities, line movements, game events, and account warnings
 
@@ -135,6 +135,32 @@ This is a professional-grade betting interface designed for arbitrage betting an
   - Status icons with animations
   - Color-coded status indicators
 
+#### `BetHistory.tsx` (Bet History Page)
+- **Location**: `src/pages/BetHistory.tsx`
+- **Purpose**: Full bet history view with batch trade mental model
+- **Mental Model**: 
+  - **Conceptual Level**: Big batch trades (game × line × platform)
+  - **Implementation Level**: Multiple accounts on the same platform making the same bet
+  - When placing a bet, a large amount is spread across many accounts on the same platform
+  - Accounts are implementation details of conceptual big trades
+- **Features**:
+  - **Left Sidebar**: Lists batch trades (not individual account bets)
+    - Each item represents one batch trade: game × line × platform
+    - Shows aggregate info: total stake, account count, aggregate status
+    - Grouped by date
+  - **Right Panel**: Detail view showing all accounts in the selected batch trade
+    - Reuses the after-bet view from `BettingDialog` for consistency
+    - Shows match info with platform at top level
+    - Displays "Total Succeeded / Total Sent" across all accounts
+    - Grid of account cards showing:
+      - Account name and avatar (initials)
+      - Individual bet amount
+      - Status icon and text (✓✓ won, ✕ failed, ✓ pending)
+      - Error screenshots for failed bets
+      - Payout information for won bets
+  - **Filtering**: Filter batch trades by status (all/pending/won/lost) and search
+  - **Statistics**: Counts batch trades (not individual account bets)
+
 #### `AccountOverviewBar.tsx`
 - **Location**: `src/components/panels/AccountOverviewBar.tsx`
 - **Purpose**: Multi-platform account balance and status aggregation
@@ -213,6 +239,30 @@ The application uses shadcn/ui components built on Radix UI primitives:
 - **Utilities**: Aspect ratio, collapsible, breadcrumb components
 
 ## Implementation Details
+
+### Batch Trade Mental Model
+
+The application uses a **batch trade mental model** for bet history:
+
+- **Conceptual Level**: Big batch trades represent a single decision to bet on a game × line × platform combination
+  - Example: "GSW @ Phoenix Suns, O 232.5, -108, DraftKings" is one batch trade
+  - This represents the user's conceptual decision to place this bet
+
+- **Implementation Level**: Each batch trade is spread across multiple accounts on the same platform
+  - A large bet amount is distributed across many accounts
+  - Each account makes the same bet (same game, line, odds, platform) but with different amounts
+  - Accounts are implementation details - they're how we execute the conceptual big trade
+
+- **Bet History Display**:
+  - **List View**: Shows batch trades (not individual account bets)
+    - Each item = one batch trade (game × line × platform)
+    - Shows aggregate: total stake, account count, aggregate status
+  - **Detail View**: When clicking a batch trade, shows all accounts in that batch
+    - Reuses the after-bet view from BettingDialog for consistency
+    - Shows each account's individual bet amount and status
+    - Displays total succeeded / total sent across all accounts
+
+This mental model matches how users think: they make big trades, which are then spread across accounts for execution.
 
 ### State Management
 
