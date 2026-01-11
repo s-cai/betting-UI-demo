@@ -835,7 +835,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
           {viewMode === 'before' ? (
             <>
               {/* Header with Total and Send Button */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[hsl(var(--border))]">
+              <div className="flex items-center gap-4 mb-6 pb-4 border-b border-[hsl(var(--border))]">
                 <div className="flex items-center gap-4">
                   <span className="text-sm font-medium text-muted-foreground">Total Bet Size:</span>
                   <span className="text-2xl font-bold font-mono text-primary">
