@@ -80,14 +80,16 @@ export function BetHistory() {
     return [...filtered].sort((a, b) => b.timestamp - a.timestamp);
   }, [bets, statusFilter, searchQuery]);
   
-  // Group bets that were placed together (same match, type, odds, within 2 minutes)
+  // Group bets that were placed together (same match, type, odds, platform, within 2 minutes)
+  // Each group represents a batch event on game x line x platform
   const groupedBetSets = useMemo(() => {
     const groups: Map<string, Bet[]> = new Map();
     
     bets.forEach(bet => {
-      // Create a key based on match, type, odds, and rounded timestamp (2 minute window)
+      // Create a key based on match, type, odds, platform, and rounded timestamp (2 minute window)
       const timeWindow = Math.floor(bet.timestamp / 120000) * 120000; // Round to 2 minute window
-      const key = `${bet.match}|${bet.type}|${bet.odds}|${timeWindow}`;
+      const platform = bet.platform || 'Unknown';
+      const key = `${bet.match}|${bet.type}|${bet.odds}|${platform}|${timeWindow}`;
       
       if (!groups.has(key)) {
         groups.set(key, []);
@@ -106,14 +108,20 @@ export function BetHistory() {
     return null;
   });
 
-  // Get all bets in the same group as the selected bet
+  // Get all bets in the same group as the selected bet (same match, type, odds, platform)
   const selectedBetGroup = useMemo(() => {
     if (!selectedBet) return [];
     
     const timeWindow = Math.floor(selectedBet.timestamp / 120000) * 120000;
-    const key = `${selectedBet.match}|${selectedBet.type}|${selectedBet.odds}|${timeWindow}`;
+    const platform = selectedBet.platform || 'Unknown';
+    const key = `${selectedBet.match}|${selectedBet.type}|${selectedBet.odds}|${platform}|${timeWindow}`;
     return groupedBetSets.get(key) || [selectedBet];
   }, [selectedBet, groupedBetSets]);
+
+  // Get the platform for the selected bet group (all bets in a group have the same platform)
+  const selectedBetPlatform = useMemo(() => {
+    return selectedBetGroup[0]?.platform || 'Unknown';
+  }, [selectedBetGroup]);
 
   // Calculate totals for the selected bet group
   const groupTotals = useMemo(() => {
@@ -293,11 +301,16 @@ export function BetHistory() {
                             <span className="font-semibold text-sm text-foreground truncate flex-1">{bet.match}</span>
                           </div>
                           <div className="text-xs text-muted-foreground mb-1">{bet.type}</div>
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            {bet.platform && (
+                              <span className="text-xs font-medium text-primary">{bet.platform}</span>
+                            )}
+                            <span className="text-muted-foreground">{formatTimeAgo(bet.timestamp)}</span>
+                          </div>
                           <div className="flex items-center justify-between text-xs">
                             <span className="font-mono text-foreground">
                               ${bet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
-                            <span className="text-muted-foreground">{formatTimeAgo(bet.timestamp)}</span>
                           </div>
                         </div>
                       ))}
@@ -313,11 +326,16 @@ export function BetHistory() {
         <div className="flex-1 overflow-y-auto terminal-scrollbar p-6">
           {selectedBet && selectedBetGroup.length > 0 ? (
             <div className="max-w-5xl">
-              {/* Match Info Header */}
+              {/* Match Info Header with Platform at Top Level */}
               <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6 mb-4">
-                <div className="flex items-center gap-3 mb-2">
-                  {selectedBet.league && <LeagueLogo league={selectedBet.league} className="w-5 h-5" />}
-                  <h2 className="text-xl font-semibold text-foreground">{selectedBet.match}</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    {selectedBet.league && <LeagueLogo league={selectedBet.league} className="w-5 h-5" />}
+                    <h2 className="text-xl font-semibold text-foreground">{selectedBet.match}</h2>
+                  </div>
+                  {selectedBetPlatform && (
+                    <div className="text-lg font-semibold text-primary">{selectedBetPlatform}</div>
+                  )}
                 </div>
                 {(selectedBet.awayTeam || selectedBet.homeTeam) && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
@@ -408,12 +426,7 @@ export function BetHistory() {
                           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold shrink-0">
                             {initials}
                           </div>
-                          <div>
-                            <div className="font-semibold text-foreground">{bet.accountName || 'Unknown Account'}</div>
-                            {bet.platform && (
-                              <div className="text-xs text-muted-foreground">{bet.platform}</div>
-                            )}
-                          </div>
+                          <div className="font-semibold text-foreground">{bet.accountName || 'Unknown Account'}</div>
                         </div>
                         <div className="text-lg font-bold font-mono text-primary">
                           ${bet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

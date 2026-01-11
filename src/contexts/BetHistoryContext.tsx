@@ -28,7 +28,7 @@ interface BetHistoryContextType {
 const BetHistoryContext = createContext<BetHistoryContextType | undefined>(undefined);
 
 // Load bets from localStorage on init
-const BET_HISTORY_VERSION = '2.0'; // Increment to force reload demo data
+const BET_HISTORY_VERSION = '2.1'; // Increment to force reload demo data (platform at top level)
 const loadBetsFromStorage = (): Bet[] => {
   try {
     // Check version - if it doesn't match, clear old data and use demo data
@@ -46,41 +46,62 @@ const loadBetsFromStorage = (): Bet[] => {
     // Ignore errors
   }
   // Return mock bets as initial data with full details
-  // Each bet group has multiple accounts to demonstrate after-bet view
+  // Each bet group represents a batch event on game x line x platform
+  // All bets in a group have the same match, type, odds, and platform
   const baseTime = Date.now();
   return [
-    // LAL @ BOS - Spread +2.5 -110 (3 accounts, all pending)
+    // LAL @ BOS - Spread +2.5 -110 - DraftKings (batch with 3 accounts, all pending)
     { id: "1", match: "LAL @ BOS", type: "Spread +2.5", odds: "-110", stake: 500, status: "pending", timestamp: baseTime - 120000, platform: "DraftKings", accountName: "John Smith", league: "NBA" as League, awayTeam: "LA Lakers", homeTeam: "Boston Celtics" },
-    { id: "1a", match: "LAL @ BOS", type: "Spread +2.5", odds: "-110", stake: 750, status: "pending", timestamp: baseTime - 119500, platform: "FanDuel", accountName: "Sarah Johnson", league: "NBA" as League, awayTeam: "LA Lakers", homeTeam: "Boston Celtics" },
-    { id: "1b", match: "LAL @ BOS", type: "Spread +2.5", odds: "-110", stake: 400, status: "pending", timestamp: baseTime - 119000, platform: "BetMGM", accountName: "Michael Chen", league: "NBA" as League, awayTeam: "LA Lakers", homeTeam: "Boston Celtics" },
+    { id: "1a", match: "LAL @ BOS", type: "Spread +2.5", odds: "-110", stake: 750, status: "pending", timestamp: baseTime - 119500, platform: "DraftKings", accountName: "Jennifer Taylor", league: "NBA" as League, awayTeam: "LA Lakers", homeTeam: "Boston Celtics" },
+    { id: "1b", match: "LAL @ BOS", type: "Spread +2.5", odds: "-110", stake: 400, status: "pending", timestamp: baseTime - 119000, platform: "DraftKings", accountName: "Christopher Brown", league: "NBA" as League, awayTeam: "LA Lakers", homeTeam: "Boston Celtics" },
     
-    // KC @ BUF - ML KC -175 (4 accounts, all won)
+    // LAL @ BOS - Spread +2.5 -110 - FanDuel (batch with 3 accounts, all pending)
+    { id: "1c", match: "LAL @ BOS", type: "Spread +2.5", odds: "-110", stake: 600, status: "pending", timestamp: baseTime - 118500, platform: "FanDuel", accountName: "Sarah Johnson", league: "NBA" as League, awayTeam: "LA Lakers", homeTeam: "Boston Celtics" },
+    { id: "1d", match: "LAL @ BOS", type: "Spread +2.5", odds: "-110", stake: 850, status: "pending", timestamp: baseTime - 118000, platform: "FanDuel", accountName: "Thomas Anderson", league: "NBA" as League, awayTeam: "LA Lakers", homeTeam: "Boston Celtics" },
+    { id: "1e", match: "LAL @ BOS", type: "Spread +2.5", odds: "-110", stake: 450, status: "pending", timestamp: baseTime - 117500, platform: "FanDuel", accountName: "Daniel Kim", league: "NBA" as League, awayTeam: "LA Lakers", homeTeam: "Boston Celtics" },
+    
+    // KC @ BUF - ML KC -175 - FanDuel (batch with 4 accounts, all won)
     { id: "2", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 1000, status: "won", timestamp: baseTime - 900000, payout: 571, platform: "FanDuel", accountName: "Sarah Johnson", league: "NFL" as League, awayTeam: "KC Chiefs", homeTeam: "Buffalo Bills" },
-    { id: "2a", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 800, status: "won", timestamp: baseTime - 899500, payout: 457, platform: "DraftKings", accountName: "Jennifer Taylor", league: "NFL" as League, awayTeam: "KC Chiefs", homeTeam: "Buffalo Bills" },
-    { id: "2b", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 1200, status: "won", timestamp: baseTime - 899000, payout: 686, platform: "BetMGM", accountName: "Robert Williams", league: "NFL" as League, awayTeam: "KC Chiefs", homeTeam: "Buffalo Bills" },
-    { id: "2c", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 600, status: "won", timestamp: baseTime - 898500, payout: 343, platform: "Caesars", accountName: "Alexander Hamilton", league: "NFL" as League, awayTeam: "KC Chiefs", homeTeam: "Buffalo Bills" },
+    { id: "2a", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 800, status: "won", timestamp: baseTime - 899500, payout: 457, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NFL" as League, awayTeam: "KC Chiefs", homeTeam: "Buffalo Bills" },
+    { id: "2b", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 1200, status: "won", timestamp: baseTime - 899000, payout: 686, platform: "FanDuel", accountName: "Ryan O'Connor", league: "NFL" as League, awayTeam: "KC Chiefs", homeTeam: "Buffalo Bills" },
+    { id: "2c", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 600, status: "won", timestamp: baseTime - 898500, payout: 343, platform: "FanDuel", accountName: "Kevin Thompson", league: "NFL" as League, awayTeam: "KC Chiefs", homeTeam: "Buffalo Bills" },
     
-    // GSW @ PHX - O 232.5 -108 (3 accounts, all pending)
+    // KC @ BUF - ML KC -175 - DraftKings (batch with 3 accounts, all won)
+    { id: "2d", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 900, status: "won", timestamp: baseTime - 898000, payout: 514, platform: "DraftKings", accountName: "Jennifer Taylor", league: "NFL" as League, awayTeam: "KC Chiefs", homeTeam: "Buffalo Bills" },
+    { id: "2e", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 700, status: "won", timestamp: baseTime - 897500, payout: 400, platform: "DraftKings", accountName: "John Smith", league: "NFL" as League, awayTeam: "KC Chiefs", homeTeam: "Buffalo Bills" },
+    { id: "2f", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: 550, status: "won", timestamp: baseTime - 897000, payout: 314, platform: "DraftKings", accountName: "Patricia Garcia", league: "NFL" as League, awayTeam: "KC Chiefs", homeTeam: "Buffalo Bills" },
+    
+    // GSW @ PHX - O 232.5 -108 - BetMGM (batch with 3 accounts, all pending)
     { id: "3", match: "GSW @ PHX", type: "O 232.5", odds: "-108", stake: 750, status: "pending", timestamp: baseTime - 1320000, platform: "BetMGM", accountName: "Michael Chen", league: "NBA" as League, awayTeam: "GS Warriors", homeTeam: "Phoenix Suns" },
-    { id: "3a", match: "GSW @ PHX", type: "O 232.5", odds: "-108", stake: 500, status: "pending", timestamp: baseTime - 1319500, platform: "FanDuel", accountName: "Thomas Anderson", league: "NBA" as League, awayTeam: "GS Warriors", homeTeam: "Phoenix Suns" },
-    { id: "3b", match: "GSW @ PHX", type: "O 232.5", odds: "-108", stake: 900, status: "pending", timestamp: baseTime - 1319000, platform: "DraftKings", accountName: "Kevin Thompson", league: "NBA" as League, awayTeam: "GS Warriors", homeTeam: "Phoenix Suns" },
+    { id: "3a", match: "GSW @ PHX", type: "O 232.5", odds: "-108", stake: 500, status: "pending", timestamp: baseTime - 1319500, platform: "BetMGM", accountName: "Robert Williams", league: "NBA" as League, awayTeam: "GS Warriors", homeTeam: "Phoenix Suns" },
+    { id: "3b", match: "GSW @ PHX", type: "O 232.5", odds: "-108", stake: 900, status: "pending", timestamp: baseTime - 1319000, platform: "BetMGM", accountName: "Lisa Anderson", league: "NBA" as League, awayTeam: "GS Warriors", homeTeam: "Phoenix Suns" },
     
-    // SF @ DET - ML DET +115 (4 accounts, mix of won/lost)
-    { id: "4", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 400, status: "lost", timestamp: baseTime - 3600000, platform: "Caesars", accountName: "Emily Davis", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
-    { id: "4a", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 600, status: "won", timestamp: baseTime - 3599500, payout: 690, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
-    { id: "4b", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 350, status: "lost", timestamp: baseTime - 3599000, platform: "BetMGM", accountName: "Lisa Anderson", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
-    { id: "4c", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 550, status: "won", timestamp: baseTime - 3598500, payout: 633, platform: "DraftKings", accountName: "Christopher Brown", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
+    // SF @ DET - ML DET +115 - FanDuel (batch with 4 accounts, mix of won/lost)
+    { id: "4", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 600, status: "won", timestamp: baseTime - 3600000, payout: 690, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
+    { id: "4a", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 550, status: "won", timestamp: baseTime - 3599500, payout: 633, platform: "FanDuel", accountName: "Christopher Brown", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
+    { id: "4b", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 400, status: "lost", timestamp: baseTime - 3599000, platform: "FanDuel", accountName: "Emily Davis", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
+    { id: "4c", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 350, status: "lost", timestamp: baseTime - 3598500, platform: "FanDuel", accountName: "Lisa Anderson", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
     
-    // MIA @ NYK - Spread -1.5 -110 (3 accounts, all won)
-    { id: "5", match: "MIA @ NYK", type: "Spread -1.5", odds: "-110", stake: 600, status: "won", timestamp: baseTime - 7200000, payout: 545, platform: "PointsBet", accountName: "Thomas Anderson", league: "NBA" as League, awayTeam: "Miami Heat", homeTeam: "Milwaukee Bucks" },
-    { id: "5a", match: "MIA @ NYK", type: "Spread -1.5", odds: "-110", stake: 800, status: "won", timestamp: baseTime - 7199500, payout: 727, platform: "FanDuel", accountName: "Daniel Kim", league: "NBA" as League, awayTeam: "Miami Heat", homeTeam: "Milwaukee Bucks" },
-    { id: "5b", match: "MIA @ NYK", type: "Spread -1.5", odds: "-110", stake: 450, status: "won", timestamp: baseTime - 7199000, payout: 409, platform: "BetMGM", accountName: "Victoria Sterling", league: "NBA" as League, awayTeam: "Miami Heat", homeTeam: "Milwaukee Bucks" },
+    // SF @ DET - ML DET +115 - DraftKings (batch with 3 accounts, all won)
+    { id: "4d", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 700, status: "won", timestamp: baseTime - 3598000, payout: 805, platform: "DraftKings", accountName: "Jennifer Taylor", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
+    { id: "4e", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 500, status: "won", timestamp: baseTime - 3597500, payout: 575, platform: "DraftKings", accountName: "John Smith", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
+    { id: "4f", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 450, status: "won", timestamp: baseTime - 3597000, payout: 518, platform: "DraftKings", accountName: "Kevin Thompson", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
     
-    // PHI @ DAL - U 44.5 -110 (4 accounts, all pending)
-    { id: "6", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 300, status: "pending", timestamp: baseTime - 10800000, platform: "Bet365", accountName: "Maria Rodriguez", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
-    { id: "6a", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 500, status: "pending", timestamp: baseTime - 10799500, platform: "FanDuel", accountName: "Ryan O'Connor", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
-    { id: "6b", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 400, status: "pending", timestamp: baseTime - 10799000, platform: "Caesars", accountName: "Nathaniel Black", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
-    { id: "6c", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 650, status: "pending", timestamp: baseTime - 10798500, platform: "DraftKings", accountName: "Patricia Garcia", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
+    // MIA @ NYK - Spread -1.5 -110 - FanDuel (batch with 3 accounts, all won)
+    { id: "5", match: "MIA @ NYK", type: "Spread -1.5", odds: "-110", stake: 800, status: "won", timestamp: baseTime - 7200000, payout: 727, platform: "FanDuel", accountName: "Daniel Kim", league: "NBA" as League, awayTeam: "Miami Heat", homeTeam: "Milwaukee Bucks" },
+    { id: "5a", match: "MIA @ NYK", type: "Spread -1.5", odds: "-110", stake: 600, status: "won", timestamp: baseTime - 7199500, payout: 545, platform: "FanDuel", accountName: "Thomas Anderson", league: "NBA" as League, awayTeam: "Miami Heat", homeTeam: "Milwaukee Bucks" },
+    { id: "5b", match: "MIA @ NYK", type: "Spread -1.5", odds: "-110", stake: 450, status: "won", timestamp: baseTime - 7199000, payout: 409, platform: "FanDuel", accountName: "Victoria Sterling", league: "NBA" as League, awayTeam: "Miami Heat", homeTeam: "Milwaukee Bucks" },
+    
+    // PHI @ DAL - U 44.5 -110 - DraftKings (batch with 4 accounts, all pending)
+    { id: "6", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 650, status: "pending", timestamp: baseTime - 10800000, platform: "DraftKings", accountName: "Patricia Garcia", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
+    { id: "6a", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 500, status: "pending", timestamp: baseTime - 10799500, platform: "DraftKings", accountName: "Jennifer Taylor", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
+    { id: "6b", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 400, status: "pending", timestamp: baseTime - 10799000, platform: "DraftKings", accountName: "Christopher Brown", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
+    { id: "6c", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 300, status: "pending", timestamp: baseTime - 10798500, platform: "DraftKings", accountName: "John Smith", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
+    
+    // PHI @ DAL - U 44.5 -110 - FanDuel (batch with 3 accounts, all pending)
+    { id: "6d", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 550, status: "pending", timestamp: baseTime - 10798000, platform: "FanDuel", accountName: "Ryan O'Connor", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
+    { id: "6e", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 450, status: "pending", timestamp: baseTime - 10797500, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
+    { id: "6f", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 350, status: "pending", timestamp: baseTime - 10797000, platform: "FanDuel", accountName: "Thomas Anderson", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys" },
   ];
 };
 
