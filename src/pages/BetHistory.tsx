@@ -223,9 +223,11 @@ export function BetHistory() {
                     </div>
                     {(selectedBet.awayTeam || selectedBet.homeTeam) && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                        <span className="text-base">
-                          {getTeamLogoEmoji(selectedBet.league)}
-                        </span>
+                        {selectedBet.league && (
+                          <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
+                            <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBet.league)}</span>
+                          </div>
+                        )}
                         {selectedBet.awayTeam && <span>{selectedBet.awayTeam}</span>}
                         {selectedBet.awayTeam && selectedBet.homeTeam && <span>@</span>}
                         {selectedBet.homeTeam && <span>{selectedBet.homeTeam}</span>}
@@ -333,9 +335,11 @@ export function BetHistory() {
                           </div>
                           {(bet.awayTeam || bet.homeTeam) && (
                             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                              <span className={cn("text-sm", !bet.league && "opacity-0")}>
-                                {getTeamLogoEmoji(bet.league)}
-                              </span>
+                              {bet.league && (
+                                <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
+                                  <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(bet.league)}</span>
+                                </div>
+                              )}
                               {bet.awayTeam && <span>{bet.awayTeam}</span>}
                               {bet.awayTeam && bet.homeTeam && <span>@</span>}
                               {bet.homeTeam && <span>{bet.homeTeam}</span>}
