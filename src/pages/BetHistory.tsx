@@ -80,6 +80,24 @@ export function BetHistory() {
     return [...filtered].sort((a, b) => b.timestamp - a.timestamp);
   }, [bets, statusFilter, searchQuery]);
   
+  // Group bets that were placed together (same match, type, odds, within 2 minutes)
+  const groupedBetSets = useMemo(() => {
+    const groups: Map<string, Bet[]> = new Map();
+    
+    bets.forEach(bet => {
+      // Create a key based on match, type, odds, and rounded timestamp (2 minute window)
+      const timeWindow = Math.floor(bet.timestamp / 120000) * 120000; // Round to 2 minute window
+      const key = `${bet.match}|${bet.type}|${bet.odds}|${timeWindow}`;
+      
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(bet);
+    });
+    
+    return groups;
+  }, [bets]);
+
   // Select first bet by default, or maintain selection if it's still in filtered list
   const [selectedBet, setSelectedBet] = useState<Bet | null>(() => {
     if (filteredBets.length > 0) {
@@ -87,15 +105,36 @@ export function BetHistory() {
     }
     return null;
   });
+
+  // Get all bets in the same group as the selected bet
+  const selectedBetGroup = useMemo(() => {
+    if (!selectedBet) return [];
+    
+    const timeWindow = Math.floor(selectedBet.timestamp / 120000) * 120000;
+    const key = `${selectedBet.match}|${selectedBet.type}|${selectedBet.odds}|${timeWindow}`;
+    return groupedBetSets.get(key) || [selectedBet];
+  }, [selectedBet, groupedBetSets]);
+
+  // Calculate totals for the selected bet group
+  const groupTotals = useMemo(() => {
+    const totalSent = selectedBetGroup.reduce((sum, bet) => sum + bet.stake, 0);
+    const totalSucceeded = selectedBetGroup
+      .filter(bet => bet.status === "won" || bet.status === "pending")
+      .reduce((sum, bet) => sum + bet.stake, 0);
+    return { totalSent, totalSucceeded };
+  }, [selectedBetGroup]);
   
   // Update selected bet when filters change
   useEffect(() => {
     if (filteredBets.length > 0) {
       // If current selection is still in filtered list, keep it; otherwise select first
-      const currentSelectedStillAvailable = selectedBet && filteredBets.some(b => b.id === selectedBet.id);
-      if (!currentSelectedStillAvailable) {
-        setSelectedBet(filteredBets[0]);
-      }
+      setSelectedBet(prev => {
+        const currentSelectedStillAvailable = prev && filteredBets.some(b => b.id === prev.id);
+        if (!currentSelectedStillAvailable) {
+          return filteredBets[0];
+        }
+        return prev;
+      });
     } else {
       setSelectedBet(null);
     }
@@ -270,118 +309,151 @@ export function BetHistory() {
           </div>
         </div>
 
-        {/* Right Side - Bet Details (After-Bet View Style) */}
+        {/* Right Side - After-Bet View */}
         <div className="flex-1 overflow-y-auto terminal-scrollbar p-6">
-          {selectedBet ? (
-            <div className="max-w-3xl">
-              {/* After-Bet View Style Card */}
+          {selectedBet && selectedBetGroup.length > 0 ? (
+            <div className="max-w-5xl">
+              {/* Match Info Header */}
               <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6 mb-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    {selectedBet.accountName && (
-                      <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold shrink-0">
-                        {selectedBet.accountName.split(' ').map(n => n[0]).join('')}
-                      </div>
-                    )}
-                    <div>
-                      <div className="font-semibold text-foreground text-lg">{selectedBet.accountName || 'Unknown Account'}</div>
-                      {selectedBet.platform && (
-                        <div className="text-sm text-muted-foreground">{selectedBet.platform}</div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold font-mono text-primary mb-1">
-                      ${selectedBet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Stake</div>
-                  </div>
+                <div className="flex items-center gap-3 mb-2">
+                  {selectedBet.league && <LeagueLogo league={selectedBet.league} className="w-5 h-5" />}
+                  <h2 className="text-xl font-semibold text-foreground">{selectedBet.match}</h2>
                 </div>
-
-                <div className={cn("flex items-center gap-2 mb-4 pb-4 border-b border-[hsl(var(--border))]", 
-                  selectedBet.status === "won" && "text-[hsl(var(--signal-positive))]",
-                  selectedBet.status === "lost" && "text-[hsl(var(--signal-negative))]",
-                  selectedBet.status === "pending" && "text-[hsl(var(--signal-warning))]"
-                )}>
-                  <span className="text-2xl font-bold">{getStatusIcon(selectedBet.status)}</span>
-                  <span className="text-lg font-semibold capitalize">{selectedBet.status}</span>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      {selectedBet.league && <LeagueLogo league={selectedBet.league} className="w-5 h-5" />}
-                      <h3 className="text-lg font-semibold text-foreground">{selectedBet.match}</h3>
-                    </div>
-                    {(selectedBet.awayTeam || selectedBet.homeTeam) && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                        {selectedBet.league && (
-                          <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
-                            <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBet.league)}</span>
-                          </div>
-                        )}
-                        {selectedBet.awayTeam && <span>{selectedBet.awayTeam}</span>}
-                        {selectedBet.awayTeam && selectedBet.homeTeam && <span>@</span>}
-                        {selectedBet.homeTeam && <span>{selectedBet.homeTeam}</span>}
+                {(selectedBet.awayTeam || selectedBet.homeTeam) && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                    {selectedBet.league && (
+                      <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
+                        <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBet.league)}</span>
                       </div>
                     )}
-                    <div className="text-sm text-muted-foreground">{selectedBet.type}</div>
+                    {selectedBet.awayTeam && <span>{selectedBet.awayTeam}</span>}
+                    {selectedBet.awayTeam && selectedBet.homeTeam && <span>@</span>}
+                    {selectedBet.homeTeam && <span>{selectedBet.homeTeam}</span>}
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4 pt-2">
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">Odds</div>
-                      <div className="text-base font-semibold text-foreground">{selectedBet.odds}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">Bet ID</div>
-                      <div className="text-sm font-mono text-foreground">{selectedBet.id}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">Date & Time</div>
-                      <div className="text-sm text-foreground flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(selectedBet.timestamp).toLocaleString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">Time Ago</div>
-                      <div className="text-sm text-foreground">{formatTimeAgo(selectedBet.timestamp)}</div>
-                    </div>
-                    {selectedBet.payout && selectedBet.status === "won" && (
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">Payout</div>
-                        <div className="text-base font-semibold font-mono text-[hsl(var(--signal-positive))]">
-                          +${selectedBet.payout.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                      </div>
-                    )}
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">Potential Return</div>
-                      <div className="text-sm font-mono text-foreground">
-                        {selectedBet.status === "pending" ? "Calculating..." : selectedBet.payout ? `$${(selectedBet.stake + selectedBet.payout).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `$${selectedBet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                      </div>
-                    </div>
+                )}
+                <div className="text-sm text-muted-foreground mb-2">{selectedBet.type} • {selectedBet.odds}</div>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {new Date(selectedBet.timestamp).toLocaleString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </div>
+                  <span>{formatTimeAgo(selectedBet.timestamp)}</span>
                 </div>
               </div>
 
-              {selectedBet.errorScreenshot && (
-                <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6">
-                  <div className="text-sm font-semibold text-muted-foreground mb-3">Error Screenshot</div>
-                  <img
-                    src={selectedBet.errorScreenshot}
-                    alt="Error screenshot"
-                    className="max-w-full h-auto rounded border border-[hsl(var(--border))]"
-                  />
+              {/* After Bet View Header - Total Succeeded / Total Sent */}
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[hsl(var(--border))]">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium text-muted-foreground">Total Succeeded:</span>
+                  <span className="text-2xl font-bold font-mono text-primary">
+                    ${groupTotals.totalSucceeded.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / ${groupTotals.totalSent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
                 </div>
-              )}
+              </div>
+
+              {/* Account Bets Grid - Reusing After-Bet View Style */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {selectedBetGroup.map((bet) => {
+                  const initials = bet.accountName?.split(' ').map(n => n[0]).join('') || '?';
+                  const getBetStatusIcon = (status: Bet['status']) => {
+                    switch (status) {
+                      case "won":
+                        return '✓✓';
+                      case "lost":
+                        return '✕';
+                      case "pending":
+                        return '✓';
+                      default:
+                        return '';
+                    }
+                  };
+                  const getBetStatusText = (status: Bet['status']) => {
+                    switch (status) {
+                      case "won":
+                        return 'Bet won';
+                      case "lost":
+                        return 'Bet failed';
+                      case "pending":
+                        return 'Bet pending';
+                      default:
+                        return '';
+                    }
+                  };
+                  const getBetStatusColor = (status: Bet['status']) => {
+                    switch (status) {
+                      case "won":
+                        return 'text-[hsl(var(--signal-positive))]';
+                      case "lost":
+                        return 'text-[hsl(var(--signal-negative))]';
+                      case "pending":
+                        return 'text-[hsl(var(--signal-warning))]';
+                      default:
+                        return 'text-muted-foreground';
+                    }
+                  };
+                  
+                  return (
+                    <div
+                      key={bet.id}
+                      className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-4 relative"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold shrink-0">
+                            {initials}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-foreground">{bet.accountName || 'Unknown Account'}</div>
+                            {bet.platform && (
+                              <div className="text-xs text-muted-foreground">{bet.platform}</div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-lg font-bold font-mono text-primary">
+                          ${bet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                      </div>
+
+                      <div className={cn("flex items-center gap-2", getBetStatusColor(bet.status))}>
+                        <span className="text-xl font-bold">{getBetStatusIcon(bet.status)}</span>
+                        <span className="text-sm font-medium">{getBetStatusText(bet.status)}</span>
+                      </div>
+
+                      {bet.status === "lost" && bet.errorScreenshot && (
+                        <div className="mt-2 space-y-2">
+                          <div className="text-xs text-[hsl(var(--signal-negative))] bg-[hsl(var(--signal-negative))]/10 px-2 py-1 rounded">
+                            Bet failed
+                          </div>
+                          <div className="mt-2">
+                            <div className="text-xs text-muted-foreground mb-1">Error Screenshot:</div>
+                            <img
+                              src={bet.errorScreenshot}
+                              alt="Error screenshot"
+                              className="max-w-full h-auto rounded border border-[hsl(var(--border))]"
+                              style={{ maxHeight: '200px' }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {bet.status === "won" && bet.payout && (
+                        <div className="mt-2">
+                          <div className="text-xs text-muted-foreground mb-1">Payout:</div>
+                          <div className="text-sm font-semibold font-mono text-[hsl(var(--signal-positive))]">
+                            +${bet.payout.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">
