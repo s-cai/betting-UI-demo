@@ -92,8 +92,8 @@ const Index = () => {
             </div>
           )}
 
-          {/* Bet History Bar (Right) - Always visible on all pages */}
-          <BetHistoryBar />
+          {/* Bet History Bar (Right) - Visible on all pages except history */}
+          {activeSection !== "history" && <BetHistoryBar />}
         </div>
 
         {/* Account Overview Bar (Bottom) - Always visible */}
