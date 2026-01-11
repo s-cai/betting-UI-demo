@@ -520,20 +520,22 @@ export function BetHistory() {
                         <span className="text-sm font-medium">{getBetStatusText(bet.status)}</span>
                       </div>
 
-                      {bet.status === "lost" && bet.errorScreenshot && (
+                      {bet.status === "lost" && bet.error && (
                         <div className="mt-2 space-y-2">
                           <div className="text-xs text-[hsl(var(--signal-negative))] bg-[hsl(var(--signal-negative))]/10 px-2 py-1 rounded">
-                            Bet failed
+                            {bet.error}
                           </div>
-                          <div className="mt-2">
-                            <div className="text-xs text-muted-foreground mb-1">Error Screenshot:</div>
-                            <img
-                              src={bet.errorScreenshot}
-                              alt="Error screenshot"
-                              className="max-w-full h-auto rounded border border-[hsl(var(--border))]"
-                              style={{ maxHeight: '200px' }}
-                            />
-                          </div>
+                          {bet.errorScreenshot && (
+                            <div className="mt-2">
+                              <div className="text-xs text-muted-foreground mb-1">Phone Screenshot:</div>
+                              <img
+                                src={bet.errorScreenshot}
+                                alt="Error screenshot"
+                                className="max-w-full h-auto rounded border border-[hsl(var(--border))]"
+                                style={{ maxHeight: '300px' }}
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
 

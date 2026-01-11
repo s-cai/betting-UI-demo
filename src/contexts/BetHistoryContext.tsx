@@ -13,6 +13,7 @@ export interface Bet {
   payout?: number;
   platform?: string;
   accountName?: string;
+  error?: string; // Error message for failed bets
   errorScreenshot?: string; // For issue #4
   league?: League; // For issue #8
   awayTeam?: string; // For issue #8

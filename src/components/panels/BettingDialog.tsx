@@ -480,7 +480,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
                 const errorMessage = getRandomErrorMessage();
                 const errorScreenshot = generateErrorScreenshot(errorMessage, bet.amount, bet.account.name);
                 
-                // Add failed bet to history with screenshot
+                // Add failed bet to history with screenshot and error message
                 addBet({
                   match: formatMatchName(),
                   type: formatBetType(),
@@ -489,6 +489,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
                   status: "lost", // Failed bets are marked as lost
                   platform: platformNames[platformId] || platform,
                   accountName: bet.account.name,
+                  error: errorMessage,
                   errorScreenshot: errorScreenshot,
                   league: match?.league,
                   awayTeam: match?.awayTeam,
