@@ -25,16 +25,19 @@ interface Platform {
   logo: string;
 }
 
+// Use base URL for GitHub Pages compatibility
+const getLogoPath = (logoName: string) => `${import.meta.env.BASE_URL}resources/${logoName}`;
+
 // eslint-disable-next-line react-refresh/only-export-components
 export const platforms: Platform[] = [
-  { id: 'fanduel', name: 'FanDuel', logo: '/resources/fanduel-logo.svg' },
-  { id: 'betmgm', name: 'BetMGM', logo: '/resources/betmgm-logo.svg' },
-  { id: 'draftkings', name: 'DraftKings', logo: '/resources/draftkings-logo.svg' },
-  { id: 'caesars', name: 'Caesars', logo: '/resources/caesars-logo.svg' },
-  { id: 'pointsbet', name: 'PointsBet', logo: '/resources/pointsbet-logo.svg' },
-  { id: 'bet365', name: 'Bet365', logo: '/resources/bet365-logo.svg' },
-  { id: 'unibet', name: 'Unibet', logo: '/resources/unibet-logo.svg' },
-  { id: 'wynnbet', name: 'WynnBET', logo: '/resources/wynnbet-logo.svg' }
+  { id: 'fanduel', name: 'FanDuel', logo: getLogoPath('fanduel-logo.svg') },
+  { id: 'betmgm', name: 'BetMGM', logo: getLogoPath('betmgm-logo.svg') },
+  { id: 'draftkings', name: 'DraftKings', logo: getLogoPath('draftkings-logo.svg') },
+  { id: 'caesars', name: 'Caesars', logo: getLogoPath('caesars-logo.svg') },
+  { id: 'pointsbet', name: 'PointsBet', logo: getLogoPath('pointsbet-logo.svg') },
+  { id: 'bet365', name: 'Bet365', logo: getLogoPath('bet365-logo.svg') },
+  { id: 'unibet', name: 'Unibet', logo: getLogoPath('unibet-logo.svg') },
+  { id: 'wynnbet', name: 'WynnBET', logo: getLogoPath('wynnbet-logo.svg') }
 ];
 
 // eslint-disable-next-line react-refresh/only-export-components

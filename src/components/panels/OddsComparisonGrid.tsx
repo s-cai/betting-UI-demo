@@ -19,15 +19,17 @@ interface BookOdds {
 }
 
 // Map book names to logo paths
+// Use base URL for GitHub Pages compatibility
+const getLogoPath = (logoName: string) => `${import.meta.env.BASE_URL}resources/${logoName}`;
 const bookLogoMap: Record<string, string> = {
-  "DraftKings": "/resources/draftkings-logo.svg",
-  "FanDuel": "/resources/fanduel-logo.svg",
-  "BetMGM": "/resources/betmgm-logo.svg",
-  "Caesars": "/resources/caesars-logo.svg",
-  "PointsBet": "/resources/pointsbet-logo.svg",
-  "Bet365": "/resources/bet365-logo.svg",
-  "Unibet": "/resources/unibet-logo.svg",
-  "WynnBET": "/resources/wynnbet-logo.svg",
+  "DraftKings": getLogoPath("draftkings-logo.svg"),
+  "FanDuel": getLogoPath("fanduel-logo.svg"),
+  "BetMGM": getLogoPath("betmgm-logo.svg"),
+  "Caesars": getLogoPath("caesars-logo.svg"),
+  "PointsBet": getLogoPath("pointsbet-logo.svg"),
+  "Bet365": getLogoPath("bet365-logo.svg"),
+  "Unibet": getLogoPath("unibet-logo.svg"),
+  "WynnBET": getLogoPath("wynnbet-logo.svg"),
 };
 
 const mockBookOdds: BookOdds[] = [

@@ -187,9 +187,7 @@ export function BetHistoryBar() {
               recentBatchTrades.map((trade) => (
                 <div
                   key={trade.key}
-                  className={cn(
-                    "p-2 border-b border-border/30 cursor-pointer hover:bg-accent/50 transition-colors"
-                  )}
+                  className="p-2 border-b border-border/30"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[10px] font-mono text-muted-foreground">{formatTimeAgo(trade.timestamp)}</span>
