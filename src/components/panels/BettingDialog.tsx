@@ -20,6 +20,7 @@ interface SentBet {
   amount: number;
   status: BetStatus;
   error: string | null;
+  errorScreenshot?: string;
 }
 
 interface Account {
@@ -328,6 +329,61 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     return errors[Math.floor(Math.random() * errors.length)];
   };
 
+  // Generate a mock phone screenshot URL for failed bets
+  // In a real app, this would be an actual screenshot from the phone
+  const generateErrorScreenshot = (error: string, betAmount: number, accountName: string): string => {
+    // Create a data URL for a mock phone screenshot
+    // This is a placeholder - in production, this would be an actual screenshot
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 800;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      // Background (phone screen)
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(0, 0, 400, 800);
+      
+      // Status bar
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, 400, 30);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '12px Arial';
+      ctx.fillText('9:41', 20, 20);
+      ctx.fillText('📶 📶 🔋', 350, 20);
+      
+      // App header
+      ctx.fillStyle = '#2a2a2a';
+      ctx.fillRect(0, 30, 400, 50);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px Arial';
+      ctx.fillText(platformNames[platformId] || platform, 20, 55);
+      
+      // Error message area
+      ctx.fillStyle = '#ff4444';
+      ctx.fillRect(20, 100, 360, 200);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('ERROR', 180, 140);
+      ctx.font = '14px Arial';
+      const lines = error.match(/.{1,30}/g) || [error];
+      lines.forEach((line, i) => {
+        ctx.fillText(line, 30, 180 + i * 25);
+      });
+      
+      // Bet details
+      ctx.fillStyle = '#333333';
+      ctx.fillRect(20, 320, 360, 150);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '12px Arial';
+      ctx.fillText(`Match: ${formatMatchName()}`, 30, 350);
+      ctx.fillText(`Type: ${formatBetType()}`, 30, 375);
+      ctx.fillText(`Odds: ${odds}`, 30, 400);
+      ctx.fillText(`Amount: $${betAmount.toFixed(2)}`, 30, 425);
+      ctx.fillText(`Account: ${accountName}`, 30, 450);
+    }
+    return canvas.toDataURL('image/png');
+  };
+
   const simulateBetStatusUpdates = (bets: SentBet[]) => {
     // Clear any existing timeouts
     timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
@@ -371,7 +427,22 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
                 
                 return updatedBet;
               } else {
-                return { ...b, status: STATUS.FAILED, error: getRandomErrorMessage() };
+                const errorMessage = getRandomErrorMessage();
+                const errorScreenshot = generateErrorScreenshot(errorMessage, bet.amount, bet.account.name);
+                
+                // Add failed bet to history with screenshot
+                addBet({
+                  match: formatMatchName(),
+                  type: formatBetType(),
+                  odds: odds,
+                  stake: bet.amount,
+                  status: "lost", // Failed bets are marked as lost
+                  platform: platformNames[platformId] || platform,
+                  accountName: bet.account.name,
+                  errorScreenshot: errorScreenshot,
+                });
+                
+                return { ...b, status: STATUS.FAILED, error: errorMessage, errorScreenshot: errorScreenshot };
               }
             }
             return b;
@@ -732,8 +803,21 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
                       </div>
 
                       {bet.status === STATUS.FAILED && bet.error && (
-                        <div className="mt-2 text-xs text-[hsl(var(--signal-negative))] bg-[hsl(var(--signal-negative))]/10 px-2 py-1 rounded">
-                          {bet.error}
+                        <div className="mt-2 space-y-2">
+                          <div className="text-xs text-[hsl(var(--signal-negative))] bg-[hsl(var(--signal-negative))]/10 px-2 py-1 rounded">
+                            {bet.error}
+                          </div>
+                          {bet.errorScreenshot && (
+                            <div className="mt-2">
+                              <div className="text-xs text-muted-foreground mb-1">Phone Screenshot:</div>
+                              <img
+                                src={bet.errorScreenshot}
+                                alt="Error screenshot"
+                                className="max-w-full h-auto rounded border border-[hsl(var(--border))]"
+                                style={{ maxHeight: '300px' }}
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
