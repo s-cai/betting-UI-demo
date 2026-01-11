@@ -142,6 +142,7 @@ function groupAccountsByType(accounts: Account[]) {
 export function BettingDialog({ isOpen, onClose, match, platform, market, side, odds }: BettingDialogProps) {
   const { addBet } = useBetHistory();
   const [selectedAccounts, setSelectedAccounts] = useState<Map<string, number>>(new Map());
+  const [betAmountInputs, setBetAmountInputs] = useState<Map<string, string>>(new Map()); // Store raw input strings
   const [distributionTotal, setDistributionTotal] = useState<string>('');
   const [sentBets, setSentBets] = useState<SentBet[]>([]);
   const [viewMode, setViewMode] = useState<'before' | 'after'>('before');
@@ -217,8 +218,22 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
         if (!newMap.has(accountId)) {
           newMap.set(accountId, 0);
         }
+        // Initialize input string if not exists
+        setBetAmountInputs(prevInputs => {
+          const newInputs = new Map(prevInputs);
+          if (!newInputs.has(accountId)) {
+            newInputs.set(accountId, '');
+          }
+          return newInputs;
+        });
       } else {
         newMap.delete(accountId);
+        // Clear input string when unchecked
+        setBetAmountInputs(prevInputs => {
+          const newInputs = new Map(prevInputs);
+          newInputs.delete(accountId);
+          return newInputs;
+        });
       }
       return newMap;
     });
@@ -228,6 +243,14 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     const account = platformAccounts.find(acc => acc.id === accountId);
     if (!account) return;
 
+    // Store the raw input string for free-form typing
+    setBetAmountInputs(prev => {
+      const newMap = new Map(prev);
+      newMap.set(accountId, value);
+      return newMap;
+    });
+
+    // Parse and update the actual bet amount
     const maxBet = calculateMaxBetSize(account);
     const betAmount = parseFloat(value) || 0;
     const clampedAmount = Math.min(betAmount, maxBet);
@@ -237,10 +260,23 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
       if (clampedAmount > 0) {
         newMap.set(accountId, clampedAmount);
       } else {
-        newMap.delete(accountId);
+        newMap.set(accountId, 0); // Keep 0 instead of deleting to maintain selection
       }
       return newMap;
     });
+  };
+
+  const handleBetAmountBlur = (accountId: string) => {
+    // Format the input on blur
+    const inputValue = betAmountInputs.get(accountId) || '';
+    const betAmount = parseFloat(inputValue) || 0;
+    if (betAmount > 0) {
+      setBetAmountInputs(prev => {
+        const newMap = new Map(prev);
+        newMap.set(accountId, betAmount.toFixed(2));
+        return newMap;
+      });
+    }
   };
 
   const handleTagSelection = (tag: string) => {
@@ -314,6 +350,14 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
 
     // Apply distribution
     setSelectedAccounts(distribution);
+    // Update input strings to match distributed amounts
+    setBetAmountInputs(prev => {
+      const newMap = new Map(prev);
+      distribution.forEach((amount, accountId) => {
+        newMap.set(accountId, amount.toFixed(2));
+      });
+      return newMap;
+    });
     setDistributionTotal('');
   };
 
@@ -498,6 +542,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     
     // Reset state when closing
     setSelectedAccounts(new Map());
+    setBetAmountInputs(new Map());
     setDistributionTotal('');
     setSentBets([]);
     setViewMode('before');
@@ -572,7 +617,6 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   const renderAccountCard = (account: Account) => {
     const maxBet = calculateMaxBetSize(account);
     const isSelected = selectedAccounts.has(account.id);
-    const betAmount = selectedAccounts.get(account.id) || 0;
     const initials = account.name.split(' ').map(n => n[0]).join('');
 
     return (
@@ -618,8 +662,9 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
             step="0.01"
             min="0"
             max={maxBet.toFixed(2)}
-            value={betAmount > 0 ? betAmount.toFixed(2) : ''}
+            value={betAmountInputs.get(account.id) || ''}
             onChange={(e) => handleBetAmountChange(account.id, e.target.value)}
+            onBlur={() => handleBetAmountBlur(account.id)}
             disabled={!isSelected}
             placeholder={`Max: $${maxBet.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
             className="flex-1"
