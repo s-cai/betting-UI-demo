@@ -398,15 +398,12 @@ export function BetHistory() {
                     <h2 className="text-xl font-semibold text-foreground">{selectedBatchTrade.match}</h2>
                   </div>
                   {selectedBatchTrade.platform && platformLogoMap[selectedBatchTrade.platform] && (
-                    <div className="flex items-center gap-2">
-                      <img 
-                        src={platformLogoMap[selectedBatchTrade.platform]} 
-                        alt={`${selectedBatchTrade.platform} Logo`} 
-                        className="h-6 w-auto object-contain"
-                        loading="lazy"
-                      />
-                      <span className="text-lg font-semibold text-primary">{selectedBatchTrade.platform}</span>
-                    </div>
+                    <img 
+                      src={platformLogoMap[selectedBatchTrade.platform]} 
+                      alt={`${selectedBatchTrade.platform} Logo`} 
+                      className="h-10 w-auto object-contain"
+                      loading="lazy"
+                    />
                   )}
                 </div>
                 {(selectedBatchTrade.awayTeam || selectedBatchTrade.homeTeam) && (
