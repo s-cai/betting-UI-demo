@@ -28,12 +28,20 @@ interface BetHistoryContextType {
 const BetHistoryContext = createContext<BetHistoryContextType | undefined>(undefined);
 
 // Load bets from localStorage on init
+const BET_HISTORY_VERSION = '2.0'; // Increment to force reload demo data
 const loadBetsFromStorage = (): Bet[] => {
   try {
+    // Check version - if it doesn't match, clear old data and use demo data
+    const savedVersion = localStorage.getItem('betting-ui-bet-history-version');
     const saved = localStorage.getItem('betting-ui-bet-history');
-    if (saved) {
+    
+    if (savedVersion === BET_HISTORY_VERSION && saved) {
       return JSON.parse(saved);
     }
+    
+    // Version mismatch or no saved data - clear and use demo data
+    localStorage.removeItem('betting-ui-bet-history');
+    localStorage.setItem('betting-ui-bet-history-version', BET_HISTORY_VERSION);
   } catch {
     // Ignore errors
   }
@@ -84,6 +92,7 @@ export function BetHistoryProvider({ children }: { children: ReactNode }) {
     setBets(newBets);
     try {
       localStorage.setItem('betting-ui-bet-history', JSON.stringify(newBets));
+      localStorage.setItem('betting-ui-bet-history-version', BET_HISTORY_VERSION);
     } catch {
       // Ignore errors
     }
