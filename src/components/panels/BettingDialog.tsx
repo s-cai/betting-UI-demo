@@ -243,27 +243,30 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     const account = platformAccounts.find(acc => acc.id === accountId);
     if (!account) return;
 
-    // Store the raw input string for free-form typing
+    // Store the raw input string for free-form typing - allow empty string and partial numbers
     setBetAmountInputs(prev => {
       const newMap = new Map(prev);
       newMap.set(accountId, value);
       return newMap;
     });
 
-    // Parse and update the actual bet amount
+    // Parse and update the actual bet amount only if we have a valid number
     const maxBet = calculateMaxBetSize(account);
-    const betAmount = parseFloat(value) || 0;
-    const clampedAmount = Math.min(betAmount, maxBet);
-
-    setSelectedAccounts(prev => {
-      const newMap = new Map(prev);
-      if (clampedAmount > 0) {
-        newMap.set(accountId, clampedAmount);
-      } else {
-        newMap.set(accountId, 0); // Keep 0 instead of deleting to maintain selection
-      }
-      return newMap;
-    });
+    const betAmount = value === '' ? 0 : parseFloat(value);
+    
+    // Only update if we have a valid number (not NaN)
+    if (!isNaN(betAmount)) {
+      const clampedAmount = Math.min(Math.max(0, betAmount), maxBet);
+      setSelectedAccounts(prev => {
+        const newMap = new Map(prev);
+        if (clampedAmount > 0 || value === '') {
+          newMap.set(accountId, clampedAmount);
+        } else {
+          newMap.set(accountId, 0); // Keep 0 instead of deleting to maintain selection
+        }
+        return newMap;
+      });
+    }
   };
 
   const handleBetAmountBlur = (accountId: string) => {
@@ -663,17 +666,21 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
             className="w-4 h-4"
           />
           <Input
-            type="number"
+            type="text"
+            inputMode="decimal"
             id={`bet-input-${account.id}`}
-            step="0.01"
-            min="0"
-            max={maxBet.toFixed(2)}
             value={betAmountInputs.get(account.id) || ''}
-            onChange={(e) => handleBetAmountChange(account.id, e.target.value)}
+            onChange={(e) => {
+              // Only allow numbers, decimal point, and empty string
+              const value = e.target.value;
+              if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                handleBetAmountChange(account.id, value);
+              }
+            }}
             onBlur={() => handleBetAmountBlur(account.id)}
             disabled={!isSelected}
             placeholder={`Max: $${maxBet.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-            className="flex-1"
+            className="flex-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
           />
         </div>
         <div className="text-xs text-muted-foreground mt-1 ml-6">
