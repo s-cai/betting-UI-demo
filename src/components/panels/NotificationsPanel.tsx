@@ -1,6 +1,8 @@
 import { Bell, AlertTriangle, TrendingUp, Clock, Settings, Info } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import type { Match } from "./SportsPanel";
+import { allMatches } from "./SportsPanel";
 
 interface Notification {
   id: string;
@@ -9,57 +11,89 @@ interface Notification {
   message: string;
   time: string;
   match?: string;
+  matchId?: string; // Store match ID for direct navigation
 }
 
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "opportunity",
-    title: "Arbitrage Detected",
-    message: "LAL @ BOS spread arbitrage +2.1% ROI",
-    time: "2s ago",
-    match: "LAL @ BOS",
-  },
-  {
-    id: "2",
-    type: "warning",
-    title: "Game Paused",
-    message: "MIA @ NYK - Timeout called",
-    time: "15s ago",
-    match: "MIA @ NYK",
-  },
-  {
-    id: "3",
-    type: "alert",
-    title: "Line Movement",
-    message: "KC @ BUF spread moved from -3 to -4.5",
-    time: "1m ago",
-    match: "KC @ BUF",
-  },
-  {
-    id: "4",
-    type: "info",
-    title: "Half-time",
-    message: "GSW @ PHX entering half-time break",
-    time: "2m ago",
-    match: "GSW @ PHX",
-  },
-  {
-    id: "5",
-    type: "opportunity",
-    title: "Best Odds Available",
-    message: "DAL ML +145 on DraftKings (best market)",
-    time: "3m ago",
-    match: "DAL @ DEN",
-  },
-  {
-    id: "6",
+interface NotificationsPanelProps {
+  onMatchSelect?: (match: Match) => void;
+  onNavigateToOdds?: () => void;
+}
+
+// Helper function to create notifications based on available matches
+const createNotificationsFromMatches = (matches: Match[]): Notification[] => {
+  const notifications: Notification[] = [];
+  
+  // Get a few matches to create notifications for
+  const sampleMatches = matches.slice(0, 5);
+  
+  sampleMatches.forEach((match, index) => {
+    const matchString = `${match.awayTeam} @ ${match.homeTeam}`;
+    const timeAgo = index === 0 ? "2s ago" : index === 1 ? "15s ago" : index === 2 ? "1m ago" : index === 3 ? "2m ago" : "3m ago";
+    
+    if (index === 0) {
+      notifications.push({
+        id: `notif-${match.id}-1`,
+        type: "opportunity",
+        title: "Arbitrage Detected",
+        message: `${matchString} spread arbitrage +2.1% ROI`,
+        time: timeAgo,
+        match: matchString,
+        matchId: match.id,
+      });
+    } else if (index === 1) {
+      notifications.push({
+        id: `notif-${match.id}-2`,
+        type: "warning",
+        title: "Game Paused",
+        message: `${matchString} - Timeout called`,
+        time: timeAgo,
+        match: matchString,
+        matchId: match.id,
+      });
+    } else if (index === 2) {
+      notifications.push({
+        id: `notif-${match.id}-3`,
+        type: "alert",
+        title: "Line Movement",
+        message: `${matchString} spread moved from -3 to -4.5`,
+        time: timeAgo,
+        match: matchString,
+        matchId: match.id,
+      });
+    } else if (index === 3) {
+      notifications.push({
+        id: `notif-${match.id}-4`,
+        type: "info",
+        title: "Half-time",
+        message: `${matchString} entering half-time break`,
+        time: timeAgo,
+        match: matchString,
+        matchId: match.id,
+      });
+    } else if (index === 4) {
+      notifications.push({
+        id: `notif-${match.id}-5`,
+        type: "opportunity",
+        title: "Best Odds Available",
+        message: `${match.awayTeam} ML +145 on DraftKings (best market)`,
+        time: timeAgo,
+        match: matchString,
+        matchId: match.id,
+      });
+    }
+  });
+  
+  // Add one account warning (no match)
+  notifications.push({
+    id: "notif-account-1",
     type: "warning",
     title: "Account Limit Warning",
     message: "BetMGM account approaching daily limit",
     time: "5m ago",
-  },
-];
+  });
+  
+  return notifications;
+};
 
 const typeStyles = {
   alert: {
@@ -88,12 +122,29 @@ const typeStyles = {
   },
 };
 
-export function NotificationsPanel() {
+export function NotificationsPanel({ onMatchSelect, onNavigateToOdds }: NotificationsPanelProps) {
   const [filter, setFilter] = useState<"all" | "opportunity" | "alert" | "warning">("all");
+  
+  // Create notifications from available matches
+  const mockNotifications = createNotificationsFromMatches(allMatches);
 
   const filteredNotifications = filter === "all" 
     ? mockNotifications 
     : mockNotifications.filter(n => n.type === filter);
+
+  const handleNotificationClick = (notification: Notification) => {
+    if (notification.matchId && onMatchSelect && allMatches) {
+      // Find the match by ID
+      const match = allMatches.find((m: Match) => m.id === notification.matchId);
+      if (match) {
+        onMatchSelect(match);
+        // Navigate to odds view if not already there
+        if (onNavigateToOdds) {
+          onNavigateToOdds();
+        }
+      }
+    }
+  };
 
   return (
     <div className="h-[280px] flex flex-col bg-panel border-b border-panel-border shrink-0">
@@ -144,9 +195,11 @@ export function NotificationsPanel() {
             return (
               <div
                 key={notification.id}
+                onClick={() => handleNotificationClick(notification)}
                 className={cn(
                   "p-2.5 rounded border cursor-pointer transition-all duration-150",
-                  "hover:bg-accent/50",
+                  "hover:bg-accent/50 hover:scale-[1.02]",
+                  notification.matchId && "hover:ring-2 hover:ring-primary/50",
                   style.bg,
                   style.border
                 )}

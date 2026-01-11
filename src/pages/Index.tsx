@@ -75,7 +75,10 @@ const Index = () => {
               {/* Center Area - Notifications + Odds Grid */}
               <div className="flex-1 flex flex-col min-w-0">
                 {/* Notifications/Alerts Panel (replaces chart) */}
-                <NotificationsPanel />
+                <NotificationsPanel 
+                  onMatchSelect={setSelectedMatch}
+                  onNavigateToOdds={() => setActiveSection("odds")}
+                />
 
                 {/* Odds Comparison Grid */}
                 <OddsComparisonGrid match={selectedMatch} />
