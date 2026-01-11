@@ -203,19 +203,6 @@ export function BetHistory() {
     return groups;
   }, [filteredBatchTrades]);
 
-  // Stats based on batch trades (conceptual big trades), not individual account bets
-  const stats = useMemo(() => {
-    return {
-      total: batchTrades.length,
-      pending: batchTrades.filter(t => t.status === "pending").length,
-      won: batchTrades.filter(t => t.status === "won").length,
-      lost: batchTrades.filter(t => t.status === "lost").length,
-      totalStake: batchTrades.reduce((sum, t) => sum + t.totalStake, 0),
-      totalPayout: batchTrades.reduce((sum, t) => 
-        sum + t.bets.filter(b => b.status === "won" && b.payout).reduce((s, b) => s + (b.payout || 0), 0), 0
-      ),
-    };
-  }, [batchTrades]);
 
   const getStatusIcon = (status: Bet['status']) => {
     switch (status) {
@@ -235,41 +222,6 @@ export function BetHistory() {
         <div className="flex items-center gap-3 mb-4">
           <History className="w-5 h-5 text-foreground" />
           <h1 className="text-xl font-semibold text-foreground">Bet History</h1>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-3">
-            <div className="text-xs text-muted-foreground mb-1">Total Bets</div>
-            <div className="text-lg font-bold text-foreground">{stats.total}</div>
-          </div>
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-3">
-            <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              Pending
-            </div>
-            <div className="text-lg font-bold text-[hsl(var(--signal-warning))]">{stats.pending}</div>
-          </div>
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-3">
-            <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-              <CheckCircle className="w-3 h-3" />
-              Won
-            </div>
-            <div className="text-lg font-bold text-[hsl(var(--signal-positive))]">{stats.won}</div>
-          </div>
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-3">
-            <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-              <XCircle className="w-3 h-3" />
-              Lost
-            </div>
-            <div className="text-lg font-bold text-[hsl(var(--signal-negative))]">{stats.lost}</div>
-          </div>
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-3">
-            <div className="text-xs text-muted-foreground mb-1">Total Payout</div>
-            <div className="text-lg font-bold font-mono text-[hsl(var(--signal-positive))]">
-              ${stats.totalPayout.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </div>
-          </div>
         </div>
 
         {/* Filters */}
@@ -371,10 +323,14 @@ export function BetHistory() {
                             <span className="text-muted-foreground">{formatTimeAgo(trade.timestamp)}</span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="font-mono text-foreground">
-                              ${trade.totalStake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </span>
                             <span className="text-xs text-muted-foreground">{trade.accountCount} accounts</span>
+                            <span className={cn(
+                              "font-mono text-xs",
+                              trade.status === "won" && "text-[hsl(var(--signal-positive))]",
+                              trade.status === "lost" && "text-[hsl(var(--signal-negative))]"
+                            )}>
+                              ${trade.totalSucceeded.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / ${trade.totalStake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
                           </div>
                         </div>
                       ))}

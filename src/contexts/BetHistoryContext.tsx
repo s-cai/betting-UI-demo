@@ -29,7 +29,7 @@ interface BetHistoryContextType {
 const BetHistoryContext = createContext<BetHistoryContextType | undefined>(undefined);
 
 // Load bets from localStorage on init
-const BET_HISTORY_VERSION = '2.1'; // Increment to force reload demo data (platform at top level)
+const BET_HISTORY_VERSION = '2.2'; // Increment to force reload demo data (error messages for failed bets)
 const loadBetsFromStorage = (): Bet[] => {
   try {
     // Check version - if it doesn't match, clear old data and use demo data
@@ -80,8 +80,8 @@ const loadBetsFromStorage = (): Bet[] => {
     // SF @ DET - ML DET +115 - FanDuel (batch with 4 accounts, mix of won/lost)
     { id: "4", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 600, status: "won", timestamp: baseTime - 3600000, payout: 690, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
     { id: "4a", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 550, status: "won", timestamp: baseTime - 3599500, payout: 633, platform: "FanDuel", accountName: "Christopher Brown", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
-    { id: "4b", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 400, status: "lost", timestamp: baseTime - 3599000, platform: "FanDuel", accountName: "Emily Davis", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
-    { id: "4c", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 350, status: "lost", timestamp: baseTime - 3598500, platform: "FanDuel", accountName: "Lisa Anderson", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
+    { id: "4b", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 400, status: "lost", timestamp: baseTime - 3599000, platform: "FanDuel", accountName: "Emily Davis", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions", error: "Insufficient funds", errorScreenshot: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iIzFhMWExYSIvPjx0ZXh0IHg9IjE1MCIgeT0iMjUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5JbnN1ZmZpY2llbnQgZnVuZHM8L3RleHQ+PC9zdmc+" },
+    { id: "4c", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 350, status: "lost", timestamp: baseTime - 3598500, platform: "FanDuel", accountName: "Lisa Anderson", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions", error: "Bet limit exceeded", errorScreenshot: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iIzFhMWExYSIvPjx0ZXh0IHg9IjE1MCIgeT0iMjUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5CZXQgbGltaXQgZXhjZWVkZWQ8L3RleHQ+PC9zdmc+" },
     
     // SF @ DET - ML DET +115 - DraftKings (batch with 3 accounts, all won)
     { id: "4d", match: "SF @ DET", type: "ML DET", odds: "+115", stake: 700, status: "won", timestamp: baseTime - 3598000, payout: 805, platform: "DraftKings", accountName: "Jennifer Taylor", league: "NFL" as League, awayTeam: "SF 49ers", homeTeam: "Detroit Lions" },
