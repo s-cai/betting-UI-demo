@@ -157,7 +157,17 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
                       <img 
                         src={odds.logoPath} 
                         alt={`${odds.book} Logo`} 
-                        className="h-5 w-auto object-contain max-w-[40px]"
+                        className="h-6 w-auto object-contain max-w-[50px]"
+                        style={{ imageRendering: 'auto' }}
+                        onError={(e) => {
+                          // Fallback to text if image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallback = document.createElement('span');
+                          fallback.className = 'w-5 h-5 bg-muted rounded text-[10px] font-bold flex items-center justify-center';
+                          fallback.textContent = odds.logo;
+                          target.parentElement?.appendChild(fallback);
+                        }}
                       />
                     ) : (
                       <span className="w-5 h-5 bg-muted rounded text-[10px] font-bold flex items-center justify-center">
