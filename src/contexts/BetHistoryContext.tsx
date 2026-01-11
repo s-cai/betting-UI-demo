@@ -109,28 +109,37 @@ const loadBetsFromStorage = (): Bet[] => {
 export function BetHistoryProvider({ children }: { children: ReactNode }) {
   const [bets, setBets] = useState<Bet[]>(loadBetsFromStorage);
 
-  // Save to localStorage whenever bets change
-  const saveBets = (newBets: Bet[]) => {
-    setBets(newBets);
-    try {
-      localStorage.setItem('betting-ui-bet-history', JSON.stringify(newBets));
-      localStorage.setItem('betting-ui-bet-history-version', BET_HISTORY_VERSION);
-    } catch {
-      // Ignore errors
-    }
-  };
-
   const addBet = (betData: Omit<Bet, 'id' | 'timestamp'>) => {
     const newBet: Bet = {
       ...betData,
       id: `bet-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
     };
-    saveBets([newBet, ...bets]);
+    // Use functional update to ensure we get the latest bets state
+    setBets(prevBets => {
+      const updatedBets = [newBet, ...prevBets];
+      try {
+        localStorage.setItem('betting-ui-bet-history', JSON.stringify(updatedBets));
+        localStorage.setItem('betting-ui-bet-history-version', BET_HISTORY_VERSION);
+      } catch {
+        // Ignore errors
+      }
+      return updatedBets;
+    });
   };
 
   const updateBet = (betId: string, updates: Partial<Bet>) => {
-    saveBets(bets.map(bet => bet.id === betId ? { ...bet, ...updates } : bet));
+    // Use functional update to ensure we get the latest bets state
+    setBets(prevBets => {
+      const updatedBets = prevBets.map(bet => bet.id === betId ? { ...bet, ...updates } : bet);
+      try {
+        localStorage.setItem('betting-ui-bet-history', JSON.stringify(updatedBets));
+        localStorage.setItem('betting-ui-bet-history-version', BET_HISTORY_VERSION);
+      } catch {
+        // Ignore errors
+      }
+      return updatedBets;
+    });
   };
 
   return (
