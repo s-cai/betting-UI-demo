@@ -149,6 +149,12 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   const [viewMode, setViewMode] = useState<'before' | 'after'>('before');
   const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
   const recentBetIdsRef = useRef<Map<string, string>>(new Map()); // Track accountId -> betId for recently added bets
+  const betsRef = useRef(bets); // Track latest bets to avoid stale closures
+
+  // Update bets ref when bets change
+  useEffect(() => {
+    betsRef.current = bets;
+  }, [bets]);
 
   const platformId = getPlatformId(platform);
   const platformAccounts = useMemo(() => accountData[platformId] || [], [platformId]);
@@ -549,9 +555,11 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     
     // Find bet IDs after a short delay to allow state to update
     setTimeout(() => {
+      // Use ref to get latest bets (avoid stale closure)
+      const latestBets = betsRef.current;
       const updatedSentBets = newSentBets.map(sentBet => {
         // Find the most recent pending bet matching this account and criteria
-        const matchingBets = bets.filter(b => 
+        const matchingBets = latestBets.filter(b => 
           b.accountName === sentBet.account.name &&
           b.match === matchName &&
           b.type === betType &&
@@ -619,6 +627,22 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     setSentBets([]);
     setViewMode('before');
   };
+
+  // Reset state when dialog opens or key props change
+  useEffect(() => {
+    if (isOpen) {
+      // Reset state when dialog opens
+      setSelectedAccounts(new Map());
+      setBetAmountInputs(new Map());
+      setDistributionTotal('');
+      setSentBets([]);
+      setViewMode('before');
+      recentBetIdsRef.current.clear();
+      // Clear any existing timeouts
+      timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
+      timeoutRefs.current = [];
+    }
+  }, [isOpen, match?.id, platform, market, side, odds]);
 
   // Cleanup timeouts on unmount
   useEffect(() => {
