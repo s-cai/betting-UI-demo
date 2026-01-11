@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
+export type League = "NFL" | "NCAAF" | "NBA" | "NCAAB";
+
 export interface Bet {
   id: string;
   match: string;
@@ -12,6 +14,9 @@ export interface Bet {
   platform?: string;
   accountName?: string;
   errorScreenshot?: string; // For issue #4
+  league?: League; // For issue #8
+  awayTeam?: string; // For issue #8
+  homeTeam?: string; // For issue #8
 }
 
 interface BetHistoryContextType {

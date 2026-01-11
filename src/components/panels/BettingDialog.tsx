@@ -467,6 +467,9 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
                   status: "pending", // New bets start as pending
                   platform: platformNames[platformId] || platform,
                   accountName: bet.account.name,
+                  league: match?.league,
+                  awayTeam: match?.awayTeam,
+                  homeTeam: match?.homeTeam,
                 });
                 
                 return updatedBet;
@@ -484,6 +487,9 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
                   platform: platformNames[platformId] || platform,
                   accountName: bet.account.name,
                   errorScreenshot: errorScreenshot,
+                  league: match?.league,
+                  awayTeam: match?.awayTeam,
+                  homeTeam: match?.homeTeam,
                 });
                 
                 return { ...b, status: STATUS.FAILED, error: errorMessage, errorScreenshot: errorScreenshot };

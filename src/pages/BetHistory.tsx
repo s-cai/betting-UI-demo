@@ -1,8 +1,50 @@
 import { useState, useMemo } from "react";
 import { History, CheckCircle, XCircle, Clock, Filter, Search, ArrowLeft, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useBetHistory, type Bet } from "@/contexts/BetHistoryContext";
+import { useBetHistory, type Bet, type League } from "@/contexts/BetHistoryContext";
 import { Input } from "@/components/ui/input";
+
+// League logo URLs - same as SportsPanel
+const leagueLogos: Record<"NFL" | "NBA", string> = {
+  NFL: "https://cdn.freebiesupply.com/logos/large/2x/nfl-1-logo-png-transparent.png",
+  NBA: "https://cdn.freebiesupply.com/logos/large/2x/nba-2-logo-png-transparent.png",
+};
+
+const LeagueLogo = ({ league, className = "w-4 h-4" }: { league?: League; className?: string }) => {
+  if (!league) return null;
+  
+  // Only NFL and NBA have logos, others use emojis
+  if (league === "NFL" || league === "NBA") {
+    const logoUrl = leagueLogos[league];
+    return (
+      <img 
+        src={logoUrl} 
+        alt={league} 
+        className={cn("object-contain", className)}
+        style={{ imageRendering: 'auto' }}
+        loading="lazy"
+      />
+    );
+  }
+  
+  // NCAAF and NCAAB use emojis
+  return (
+    <span className={className}>
+      {league === "NCAAF" ? "🏈" : "🏀"}
+    </span>
+  );
+};
+
+// Get team logo emoji based on league
+const getTeamLogoEmoji = (league?: League): string => {
+  if (!league) return "📊";
+  if (league === "NFL" || league === "NCAAF") {
+    return "🏈";
+  } else if (league === "NBA" || league === "NCAAB") {
+    return "🏀";
+  }
+  return "📊";
+};
 
 const formatTimeAgo = (timestamp: number): string => {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
@@ -173,12 +215,23 @@ export function BetHistory() {
             
             <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6">
               <div className="flex items-start justify-between mb-6 pb-4 border-b border-[hsl(var(--border))]">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    {getStatusIcon(selectedBet.status)}
-                    <h2 className="text-xl font-semibold text-foreground">{selectedBet.match}</h2>
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-1">{selectedBet.type}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      {getStatusIcon(selectedBet.status)}
+                      {selectedBet.league && <LeagueLogo league={selectedBet.league} className="w-5 h-5" />}
+                      <h2 className="text-xl font-semibold text-foreground">{selectedBet.match}</h2>
+                    </div>
+                    {(selectedBet.awayTeam || selectedBet.homeTeam) && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                        <span className="text-base">
+                          {getTeamLogoEmoji(selectedBet.league)}
+                        </span>
+                        {selectedBet.awayTeam && <span>{selectedBet.awayTeam}</span>}
+                        {selectedBet.awayTeam && selectedBet.homeTeam && <span>@</span>}
+                        {selectedBet.homeTeam && <span>{selectedBet.homeTeam}</span>}
+                      </div>
+                    )}
+                    <div className="text-sm text-muted-foreground mb-1">{selectedBet.type}</div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
@@ -270,13 +323,24 @@ export function BetHistory() {
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              {getStatusIcon(bet.status)}
-                              <span className="font-semibold text-foreground">{bet.match}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {formatTimeAgo(bet.timestamp)}
+                          <div className="flex items-center gap-2 mb-1">
+                            {getStatusIcon(bet.status)}
+                            {bet.league && <LeagueLogo league={bet.league} className="w-4 h-4" />}
+                            <span className="font-semibold text-foreground">{bet.match}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {formatTimeAgo(bet.timestamp)}
+                            </span>
+                          </div>
+                          {(bet.awayTeam || bet.homeTeam) && (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                              <span className={cn("text-sm", !bet.league && "opacity-0")}>
+                                {getTeamLogoEmoji(bet.league)}
                               </span>
+                              {bet.awayTeam && <span>{bet.awayTeam}</span>}
+                              {bet.awayTeam && bet.homeTeam && <span>@</span>}
+                              {bet.homeTeam && <span>{bet.homeTeam}</span>}
                             </div>
+                          )}
                             <div className="text-sm text-muted-foreground">{bet.type}</div>
                             {bet.platform && (
                               <div className="text-xs text-muted-foreground mt-1">
