@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { History, CheckCircle, XCircle, Clock, Filter, Search, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBetHistory, type Bet, type League } from "@/contexts/BetHistoryContext";
@@ -61,10 +61,9 @@ export function BetHistory() {
   const { bets } = useBetHistory();
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "won" | "lost">("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBet, setSelectedBet] = useState<Bet | null>(null);
-
-  // Group bets by date
-  const groupedBets = useMemo(() => {
+  
+  // Get filtered and sorted bets for selection
+  const filteredBets = useMemo(() => {
     const filtered = bets.filter(bet => {
       if (statusFilter !== "all" && bet.status !== statusFilter) return false;
       if (searchQuery) {
@@ -78,13 +77,35 @@ export function BetHistory() {
       }
       return true;
     });
+    return [...filtered].sort((a, b) => b.timestamp - a.timestamp);
+  }, [bets, statusFilter, searchQuery]);
+  
+  // Select first bet by default, or maintain selection if it's still in filtered list
+  const [selectedBet, setSelectedBet] = useState<Bet | null>(() => {
+    if (filteredBets.length > 0) {
+      return filteredBets[0];
+    }
+    return null;
+  });
+  
+  // Update selected bet when filters change
+  useEffect(() => {
+    if (filteredBets.length > 0) {
+      // If current selection is still in filtered list, keep it; otherwise select first
+      const currentSelectedStillAvailable = selectedBet && filteredBets.some(b => b.id === selectedBet.id);
+      if (!currentSelectedStillAvailable) {
+        setSelectedBet(filteredBets[0]);
+      }
+    } else {
+      setSelectedBet(null);
+    }
+  }, [filteredBets]);
 
-    // Sort by timestamp (newest first)
-    const sorted = [...filtered].sort((a, b) => b.timestamp - a.timestamp);
-
+  // Group bets by date (using filteredBets)
+  const groupedBets = useMemo(() => {
     // Group by date
     const groups: Record<string, Bet[]> = {};
-    sorted.forEach(bet => {
+    filteredBets.forEach(bet => {
       const date = new Date(bet.timestamp).toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
@@ -97,7 +118,7 @@ export function BetHistory() {
     });
 
     return groups;
-  }, [bets, statusFilter, searchQuery]);
+  }, [filteredBets]);
 
   const stats = useMemo(() => {
     return {
