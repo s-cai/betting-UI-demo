@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Match } from "./SportsPanel";
+import { useBetHistory } from "@/contexts/BetHistoryContext";
 
 const STATUS = {
   SENT: 'sent',
@@ -138,6 +139,7 @@ function groupAccountsByType(accounts: Account[]) {
 }
 
 export function BettingDialog({ isOpen, onClose, match, platform, market, side, odds }: BettingDialogProps) {
+  const { addBet } = useBetHistory();
   const [selectedAccounts, setSelectedAccounts] = useState<Map<string, number>>(new Map());
   const [distributionTotal, setDistributionTotal] = useState<string>('');
   const [sentBets, setSentBets] = useState<SentBet[]>([]);
@@ -182,6 +184,29 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     }
     return market;
   }, [market, side, match, odds]);
+
+  // Format bet type for history
+  const formatBetType = (): string => {
+    if (market === 'Moneyline') {
+      const teamName = side === 'away' ? match?.awayTeam : match?.homeTeam;
+      return `ML ${teamName}`;
+    }
+    if (market === 'Spread') {
+      const spreadMatch = odds.match(/^([+-]?\d+\.?\d*)/);
+      const spreadLine = spreadMatch ? spreadMatch[1] : '';
+      return `Spread ${spreadLine}`;
+    }
+    if (market === 'Total') {
+      return side === 'over' ? `O ${match?.total.line}` : `U ${match?.total.line}`;
+    }
+    return marketDisplay;
+  };
+
+  // Format match name for history
+  const formatMatchName = (): string => {
+    if (!match) return '';
+    return `${match.awayTeam} @ ${match.homeTeam}`;
+  };
 
   const handleAccountToggle = (accountId: string, checked: boolean) => {
     setSelectedAccounts(prev => {
@@ -331,7 +356,20 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
             if (b.account.id === bet.account.id && b.status === STATUS.ACKED) {
               // Increased failure rate: 40% failure, 60% success
               if (Math.random() > 0.4) {
-                return { ...b, status: STATUS.SUCCEEDED, error: null };
+                const updatedBet = { ...b, status: STATUS.SUCCEEDED, error: null };
+                
+                // Add to bet history when succeeded
+                addBet({
+                  match: formatMatchName(),
+                  type: formatBetType(),
+                  odds: odds,
+                  stake: bet.amount,
+                  status: "pending", // New bets start as pending
+                  platform: platformNames[platformId] || platform,
+                  accountName: bet.account.name,
+                });
+                
+                return updatedBet;
               } else {
                 return { ...b, status: STATUS.FAILED, error: getRandomErrorMessage() };
               }
