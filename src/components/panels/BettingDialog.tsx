@@ -549,13 +549,26 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
     timeoutRefs.current = [];
     
-    // Reset state when closing
+    // Don't reset sentBets or viewMode if there are sent bets - keep after-bet view
+    // Only reset selection and inputs for new bets
+    setSelectedAccounts(new Map());
+    setBetAmountInputs(new Map());
+    setDistributionTotal('');
+    // Keep sentBets and viewMode to preserve after-bet view
+    onClose();
+  };
+
+  const handleResetForNewBet = () => {
+    // Clear all timeouts
+    timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
+    timeoutRefs.current = [];
+    
+    // Reset everything for a new bet
     setSelectedAccounts(new Map());
     setBetAmountInputs(new Map());
     setDistributionTotal('');
     setSentBets([]);
     setViewMode('before');
-    onClose();
   };
 
   // Cleanup timeouts on unmount
@@ -698,7 +711,19 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
       >
         {/* Header */}
         <div className="bg-[hsl(var(--panel-header))] px-6 py-4 border-b border-[hsl(var(--border))] flex items-center justify-between shrink-0">
-          <h2 className="text-lg font-semibold text-foreground">Place Bet</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-foreground">
+              {viewMode === 'after' ? 'Bet Status' : 'Place Bet'}
+            </h2>
+            {viewMode === 'after' && (
+              <button
+                onClick={handleResetForNewBet}
+                className="text-xs px-3 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-all"
+              >
+                New Bet
+              </button>
+            )}
+          </div>
           <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
           </button>

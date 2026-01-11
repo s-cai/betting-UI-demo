@@ -159,14 +159,18 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
                         alt={`${odds.book} Logo`} 
                         className="h-6 w-auto object-contain max-w-[50px]"
                         style={{ imageRendering: 'auto' }}
+                        loading="lazy"
                         onError={(e) => {
                           // Fallback to text if image fails to load
                           const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const fallback = document.createElement('span');
-                          fallback.className = 'w-5 h-5 bg-muted rounded text-[10px] font-bold flex items-center justify-center';
-                          fallback.textContent = odds.logo;
-                          target.parentElement?.appendChild(fallback);
+                          const parent = target.parentElement;
+                          if (parent && !parent.querySelector('.logo-fallback')) {
+                            target.style.display = 'none';
+                            const fallback = document.createElement('span');
+                            fallback.className = 'logo-fallback w-5 h-5 bg-muted rounded text-[10px] font-bold flex items-center justify-center';
+                            fallback.textContent = odds.logo;
+                            parent.appendChild(fallback);
+                          }
                         }}
                       />
                     ) : (

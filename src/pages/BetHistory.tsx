@@ -270,17 +270,48 @@ export function BetHistory() {
           </div>
         </div>
 
-        {/* Right Side - Bet Details */}
+        {/* Right Side - Bet Details (After-Bet View Style) */}
         <div className="flex-1 overflow-y-auto terminal-scrollbar p-6">
           {selectedBet ? (
             <div className="max-w-3xl">
-              <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6">
-              <div className="flex items-start justify-between mb-6 pb-4 border-b border-[hsl(var(--border))]">
-                  <div className="flex-1">
+              {/* After-Bet View Style Card */}
+              <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6 mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    {selectedBet.accountName && (
+                      <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold shrink-0">
+                        {selectedBet.accountName.split(' ').map(n => n[0]).join('')}
+                      </div>
+                    )}
+                    <div>
+                      <div className="font-semibold text-foreground text-lg">{selectedBet.accountName || 'Unknown Account'}</div>
+                      {selectedBet.platform && (
+                        <div className="text-sm text-muted-foreground">{selectedBet.platform}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold font-mono text-primary mb-1">
+                      ${selectedBet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Stake</div>
+                  </div>
+                </div>
+
+                <div className={cn("flex items-center gap-2 mb-4 pb-4 border-b border-[hsl(var(--border))]", 
+                  selectedBet.status === "won" && "text-[hsl(var(--signal-positive))]",
+                  selectedBet.status === "lost" && "text-[hsl(var(--signal-negative))]",
+                  selectedBet.status === "pending" && "text-[hsl(var(--signal-warning))]"
+                )}>
+                  <span className="text-2xl font-bold">{getStatusIcon(selectedBet.status)}</span>
+                  <span className="text-lg font-semibold capitalize">{selectedBet.status}</span>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
                     <div className="flex items-center gap-3 mb-2">
-                      {getStatusIcon(selectedBet.status)}
                       {selectedBet.league && <LeagueLogo league={selectedBet.league} className="w-5 h-5" />}
-                      <h2 className="text-xl font-semibold text-foreground">{selectedBet.match}</h2>
+                      <h3 className="text-lg font-semibold text-foreground">{selectedBet.match}</h3>
                     </div>
                     {(selectedBet.awayTeam || selectedBet.homeTeam) && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
@@ -294,75 +325,55 @@ export function BetHistory() {
                         {selectedBet.homeTeam && <span>{selectedBet.homeTeam}</span>}
                       </div>
                     )}
-                    <div className="text-sm text-muted-foreground mb-1">{selectedBet.type}</div>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(selectedBet.timestamp).toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                    <span>{formatTimeAgo(selectedBet.timestamp)}</span>
+                    <div className="text-sm text-muted-foreground">{selectedBet.type}</div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-mono text-2xl font-bold text-foreground mb-1">
-                    ${selectedBet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Stake</div>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-6 mb-6">
-                <div>
-                  <div className="text-xs text-muted-foreground mb-1">Odds</div>
-                  <div className="text-lg font-semibold text-foreground">{selectedBet.odds}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground mb-1">Status</div>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(selectedBet.status)}
-                    <span className="text-lg font-semibold capitalize text-foreground">{selectedBet.status}</span>
-                  </div>
-                </div>
-                {selectedBet.platform && (
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Platform</div>
-                    <div className="text-lg font-semibold text-foreground">{selectedBet.platform}</div>
-                  </div>
-                )}
-                {selectedBet.accountName && (
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Account</div>
-                    <div className="text-lg font-semibold text-foreground">{selectedBet.accountName}</div>
-                  </div>
-                )}
-                {selectedBet.payout && selectedBet.status === "won" && (
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Payout</div>
-                    <div className="text-lg font-semibold font-mono text-[hsl(var(--signal-positive))]">
-                      +${selectedBet.payout.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Odds</div>
+                      <div className="text-base font-semibold text-foreground">{selectedBet.odds}</div>
                     </div>
-                  </div>
-                )}
-                <div>
-                  <div className="text-xs text-muted-foreground mb-1">Bet ID</div>
-                  <div className="text-sm font-mono text-foreground">{selectedBet.id}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground mb-1">Potential Return</div>
-                  <div className="text-sm font-mono text-foreground">
-                    {selectedBet.status === "pending" ? "Calculating..." : selectedBet.payout ? `$${(selectedBet.stake + selectedBet.payout).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `$${selectedBet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Bet ID</div>
+                      <div className="text-sm font-mono text-foreground">{selectedBet.id}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Date & Time</div>
+                      <div className="text-sm text-foreground flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(selectedBet.timestamp).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Time Ago</div>
+                      <div className="text-sm text-foreground">{formatTimeAgo(selectedBet.timestamp)}</div>
+                    </div>
+                    {selectedBet.payout && selectedBet.status === "won" && (
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">Payout</div>
+                        <div className="text-base font-semibold font-mono text-[hsl(var(--signal-positive))]">
+                          +${selectedBet.payout.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                      </div>
+                    )}
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Potential Return</div>
+                      <div className="text-sm font-mono text-foreground">
+                        {selectedBet.status === "pending" ? "Calculating..." : selectedBet.payout ? `$${(selectedBet.stake + selectedBet.payout).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `$${selectedBet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {selectedBet.errorScreenshot && (
-                <div className="mt-6 pt-6 border-t border-[hsl(var(--border))]">
+                <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6">
                   <div className="text-sm font-semibold text-muted-foreground mb-3">Error Screenshot</div>
                   <img
                     src={selectedBet.errorScreenshot}
@@ -371,7 +382,6 @@ export function BetHistory() {
                   />
                 </div>
               )}
-              </div>
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">
