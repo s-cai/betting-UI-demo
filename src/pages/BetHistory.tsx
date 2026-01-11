@@ -298,7 +298,33 @@ export function BetHistory() {
                           <div className="flex items-center gap-2 mb-1">
                             {getStatusIcon(bet.status)}
                             {bet.league && <LeagueLogo league={bet.league} className="w-3.5 h-3.5" />}
-                            <span className="font-semibold text-sm text-foreground truncate flex-1">{bet.match}</span>
+                            {(bet.awayTeam || bet.homeTeam) ? (
+                              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                {bet.awayTeam && (
+                                  <>
+                                    {bet.league && (
+                                      <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
+                                        <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(bet.league)}</span>
+                                      </div>
+                                    )}
+                                    <span className="font-semibold text-sm text-foreground truncate">{bet.awayTeam}</span>
+                                  </>
+                                )}
+                                {bet.awayTeam && bet.homeTeam && <span className="text-xs text-muted-foreground">@</span>}
+                                {bet.homeTeam && (
+                                  <>
+                                    {bet.league && (
+                                      <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
+                                        <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(bet.league)}</span>
+                                      </div>
+                                    )}
+                                    <span className="font-semibold text-sm text-foreground truncate">{bet.homeTeam}</span>
+                                  </>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="font-semibold text-sm text-foreground truncate flex-1">{bet.match}</span>
+                            )}
                           </div>
                           <div className="text-xs text-muted-foreground mb-1">{bet.type}</div>
                           <div className="flex items-center justify-between text-xs mb-1">
@@ -339,14 +365,27 @@ export function BetHistory() {
                 </div>
                 {(selectedBet.awayTeam || selectedBet.homeTeam) && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                    {selectedBet.league && (
-                      <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
-                        <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBet.league)}</span>
-                      </div>
+                    {selectedBet.awayTeam && (
+                      <>
+                        {selectedBet.league && (
+                          <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
+                            <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBet.league)}</span>
+                          </div>
+                        )}
+                        <span>{selectedBet.awayTeam}</span>
+                      </>
                     )}
-                    {selectedBet.awayTeam && <span>{selectedBet.awayTeam}</span>}
                     {selectedBet.awayTeam && selectedBet.homeTeam && <span>@</span>}
-                    {selectedBet.homeTeam && <span>{selectedBet.homeTeam}</span>}
+                    {selectedBet.homeTeam && (
+                      <>
+                        {selectedBet.league && (
+                          <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
+                            <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBet.league)}</span>
+                          </div>
+                        )}
+                        <span>{selectedBet.homeTeam}</span>
+                      </>
+                    )}
                   </div>
                 )}
                 <div className="text-sm text-muted-foreground mb-2">{selectedBet.type} • {selectedBet.odds}</div>

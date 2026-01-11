@@ -137,14 +137,27 @@ export function BetHistoryBar() {
                   </div>
                   {(bet.awayTeam || bet.homeTeam) && (
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-0.5">
-                      {bet.league && (
-                        <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
-                          <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(bet.league)}</span>
-                        </div>
+                      {bet.awayTeam && (
+                        <>
+                          {bet.league && (
+                            <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
+                              <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(bet.league)}</span>
+                            </div>
+                          )}
+                          <span>{bet.awayTeam}</span>
+                        </>
                       )}
-                      {bet.awayTeam && <span>{bet.awayTeam}</span>}
                       {bet.awayTeam && bet.homeTeam && <span>@</span>}
-                      {bet.homeTeam && <span>{bet.homeTeam}</span>}
+                      {bet.homeTeam && (
+                        <>
+                          {bet.league && (
+                            <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
+                              <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(bet.league)}</span>
+                            </div>
+                          )}
+                          <span>{bet.homeTeam}</span>
+                        </>
+                      )}
                     </div>
                   )}
                   <div className="text-[11px] text-muted-foreground">{bet.type}</div>
