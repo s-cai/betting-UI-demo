@@ -1,35 +1,37 @@
 import { History, ChevronLeft, ChevronRight, CheckCircle, XCircle, Clock } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { useBetHistory } from "@/contexts/BetHistoryContext";
 
-interface Bet {
-  id: string;
-  match: string;
-  type: string;
-  odds: string;
-  stake: string;
-  status: "won" | "lost" | "pending";
-  time: string;
-  payout?: string;
-}
-
-const mockBets: Bet[] = [
-  { id: "1", match: "LAL @ BOS", type: "Spread +2.5", odds: "-110", stake: "$500", status: "pending", time: "2m ago" },
-  { id: "2", match: "KC @ BUF", type: "ML KC", odds: "-175", stake: "$1,000", status: "won", time: "15m ago", payout: "$571" },
-  { id: "3", match: "GSW @ PHX", type: "O 232.5", odds: "-108", stake: "$750", status: "pending", time: "22m ago" },
-  { id: "4", match: "SF @ DET", type: "ML DET", odds: "+115", stake: "$400", status: "lost", time: "1h ago" },
-  { id: "5", match: "MIA @ NYK", type: "Spread -1.5", odds: "-110", stake: "$600", status: "won", time: "2h ago", payout: "$545" },
-  { id: "6", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: "$300", status: "pending", time: "3h ago" },
-];
+const formatTimeAgo = (timestamp: number): string => {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+};
 
 export function BetHistoryBar() {
   const [isExpanded, setIsExpanded] = useState(true);
+  const { bets } = useBetHistory();
 
-  const stats = {
-    pending: mockBets.filter(b => b.status === "pending").length,
-    won: mockBets.filter(b => b.status === "won").length,
-    lost: mockBets.filter(b => b.status === "lost").length,
-  };
+  // Get recent bets (last 6, sorted by timestamp)
+  const recentBets = useMemo(() => {
+    return [...bets]
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 6);
+  }, [bets]);
+
+  const stats = useMemo(() => {
+    return {
+      pending: bets.filter(b => b.status === "pending").length,
+      won: bets.filter(b => b.status === "won").length,
+      lost: bets.filter(b => b.status === "lost").length,
+    };
+  }, [bets]);
 
   return (
     <div className={cn(
@@ -70,41 +72,47 @@ export function BetHistoryBar() {
 
           {/* Bet List */}
           <div className="flex-1 overflow-y-auto terminal-scrollbar">
-            {mockBets.map((bet) => (
-              <div
-                key={bet.id}
-                className={cn(
-                  "p-2 border-b border-border/30 cursor-pointer hover:bg-accent/50 transition-colors"
-                )}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-mono text-muted-foreground">{bet.time}</span>
-                  {bet.status === "won" && <CheckCircle className="w-3 h-3 text-signal-positive" />}
-                  {bet.status === "lost" && <XCircle className="w-3 h-3 text-signal-negative" />}
-                  {bet.status === "pending" && <Clock className="w-3 h-3 text-signal-warning animate-pulse-glow" />}
-                </div>
-                
-                <div className="text-xs font-medium mb-0.5">{bet.match}</div>
-                <div className="text-[11px] text-muted-foreground">{bet.type}</div>
-                
-                <div className="flex items-center justify-between mt-1.5 text-[10px]">
-                  <span className="font-mono">{bet.odds}</span>
-                  <span className={cn(
-                    "font-mono",
-                    bet.status === "won" && "text-signal-positive",
-                    bet.status === "lost" && "text-signal-negative line-through"
-                  )}>
-                    {bet.stake}
-                  </span>
-                </div>
-                
-                {bet.payout && (
-                  <div className="text-[10px] text-signal-positive font-mono mt-1">
-                    +{bet.payout}
-                  </div>
-                )}
+            {recentBets.length === 0 ? (
+              <div className="p-4 text-center text-muted-foreground text-xs">
+                No bets yet
               </div>
-            ))}
+            ) : (
+              recentBets.map((bet) => (
+                <div
+                  key={bet.id}
+                  className={cn(
+                    "p-2 border-b border-border/30 cursor-pointer hover:bg-accent/50 transition-colors"
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-mono text-muted-foreground">{formatTimeAgo(bet.timestamp)}</span>
+                    {bet.status === "won" && <CheckCircle className="w-3 h-3 text-signal-positive" />}
+                    {bet.status === "lost" && <XCircle className="w-3 h-3 text-signal-negative" />}
+                    {bet.status === "pending" && <Clock className="w-3 h-3 text-signal-warning animate-pulse-glow" />}
+                  </div>
+                  
+                  <div className="text-xs font-medium mb-0.5">{bet.match}</div>
+                  <div className="text-[11px] text-muted-foreground">{bet.type}</div>
+                  
+                  <div className="flex items-center justify-between mt-1.5 text-[10px]">
+                    <span className="font-mono">{bet.odds}</span>
+                    <span className={cn(
+                      "font-mono",
+                      bet.status === "won" && "text-signal-positive",
+                      bet.status === "lost" && "text-signal-negative line-through"
+                    )}>
+                      ${bet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  
+                  {bet.payout && (
+                    <div className="text-[10px] text-signal-positive font-mono mt-1">
+                      +${bet.payout.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </>
       ) : (

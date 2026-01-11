@@ -7,6 +7,7 @@ import { BetHistoryBar } from "@/components/panels/BetHistoryBar";
 import { AccountOverviewBar } from "@/components/panels/AccountOverviewBar";
 import { Accounts } from "./Accounts";
 import { Settings } from "./Settings";
+import { BetHistory } from "./BetHistory";
 
 const Index = () => {
   // Load persisted state from localStorage
@@ -64,9 +65,9 @@ const Index = () => {
               <Settings />
             </div>
           ) : activeSection === "history" ? (
-            /* Bet History View - TBD, for now show placeholder */
-            <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden items-center justify-center">
-              <div className="text-muted-foreground">Bet History View - Coming Soon</div>
+            /* Bet History View */
+            <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
+              <BetHistory />
             </div>
           ) : (
             /* Default Odds View */
