@@ -54,16 +54,83 @@ const formatTimeAgo = (timestamp: number): string => {
   return `${days}d ago`;
 };
 
+interface BatchTrade {
+  key: string;
+  match: string;
+  type: string;
+  odds: string;
+  platform?: string;
+  timestamp: number;
+  totalStake: number;
+  totalSucceeded: number;
+  accountCount: number;
+  status: "won" | "lost" | "pending";
+  league?: League;
+  awayTeam?: string;
+  homeTeam?: string;
+}
+
 export function BetHistoryBar() {
   const [isExpanded, setIsExpanded] = useState(true);
   const { bets } = useBetHistory();
 
-  // Get recent bets (last 6, sorted by timestamp)
-  const recentBets = useMemo(() => {
-    return [...bets]
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, 6);
+  // Group bets into batch trades (same logic as BetHistory.tsx)
+  const batchTrades = useMemo(() => {
+    const groups: Map<string, typeof bets> = new Map();
+    
+    bets.forEach(bet => {
+      // Create a key based on match, type, odds, platform, and rounded timestamp (2 minute window)
+      const timeWindow = Math.floor(bet.timestamp / 120000) * 120000;
+      const platform = bet.platform || 'Unknown';
+      const key = `${bet.match}|${bet.type}|${bet.odds}|${platform}|${timeWindow}`;
+      
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(bet);
+    });
+    
+    // Convert groups to BatchTrade objects
+    const trades: BatchTrade[] = [];
+    groups.forEach((batchBets, key) => {
+      const firstBet = batchBets[0];
+      const totalStake = batchBets.reduce((sum, bet) => sum + bet.stake, 0);
+      const totalSucceeded = batchBets
+        .filter(bet => bet.status === "won" || bet.status === "pending")
+        .reduce((sum, bet) => sum + bet.stake, 0);
+      
+      // Determine aggregate status: if any pending, it's pending; else if any won, it's won; else lost
+      let aggregateStatus: "won" | "lost" | "pending" = "lost";
+      if (batchBets.some(b => b.status === "pending")) {
+        aggregateStatus = "pending";
+      } else if (batchBets.some(b => b.status === "won")) {
+        aggregateStatus = "won";
+      }
+      
+      trades.push({
+        key,
+        match: firstBet.match,
+        type: firstBet.type,
+        odds: firstBet.odds,
+        platform: firstBet.platform || 'Unknown',
+        timestamp: Math.min(...batchBets.map(b => b.timestamp)),
+        totalStake,
+        totalSucceeded,
+        accountCount: batchBets.length,
+        status: aggregateStatus,
+        league: firstBet.league,
+        awayTeam: firstBet.awayTeam,
+        homeTeam: firstBet.homeTeam,
+      });
+    });
+    
+    return trades.sort((a, b) => b.timestamp - a.timestamp);
   }, [bets]);
+
+  // Get recent batch trades (last 6, sorted by timestamp)
+  const recentBatchTrades = useMemo(() => {
+    return batchTrades.slice(0, 6);
+  }, [batchTrades]);
 
   const stats = useMemo(() => {
     return {
@@ -112,72 +179,66 @@ export function BetHistoryBar() {
 
           {/* Bet List */}
           <div className="flex-1 overflow-y-auto terminal-scrollbar">
-            {recentBets.length === 0 ? (
+            {recentBatchTrades.length === 0 ? (
               <div className="p-4 text-center text-muted-foreground text-xs">
                 No bets yet
               </div>
             ) : (
-              recentBets.map((bet) => (
+              recentBatchTrades.map((trade) => (
                 <div
-                  key={bet.id}
+                  key={trade.key}
                   className={cn(
                     "p-2 border-b border-border/30 cursor-pointer hover:bg-accent/50 transition-colors"
                   )}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-mono text-muted-foreground">{formatTimeAgo(bet.timestamp)}</span>
-                    {bet.status === "won" && <CheckCircle className="w-3 h-3 text-signal-positive" />}
-                    {bet.status === "lost" && <XCircle className="w-3 h-3 text-signal-negative" />}
-                    {bet.status === "pending" && <Clock className="w-3 h-3 text-signal-warning animate-pulse-glow" />}
+                    <span className="text-[10px] font-mono text-muted-foreground">{formatTimeAgo(trade.timestamp)}</span>
+                    {trade.status === "won" && <CheckCircle className="w-3 h-3 text-signal-positive" />}
+                    {trade.status === "lost" && <XCircle className="w-3 h-3 text-signal-negative" />}
+                    {trade.status === "pending" && <Clock className="w-3 h-3 text-signal-warning animate-pulse-glow" />}
                   </div>
                   
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    {bet.league && <LeagueLogo league={bet.league} className="w-3 h-3" />}
-                    <span className="text-xs font-medium">{bet.match}</span>
+                    {trade.league && <LeagueLogo league={trade.league} className="w-3 h-3" />}
+                    <span className="text-xs font-medium truncate">{trade.match}</span>
                   </div>
-                  {(bet.awayTeam || bet.homeTeam) && (
+                  {(trade.awayTeam || trade.homeTeam) && (
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-0.5">
-                      {bet.awayTeam && (
+                      {trade.awayTeam && (
                         <>
-                          {bet.league && (
+                          {trade.league && (
                             <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
-                              <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(bet.league)}</span>
+                              <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(trade.league)}</span>
                             </div>
                           )}
-                          <span>{bet.awayTeam}</span>
+                          <span>{trade.awayTeam}</span>
                         </>
                       )}
-                      {bet.awayTeam && bet.homeTeam && <span>@</span>}
-                      {bet.homeTeam && (
+                      {trade.awayTeam && trade.homeTeam && <span>@</span>}
+                      {trade.homeTeam && (
                         <>
-                          {bet.league && (
+                          {trade.league && (
                             <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
-                              <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(bet.league)}</span>
+                              <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(trade.league)}</span>
                             </div>
                           )}
-                          <span>{bet.homeTeam}</span>
+                          <span>{trade.homeTeam}</span>
                         </>
                       )}
                     </div>
                   )}
-                  <div className="text-[11px] text-muted-foreground">{bet.type}</div>
+                  <div className="text-[11px] text-muted-foreground">{trade.type} • {trade.odds}</div>
                   
                   <div className="flex items-center justify-between mt-1.5 text-[10px]">
-                    <span className="font-mono">{bet.odds}</span>
+                    <span className="text-muted-foreground">{trade.accountCount} accounts</span>
                     <span className={cn(
-                      "font-mono",
-                      bet.status === "won" && "text-signal-positive",
-                      bet.status === "lost" && "text-signal-negative line-through"
+                      "font-mono text-xs",
+                      trade.status === "won" && "text-signal-positive",
+                      trade.status === "lost" && "text-signal-negative"
                     )}>
-                      ${bet.stake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ${trade.totalSucceeded.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / ${trade.totalStake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
-                  
-                  {bet.payout && (
-                    <div className="text-[10px] text-signal-positive font-mono mt-1">
-                      +${bet.payout.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                  )}
                 </div>
               ))
             )}
