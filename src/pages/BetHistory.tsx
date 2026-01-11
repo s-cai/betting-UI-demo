@@ -10,6 +10,18 @@ const leagueLogos: Record<"NFL" | "NBA", string> = {
   NBA: "https://cdn.freebiesupply.com/logos/large/2x/nba-2-logo-png-transparent.png",
 };
 
+// Platform logo map - same as OddsComparisonGrid and Accounts
+const platformLogoMap: Record<string, string> = {
+  "DraftKings": "/resources/draftkings-logo.svg",
+  "FanDuel": "/resources/fanduel-logo.svg",
+  "BetMGM": "/resources/betmgm-logo.svg",
+  "Caesars": "/resources/caesars-logo.svg",
+  "PointsBet": "/resources/pointsbet-logo.svg",
+  "Bet365": "/resources/bet365-logo.svg",
+  "Unibet": "/resources/unibet-logo.svg",
+  "WynnBET": "/resources/wynnbet-logo.svg",
+};
+
 const LeagueLogo = ({ league, className = "w-4 h-4" }: { league?: League; className?: string }) => {
   if (!league) return null;
   
@@ -385,7 +397,17 @@ export function BetHistory() {
                     {selectedBatchTrade.league && <LeagueLogo league={selectedBatchTrade.league} className="w-5 h-5" />}
                     <h2 className="text-xl font-semibold text-foreground">{selectedBatchTrade.match}</h2>
                   </div>
-                  <div className="text-lg font-semibold text-primary">{selectedBatchTrade.platform}</div>
+                  {selectedBatchTrade.platform && platformLogoMap[selectedBatchTrade.platform] && (
+                    <div className="flex items-center gap-2">
+                      <img 
+                        src={platformLogoMap[selectedBatchTrade.platform]} 
+                        alt={`${selectedBatchTrade.platform} Logo`} 
+                        className="h-6 w-auto object-contain"
+                        loading="lazy"
+                      />
+                      <span className="text-lg font-semibold text-primary">{selectedBatchTrade.platform}</span>
+                    </div>
+                  )}
                 </div>
                 {(selectedBatchTrade.awayTeam || selectedBatchTrade.homeTeam) && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
