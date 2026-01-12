@@ -1,8 +1,18 @@
-import { User } from "lucide-react";
+import { User, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 export function Settings() {
   // Mock trader name - in real app this would come from user context/API
   const traderName = "John Trader";
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
@@ -35,10 +45,49 @@ export function Settings() {
               </div>
             </div>
 
-            {/* Placeholder for future settings */}
+            {/* Appearance Settings */}
             <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6">
-              <div className="text-center text-muted-foreground py-8">
-                <p className="text-sm">Additional settings coming soon...</p>
+              <div className="flex items-center gap-3 mb-4">
+                {mounted && theme === 'dark' ? (
+                  <Moon className="w-5 h-5 text-primary" />
+                ) : (
+                  <Sun className="w-5 h-5 text-primary" />
+                )}
+                <h2 className="text-lg font-semibold text-foreground">Appearance</h2>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground mb-3 block">
+                    Theme
+                  </label>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setTheme('light')}
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2 rounded-md border transition-all",
+                        mounted && theme === 'light'
+                          ? "bg-accent border-primary text-foreground"
+                          : "bg-[hsl(var(--card))] border-[hsl(var(--border))] text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                      )}
+                    >
+                      <Sun className="w-4 h-4" />
+                      <span>Light</span>
+                    </button>
+                    <button
+                      onClick={() => setTheme('dark')}
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2 rounded-md border transition-all",
+                        mounted && theme === 'dark'
+                          ? "bg-accent border-primary text-foreground"
+                          : "bg-[hsl(var(--card))] border-[hsl(var(--border))] text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                      )}
+                    >
+                      <Moon className="w-4 h-4" />
+                      <span>Dark</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

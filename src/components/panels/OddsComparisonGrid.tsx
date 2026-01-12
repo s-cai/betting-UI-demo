@@ -145,15 +145,15 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
 
       {/* Odds Grid */}
       <div className="flex-1 overflow-auto terminal-scrollbar">
-        <table className="data-table w-full">
+        <table className="data-table w-full" style={{ tableLayout: 'fixed' }}>
           <thead className="sticky top-0 z-10">
             {/* Market Headers */}
             <tr className="bg-panel-header">
-              <th className="w-28 text-left">Moneyline</th>
-              <th className="text-center">Best Odds</th>
-              <th className="text-center">Avg Odds</th>
+              <th className="text-left" style={{ width: '12.5%' }}>Moneyline</th>
+              <th className="text-center" style={{ width: '12.5%' }}>Best Odds</th>
+              <th className="text-center" style={{ width: '12.5%' }}>Close Odds</th>
               {mockBookOdds.slice(0, 6).map((odds) => (
-                <th key={odds.book} className="text-center w-16">
+                <th key={odds.book} className="text-center" style={{ width: '12.5%' }}>
                   <div className="flex items-center justify-center gap-1">
                     {odds.logoPath ? (
                       <img 
