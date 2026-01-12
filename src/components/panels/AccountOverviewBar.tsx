@@ -108,22 +108,68 @@ export function AccountOverviewBar() {
         <div className="px-4 pb-3 overflow-x-auto terminal-scrollbar">
           <div className="flex gap-2">
             {platformSummaries.map((summary) => {
-              const totalBalance = summary.online.balance + summary.limited.balance + summary.offline.balance;
               return (
                 <div
                   key={summary.platformId}
-                  className="shrink-0 w-32 p-3 rounded border border-[hsl(var(--border))] bg-[hsl(var(--card))] transition-all hover:bg-accent/50"
+                  className="shrink-0 w-48 p-3 rounded border border-[hsl(var(--border))] bg-[hsl(var(--card))] transition-all hover:bg-accent/50"
                 >
-                  <div className="flex flex-col items-center gap-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <img 
                       src={summary.logo} 
                       alt={`${summary.platformName} Logo`} 
                       className="h-6 w-auto object-contain"
                     />
-                    <span className="text-xs font-semibold truncate w-full text-center">{summary.platformName}</span>
-                    <span className="font-mono text-sm font-medium text-signal-positive">
-                      ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
+                    <span className="text-xs font-semibold truncate">{summary.platformName}</span>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {/* Online */}
+                    {summary.online.count > 0 && (
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <Wifi className="w-3 h-3 text-signal-online" />
+                          <span className="text-muted-foreground">Online:</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-signal-positive font-medium">
+                            ${summary.online.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                          <span className="text-muted-foreground">({summary.online.count})</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Limited */}
+                    {summary.limited.count > 0 && (
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <AlertTriangle className="w-3 h-3 text-signal-warning" />
+                          <span className="text-muted-foreground">Limited:</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-signal-warning font-medium">
+                            ${summary.limited.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                          <span className="text-muted-foreground">({summary.limited.count})</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Offline */}
+                    {summary.offline.count > 0 && (
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <WifiOff className="w-3 h-3 text-signal-offline" />
+                          <span className="text-muted-foreground">Offline:</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-muted-foreground font-medium">
+                            ${summary.offline.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                          <span className="text-muted-foreground">({summary.offline.count})</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
