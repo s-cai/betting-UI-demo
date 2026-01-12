@@ -214,7 +214,7 @@
   }
 
   .data-table th {
-    @apply text-left text-muted-foreground font-medium uppercase tracking-wider py-1.5 px-2 border-b border-border;
+    @apply text-muted-foreground font-medium uppercase tracking-wider py-1.5 px-2 border-b border-border;
   }
 
   .data-table td {
