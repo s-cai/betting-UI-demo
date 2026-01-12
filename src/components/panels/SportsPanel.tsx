@@ -391,7 +391,7 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
                   </span>
                 </div>
                 {match.score && (
-                  <span className="text-[10px] font-mono text-muted-foreground">
+                  <span className="text-sm font-mono font-semibold text-foreground">
                     {match.score.away} - {match.score.home}
                   </span>
                 )}
