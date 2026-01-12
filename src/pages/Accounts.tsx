@@ -409,6 +409,14 @@ export function Accounts() {
     return platformAccounts;
   }, [accounts, selectedPlatform, selectedTags, showLimited]);
 
+  // Calculate totals for the current platform
+  const platformTotals = useMemo(() => {
+    const totalBalance = filteredAccounts.reduce((sum, acc) => sum + acc.balance, 0);
+    const totalBackupCash = filteredAccounts.reduce((sum, acc) => sum + acc.backupCash, 0);
+    const totalAccounts = filteredAccounts.length;
+    return { totalBalance, totalBackupCash, totalAccounts };
+  }, [filteredAccounts]);
+
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => {
       const newSet = new Set(prev);
@@ -456,6 +464,32 @@ export function Accounts() {
         <div className="flex items-center gap-5 mb-6 pb-4 border-b border-[hsl(var(--border))]">
           <img src={platform.logo} alt={`${platform.name} Logo`} className="h-[60px] w-auto object-contain" />
           <h2 className="text-2xl font-semibold text-foreground">{platform.name}</h2>
+        </div>
+        
+        {/* Platform Totals */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-[hsl(var(--panel-bg))] rounded-md border border-[hsl(var(--panel-border))]">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+              Total Accounts
+            </div>
+            <div className="text-2xl font-bold text-foreground">{platformTotals.totalAccounts}</div>
+          </div>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+              Total Balance
+            </div>
+            <div className="text-2xl font-bold font-mono text-[hsl(var(--signal-positive))]">
+              ${platformTotals.totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+              Total Backup Cash
+            </div>
+            <div className="text-2xl font-bold font-mono text-[hsl(var(--signal-positive))]">
+              ${platformTotals.totalBackupCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+          </div>
         </div>
         
         <div className="space-y-6">

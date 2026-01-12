@@ -147,9 +147,12 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   const [distributionTotal, setDistributionTotal] = useState<string>('');
   const [sentBets, setSentBets] = useState<SentBet[]>([]);
   const [viewMode, setViewMode] = useState<'before' | 'after'>('before');
+  const [betSendStartTime, setBetSendStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
   const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
   const recentBetIdsRef = useRef<Map<string, string>>(new Map()); // Track accountId -> betId for recently added bets
   const betsRef = useRef(bets); // Track latest bets to avoid stale closures
+  const elapsedTimeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Update bets ref when bets change
   useEffect(() => {
@@ -552,6 +555,8 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     
     setSentBets(newSentBets);
     setViewMode('after');
+    setBetSendStartTime(Date.now());
+    setElapsedTime(0);
     
     // Find bet IDs after a short delay to allow state to update
     setTimeout(() => {
@@ -620,36 +625,107 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
     timeoutRefs.current = [];
     
+    // Clear elapsed time interval
+    if (elapsedTimeIntervalRef.current) {
+      clearInterval(elapsedTimeIntervalRef.current);
+      elapsedTimeIntervalRef.current = null;
+    }
+    
     // Reset everything for a new bet
     setSelectedAccounts(new Map());
     setBetAmountInputs(new Map());
     setDistributionTotal('');
     setSentBets([]);
     setViewMode('before');
+    setBetSendStartTime(null);
+    setElapsedTime(0);
   };
 
   // Reset state when dialog opens or key props change
   useEffect(() => {
     if (isOpen) {
       // Reset state when dialog opens
-      setSelectedAccounts(new Map());
-      setBetAmountInputs(new Map());
-      setDistributionTotal('');
       setSentBets([]);
       setViewMode('before');
+      setBetSendStartTime(null);
+      setElapsedTime(0);
       recentBetIdsRef.current.clear();
       // Clear any existing timeouts
       timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
       timeoutRefs.current = [];
+      // Clear elapsed time interval
+      if (elapsedTimeIntervalRef.current) {
+        clearInterval(elapsedTimeIntervalRef.current);
+        elapsedTimeIntervalRef.current = null;
+      }
+      
+      // Default to select all accounts
+      const allAccountsMap = new Map<string, number>();
+      const allInputsMap = new Map<string, string>();
+      platformAccounts.forEach(account => {
+        allAccountsMap.set(account.id, 0);
+        allInputsMap.set(account.id, '');
+      });
+      setSelectedAccounts(allAccountsMap);
+      setBetAmountInputs(allInputsMap);
+      setDistributionTotal('');
     }
-  }, [isOpen, match?.id, platform, market, side, odds]);
+  }, [isOpen, match?.id, platform, market, side, odds, platformAccounts]);
 
-  // Cleanup timeouts on unmount
+  // Cleanup timeouts and intervals on unmount
   useEffect(() => {
     return () => {
       timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
+      if (elapsedTimeIntervalRef.current) {
+        clearInterval(elapsedTimeIntervalRef.current);
+      }
     };
   }, []);
+
+  // Update elapsed time when in after-bet view
+  useEffect(() => {
+    if (viewMode === 'after' && betSendStartTime !== null) {
+      // Update elapsed time every 100ms for smooth display
+      elapsedTimeIntervalRef.current = setInterval(() => {
+        setElapsedTime(Date.now() - betSendStartTime);
+      }, 100);
+      
+      return () => {
+        if (elapsedTimeIntervalRef.current) {
+          clearInterval(elapsedTimeIntervalRef.current);
+        }
+      };
+    } else {
+      if (elapsedTimeIntervalRef.current) {
+        clearInterval(elapsedTimeIntervalRef.current);
+        elapsedTimeIntervalRef.current = null;
+      }
+    }
+  }, [viewMode, betSendStartTime]);
+
+  // Auto-close after-bet view 5 seconds after all bets are sent and successful
+  useEffect(() => {
+    if (viewMode === 'after' && sentBets.length > 0) {
+      // Check if all bets are done (either SUCCEEDED or FAILED)
+      const allDone = sentBets.every(bet => 
+        bet.status === STATUS.SUCCEEDED || bet.status === STATUS.FAILED
+      );
+      
+      // Check if all bets succeeded
+      const allSucceeded = sentBets.every(bet => bet.status === STATUS.SUCCEEDED);
+      
+      if (allDone && allSucceeded) {
+        const closeTimeout = setTimeout(() => {
+          handleClose();
+        }, 5000);
+        timeoutRefs.current.push(closeTimeout);
+        
+        return () => {
+          clearTimeout(closeTimeout);
+        };
+      }
+    }
+  }, [viewMode, sentBets, handleClose]);
 
   // Calculate total succeeded amount
   const totalSucceeded = useMemo(() => {
@@ -930,6 +1006,14 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
                     ${totalSucceeded.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / ${totalSent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
+                {betSendStartTime !== null && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Time Elapsed:</span>
+                    <span className="text-lg font-bold font-mono text-foreground">
+                      {(elapsedTime / 1000).toFixed(2)}s
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Sent Bets List */}
