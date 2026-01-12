@@ -402,9 +402,6 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
                 <div className="grid grid-cols-12 gap-1">
                   {/* Away Team */}
                   <div className="col-span-5 flex items-center gap-2">
-                    <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
-                      <span className="text-[8px] text-muted-foreground">🏈</span>
-                    </div>
                     <span className="text-xs font-medium truncate">{match.awayTeam}</span>
                   </div>
                   <div className="col-span-2 flex items-center justify-center">
@@ -434,9 +431,6 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
 
                   {/* Home Team */}
                   <div className="col-span-5 flex items-center gap-2">
-                    <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
-                      <span className="text-[8px] text-muted-foreground">🏈</span>
-                    </div>
                     <span className="text-xs font-medium truncate">{match.homeTeam}</span>
                   </div>
                   <div className="col-span-2 flex items-center justify-center">

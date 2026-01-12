@@ -32,16 +32,6 @@ const LeagueLogo = ({ league, className = "w-3 h-3" }: { league?: League; classN
   );
 };
 
-// Get team logo emoji based on league
-const getTeamLogoEmoji = (league?: League): string => {
-  if (!league) return "";
-  if (league === "NFL" || league === "NCAAF") {
-    return "🏈";
-  } else if (league === "NBA" || league === "NCAAB") {
-    return "🏀";
-  }
-  return "";
-};
 
 const formatTimeAgo = (timestamp: number): string => {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
@@ -202,27 +192,9 @@ export function BetHistoryBar() {
                   </div>
                   {(trade.awayTeam || trade.homeTeam) && (
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-0.5">
-                      {trade.awayTeam && (
-                        <>
-                          {trade.league && (
-                            <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
-                              <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(trade.league)}</span>
-                            </div>
-                          )}
-                          <span>{trade.awayTeam}</span>
-                        </>
-                      )}
+                      {trade.awayTeam && <span>{trade.awayTeam}</span>}
                       {trade.awayTeam && trade.homeTeam && <span>@</span>}
-                      {trade.homeTeam && (
-                        <>
-                          {trade.league && (
-                            <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
-                              <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(trade.league)}</span>
-                            </div>
-                          )}
-                          <span>{trade.homeTeam}</span>
-                        </>
-                      )}
+                      {trade.homeTeam && <span>{trade.homeTeam}</span>}
                     </div>
                   )}
                   <div className="text-[11px] text-muted-foreground">{trade.type} • {trade.odds}</div>

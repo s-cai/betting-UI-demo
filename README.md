@@ -58,8 +58,8 @@ This is a professional-grade betting interface designed for arbitrage betting an
   - Score display for live games
 - **Logo/Emoji Usage**:
   - **Category buttons**: Football and Basketball use emojis (🏈 and 🏀)
-  - **League logos**: Only NFL and NBA display official league logos
-  - **NCAA leagues**: NCAAF and NCAAB use emojis (🏈 and 🏀 respectively)
+  - **League logos**: Only NFL and NBA display official league logos in league selection tabs
+  - **NCAA leagues**: NCAAF and NCAAB use emojis (🏈 and 🏀 respectively) in league selection tabs
 - **Game Status Indicators**:
   - ⏳ Hourglass emoji for PRE (prematch) games
   - ⏰ Clock emoji for timeout status during LIVE games

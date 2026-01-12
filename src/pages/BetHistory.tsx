@@ -49,16 +49,6 @@ const LeagueLogo = ({ league, className = "w-4 h-4" }: { league?: League; classN
   );
 };
 
-// Get team logo emoji based on league
-const getTeamLogoEmoji = (league?: League): string => {
-  if (!league) return "📊";
-  if (league === "NFL" || league === "NCAAF") {
-    return "🏈";
-  } else if (league === "NBA" || league === "NCAAB") {
-    return "🏀";
-  }
-  return "📊";
-};
 
 const formatTimeAgo = (timestamp: number): string => {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
@@ -293,27 +283,9 @@ export function BetHistory() {
                             {trade.league && <LeagueLogo league={trade.league} className="w-3.5 h-3.5" />}
                             {(trade.awayTeam || trade.homeTeam) ? (
                               <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                {trade.awayTeam && (
-                                  <>
-                                    {trade.league && (
-                                      <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
-                                        <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(trade.league)}</span>
-                                      </div>
-                                    )}
-                                    <span className="font-semibold text-sm text-foreground truncate">{trade.awayTeam}</span>
-                                  </>
-                                )}
+                                {trade.awayTeam && <span className="font-semibold text-sm text-foreground truncate">{trade.awayTeam}</span>}
                                 {trade.awayTeam && trade.homeTeam && <span className="text-xs text-muted-foreground">@</span>}
-                                {trade.homeTeam && (
-                                  <>
-                                    {trade.league && (
-                                      <div className="w-3 h-3 bg-muted rounded flex items-center justify-center shrink-0">
-                                        <span className="text-[6px] text-muted-foreground">{getTeamLogoEmoji(trade.league)}</span>
-                                      </div>
-                                    )}
-                                    <span className="font-semibold text-sm text-foreground truncate">{trade.homeTeam}</span>
-                                  </>
-                                )}
+                                {trade.homeTeam && <span className="font-semibold text-sm text-foreground truncate">{trade.homeTeam}</span>}
                               </div>
                             ) : (
                               <span className="font-semibold text-sm text-foreground truncate flex-1">{trade.match}</span>
@@ -366,27 +338,9 @@ export function BetHistory() {
                 </div>
                 {(selectedBatchTrade.awayTeam || selectedBatchTrade.homeTeam) && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                    {selectedBatchTrade.awayTeam && (
-                      <>
-                        {selectedBatchTrade.league && (
-                          <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
-                            <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBatchTrade.league)}</span>
-                          </div>
-                        )}
-                        <span>{selectedBatchTrade.awayTeam}</span>
-                      </>
-                    )}
+                    {selectedBatchTrade.awayTeam && <span>{selectedBatchTrade.awayTeam}</span>}
                     {selectedBatchTrade.awayTeam && selectedBatchTrade.homeTeam && <span>@</span>}
-                    {selectedBatchTrade.homeTeam && (
-                      <>
-                        {selectedBatchTrade.league && (
-                          <div className="w-4 h-4 bg-muted rounded flex items-center justify-center shrink-0">
-                            <span className="text-[8px] text-muted-foreground">{getTeamLogoEmoji(selectedBatchTrade.league)}</span>
-                          </div>
-                        )}
-                        <span>{selectedBatchTrade.homeTeam}</span>
-                      </>
-                    )}
+                    {selectedBatchTrade.homeTeam && <span>{selectedBatchTrade.homeTeam}</span>}
                   </div>
                 )}
                 <div className="text-sm text-muted-foreground mb-2">{selectedBatchTrade.type} • {selectedBatchTrade.odds}</div>
