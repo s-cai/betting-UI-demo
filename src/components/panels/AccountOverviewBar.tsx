@@ -108,6 +108,7 @@ export function AccountOverviewBar() {
         <div className="px-4 pb-3 overflow-x-auto terminal-scrollbar">
           <div className="flex gap-2">
             {platformSummaries.map((summary) => {
+              const totalBalance = summary.online.balance + summary.limited.balance + summary.offline.balance;
               return (
                 <div
                   key={summary.platformId}
@@ -119,7 +120,9 @@ export function AccountOverviewBar() {
                       alt={`${summary.platformName} Logo`} 
                       className="h-6 w-auto object-contain"
                     />
-                    <span className="text-xs font-semibold truncate">{summary.platformName}</span>
+                    <span className="text-xs font-mono font-semibold text-signal-positive">
+                      ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
                   </div>
                   
                   <div className="space-y-2">
