@@ -427,10 +427,19 @@ export function BetHistory() {
                         </div>
                       </div>
 
-                      <div className={cn("flex items-center gap-2", getBetStatusColor(bet.status))}>
+                      <div className={cn("flex items-center gap-2 mb-2", getBetStatusColor(bet.status))}>
                         <span className="text-xl font-bold">{getBetStatusIcon(bet.status)}</span>
                         <span className="text-sm font-medium">{getBetStatusText(bet.status)}</span>
                       </div>
+
+                      {bet.timing !== undefined && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>Time:</span>
+                          <span className="font-mono font-semibold">
+                            {(bet.timing / 1000).toFixed(2)}s
+                          </span>
+                        </div>
+                      )}
 
                       {bet.status === "lost" && bet.error && (
                         <div className="mt-2 space-y-2">
