@@ -151,7 +151,7 @@ interface SportsPanelProps {
 // Using reliable CDN sources
 const leagueLogos: Record<"NFL" | "NBA", string> = {
   NFL: "https://cdn.freebiesupply.com/logos/large/2x/nfl-1-logo-png-transparent.png",
-  NBA: "https://cdn.freebiesupply.com/logos/large/2x/nba-2-logo-png-transparent.png",
+  NBA: "https://cdn.freebiesupply.com/logos/large/2x/nba-3-logo-png-transparent.png",
 };
 
 const LeagueLogo = ({ league, className = "w-4 h-4" }: { league: League; className?: string }) => {

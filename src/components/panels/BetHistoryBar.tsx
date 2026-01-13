@@ -6,7 +6,7 @@ import { useBetHistory, type League } from "@/contexts/BetHistoryContext";
 // League logo URLs
 const leagueLogos: Record<"NFL" | "NBA", string> = {
   NFL: "https://cdn.freebiesupply.com/logos/large/2x/nfl-1-logo-png-transparent.png",
-  NBA: "https://cdn.freebiesupply.com/logos/large/2x/nba-2-logo-png-transparent.png",
+  NBA: "https://cdn.freebiesupply.com/logos/large/2x/nba-3-logo-png-transparent.png",
 };
 
 const LeagueLogo = ({ league, className = "w-3 h-3" }: { league?: League; className?: string }) => {
