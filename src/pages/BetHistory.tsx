@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 // League logo URLs - same as SportsPanel
 const leagueLogos: Record<"NFL" | "NBA", string> = {
   NFL: "https://cdn.freebiesupply.com/logos/large/2x/nfl-1-logo-png-transparent.png",
-  NBA: "https://cdn.freebiesupply.com/logos/large/2x/nba-3-logo-png-transparent.png",
+  NBA: "https://upload.wikimedia.org/wikipedia/en/thumb/0/03/National_Basketball_Association_logo.svg/512px-National_Basketball_Association_logo.svg.png",
 };
 
 // Platform logo map - same as OddsComparisonGrid and Accounts
