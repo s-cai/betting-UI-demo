@@ -34,13 +34,13 @@ const bookLogoMap: Record<string, string> = {
 
 const mockBookOdds: BookOdds[] = [
   { book: "DraftKings", logo: "DK", logoPath: bookLogoMap["DraftKings"], hasOpen: true, spread: { away: "+1.5 (-195)", home: "-1.5 (+160)" }, moneyline: { away: "+123", home: "-140", best: true }, total: { over: "-103", under: "+100" } },
-  { book: "Pinnacle", logo: "P", spread: { away: "-1.5 (+150)", home: "+1.5 (-170)" }, moneyline: { away: "+109", home: "-125" }, total: { over: "-102", under: "-105" } },
   { book: "FanDuel", logo: "FD", logoPath: bookLogoMap["FanDuel"], spread: { away: "+1 (-129)", home: "-1 (+105)" }, moneyline: { away: "+102", home: "-119" }, total: { over: "-108", under: "-112" } },
   { book: "BetMGM", logo: "M", logoPath: bookLogoMap["BetMGM"], spread: { away: "+1 (-125)", home: "-1 (+100)", best: true }, moneyline: { away: "+100", home: "-120" }, total: { over: "-105", under: "-115", best: true } },
   { book: "Caesars", logo: "C", logoPath: bookLogoMap["Caesars"], spread: { away: "+1.5 (-180)", home: "-1.5 (+150)" }, moneyline: { away: "+100", home: "-125" }, total: { over: "-110", under: "-110" } },
   { book: "PointsBet", logo: "PB", logoPath: bookLogoMap["PointsBet"], spread: { away: "+1.5 (-175)", home: "-1.5 (+145)" }, moneyline: { away: "+100", home: "-120" }, total: { over: "-112", under: "-108" } },
   { book: "Bet365", logo: "365", logoPath: bookLogoMap["Bet365"], spread: { away: "+1.5 (-210)", home: "-1.5 (+160)" }, moneyline: { away: "+110", home: "-126" }, total: { over: "-110", under: "-110" } },
-  { book: "Betway", logo: "BW", spread: { away: "+1.5 (-155)", home: "-1.5 (+130)" }, moneyline: { away: "+100", home: "-130" }, total: { over: "-112", under: "-108" } },
+  { book: "Unibet", logo: "UB", logoPath: bookLogoMap["Unibet"], spread: { away: "-1.5 (+150)", home: "+1.5 (-170)" }, moneyline: { away: "+109", home: "-125" }, total: { over: "-102", under: "-105" } },
+  { book: "WynnBET", logo: "WB", logoPath: bookLogoMap["WynnBET"], spread: { away: "+1.5 (-155)", home: "-1.5 (+130)" }, moneyline: { away: "+100", home: "-130" }, total: { over: "-112", under: "-108" } },
 ];
 
 // Only Main Lines tab is shown - other tabs removed per issue #22
@@ -123,17 +123,17 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
           <thead className="sticky top-0 z-10">
             {/* Market Headers */}
             <tr className="bg-panel-header">
-              <th className="text-left" style={{ width: '12.5%' }}>Moneyline</th>
-              <th className="text-center" style={{ width: '12.5%' }}>Best Odds</th>
-              <th className="text-center" style={{ width: '12.5%' }}>Close Odds</th>
-              {mockBookOdds.slice(0, 6).map((odds) => (
-                <th key={odds.book} className="text-center" style={{ width: '12.5%' }}>
-                  <div className="flex items-center justify-center gap-1">
+              <th className="text-left" style={{ width: '14%' }}>Moneyline</th>
+              <th className="text-center" style={{ width: '9%' }}>Best Odds</th>
+              <th className="text-center" style={{ width: '9%' }}>Close Odds</th>
+              {mockBookOdds.map((odds) => (
+                <th key={odds.book} className="text-center px-1" style={{ width: '8.5%' }}>
+                  <div className="flex items-center justify-center gap-0.5">
                     {odds.logoPath ? (
                       <img 
                         src={odds.logoPath} 
                         alt={`${odds.book} Logo`} 
-                        className="h-6 w-auto object-contain max-w-[50px]"
+                        className="h-7 w-auto object-contain max-w-[60px]"
                         style={{ imageRendering: 'auto' }}
                         loading="lazy"
                         onError={(e) => {
@@ -143,14 +143,14 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
                           if (parent && !parent.querySelector('.logo-fallback')) {
                             target.style.display = 'none';
                             const fallback = document.createElement('span');
-                            fallback.className = 'logo-fallback w-5 h-5 bg-muted rounded text-[10px] font-bold flex items-center justify-center';
+                            fallback.className = 'logo-fallback w-6 h-6 bg-muted rounded text-xs font-bold flex items-center justify-center';
                             fallback.textContent = odds.logo;
                             parent.appendChild(fallback);
                           }
                         }}
                       />
                     ) : (
-                      <span className="w-5 h-5 bg-muted rounded text-[10px] font-bold flex items-center justify-center">
+                      <span className="w-6 h-6 bg-muted rounded text-xs font-bold flex items-center justify-center">
                         {odds.logo}
                       </span>
                     )}
@@ -178,7 +178,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               <td className="text-center">
                 <span className="text-xs font-mono text-muted-foreground">+102</span>
               </td>
-              {mockBookOdds.slice(0, 6).map((odds) => (
+              {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
                   <button 
                     onClick={() => handleOddsClick(odds.book, 'Moneyline', 'away', odds.moneyline.away)}
@@ -211,7 +211,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               <td className="text-center">
                 <span className="text-xs font-mono text-muted-foreground">-126</span>
               </td>
-              {mockBookOdds.slice(0, 6).map((odds) => (
+              {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
                   <button 
                     onClick={() => handleOddsClick(odds.book, 'Moneyline', 'home', odds.moneyline.home)}
@@ -249,7 +249,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               <td className="text-center">
                 <span className="text-xs font-mono text-muted-foreground">+1.5 (-195)</span>
               </td>
-              {mockBookOdds.slice(0, 6).map((odds) => (
+              {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
                   <button 
                     onClick={() => handleOddsClick(odds.book, 'Spread', 'away', odds.spread.away)}
@@ -280,7 +280,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               <td className="text-center">
                 <span className="text-xs font-mono text-muted-foreground">-1.5 (+150)</span>
               </td>
-              {mockBookOdds.slice(0, 6).map((odds) => (
+              {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
                   <button 
                     onClick={() => handleOddsClick(odds.book, 'Spread', 'home', odds.spread.home)}
@@ -310,7 +310,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               <td className="text-center">
                 <span className="text-xs font-mono text-muted-foreground">-107</span>
               </td>
-              {mockBookOdds.slice(0, 6).map((odds) => (
+              {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
                   <button 
                     onClick={() => handleOddsClick(odds.book, 'Total', 'over', odds.total.over)}
@@ -336,7 +336,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
               <td className="text-center">
                 <span className="text-xs font-mono text-muted-foreground">-109</span>
               </td>
-              {mockBookOdds.slice(0, 6).map((odds) => (
+              {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
                   <button 
                     onClick={() => handleOddsClick(odds.book, 'Total', 'under', odds.total.under)}
