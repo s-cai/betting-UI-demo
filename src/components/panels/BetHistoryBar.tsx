@@ -117,16 +117,31 @@ export function BetHistoryBar() {
     return trades.sort((a, b) => b.timestamp - a.timestamp);
   }, [bets]);
 
-  // Get today's batch trades (filtered by today's date, sorted by timestamp)
+  // Get today's batch trades (filtered by noon-to-noon boundary, sorted by timestamp)
   const todaysBatchTrades = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayStart = today.getTime();
-    const todayEnd = todayStart + 24 * 60 * 60 * 1000;
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // Set boundary at noon (12:00:00)
+    const boundary = new Date(now);
+    boundary.setHours(12, 0, 0, 0);
+    
+    let periodStart: number;
+    let periodEnd: number;
+    
+    if (currentHour < 12) {
+      // Before noon: show bets from noon yesterday to noon today
+      periodStart = boundary.getTime() - (24 * 60 * 60 * 1000); // Noon yesterday
+      periodEnd = boundary.getTime(); // Noon today
+    } else {
+      // At or after noon: show bets from noon today to noon tomorrow
+      periodStart = boundary.getTime(); // Noon today
+      periodEnd = boundary.getTime() + (24 * 60 * 60 * 1000); // Noon tomorrow
+    }
     
     return batchTrades.filter(trade => {
-      const tradeDate = new Date(trade.timestamp);
-      return tradeDate.getTime() >= todayStart && tradeDate.getTime() < todayEnd;
+      const tradeTime = trade.timestamp;
+      return tradeTime >= periodStart && tradeTime < periodEnd;
     });
   }, [batchTrades]);
 
