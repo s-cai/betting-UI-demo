@@ -718,7 +718,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     }
   }, [viewMode, sentBets]);
 
-  // Auto-close after-bet view 5 seconds after all bets are sent and successful
+  // Auto-close after-bet view 3 seconds after all bets are sent and successful
   useEffect(() => {
     if (viewMode === 'after' && sentBets.length > 0) {
       // Check if all bets are done (either SUCCEEDED or FAILED)
@@ -732,7 +732,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
       if (allDone && allSucceeded) {
         const closeTimeout = setTimeout(() => {
           handleClose();
-        }, 5000);
+        }, 3000);
         timeoutRefs.current.push(closeTimeout);
         
         return () => {
