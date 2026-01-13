@@ -117,9 +117,17 @@ export function BetHistoryBar() {
     return trades.sort((a, b) => b.timestamp - a.timestamp);
   }, [bets]);
 
-  // Get recent batch trades (last 6, sorted by timestamp)
-  const recentBatchTrades = useMemo(() => {
-    return batchTrades.slice(0, 6);
+  // Get today's batch trades (filtered by today's date, sorted by timestamp)
+  const todaysBatchTrades = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStart = today.getTime();
+    const todayEnd = todayStart + 24 * 60 * 60 * 1000;
+    
+    return batchTrades.filter(trade => {
+      const tradeDate = new Date(trade.timestamp);
+      return tradeDate.getTime() >= todayStart && tradeDate.getTime() < todayEnd;
+    });
   }, [batchTrades]);
 
   const stats = useMemo(() => {
@@ -148,7 +156,7 @@ export function BetHistoryBar() {
           {/* Header */}
           <div className="panel-header flex items-center gap-2">
             <History className="w-3.5 h-3.5" />
-            <span>Recent Bets</span>
+            <span>Today's Bets</span>
           </div>
 
           {/* Stats */}
@@ -168,13 +176,13 @@ export function BetHistoryBar() {
           </div>
 
           {/* Bet List */}
-          <div className="flex-1 overflow-y-auto terminal-scrollbar">
-            {recentBatchTrades.length === 0 ? (
+          <div className="flex-1 overflow-y-auto terminal-scrollbar min-h-0">
+            {todaysBatchTrades.length === 0 ? (
               <div className="p-4 text-center text-muted-foreground text-xs">
-                No bets yet
+                No bets today
               </div>
             ) : (
-              recentBatchTrades.map((trade) => (
+              todaysBatchTrades.map((trade) => (
                 <div
                   key={trade.key}
                   className="p-2 border-b border-border/30"

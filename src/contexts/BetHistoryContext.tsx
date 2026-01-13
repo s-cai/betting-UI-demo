@@ -30,7 +30,7 @@ interface BetHistoryContextType {
 const BetHistoryContext = createContext<BetHistoryContextType | undefined>(undefined);
 
 // Load bets from localStorage on init
-const BET_HISTORY_VERSION = '2.3'; // Increment to force reload demo data (per-account timing, no pending bets)
+const BET_HISTORY_VERSION = '2.4'; // Increment to force reload demo data (more today's bets for scrollable list)
 const loadBetsFromStorage = (): Bet[] => {
   try {
     // Check version - if it doesn't match, clear old data and use demo data
@@ -105,6 +105,62 @@ const loadBetsFromStorage = (): Bet[] => {
     { id: "6d", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 550, status: "won", timestamp: baseTime - 10798000, payout: 500, platform: "FanDuel", accountName: "Ryan O'Connor", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys", timing: 1810 },
     { id: "6e", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 450, status: "won", timestamp: baseTime - 10797500, payout: 409, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys", timing: 2040 },
     { id: "6f", match: "PHI @ DAL", type: "U 44.5", odds: "-110", stake: 350, status: "won", timestamp: baseTime - 10797000, payout: 318, platform: "FanDuel", accountName: "Thomas Anderson", league: "NFL" as League, awayTeam: "Philadelphia Eagles", homeTeam: "Dallas Cowboys", timing: 1900 },
+    
+    // Additional today's bets to make the list scrollable
+    // DEN @ LV - ML DEN -140 - BetMGM (batch with 4 accounts, all won) - 4 hours ago
+    { id: "7", match: "DEN @ LV", type: "ML DEN", odds: "-140", stake: 850, status: "won", timestamp: baseTime - 14400000, payout: 607, platform: "BetMGM", accountName: "Robert Williams", league: "NFL" as League, awayTeam: "Denver Broncos", homeTeam: "Las Vegas Raiders", timing: 1920 },
+    { id: "7a", match: "DEN @ LV", type: "ML DEN", odds: "-140", stake: 650, status: "won", timestamp: baseTime - 14399500, payout: 464, platform: "BetMGM", accountName: "Michael Chen", league: "NFL" as League, awayTeam: "Denver Broncos", homeTeam: "Las Vegas Raiders", timing: 1780 },
+    { id: "7b", match: "DEN @ LV", type: "ML DEN", odds: "-140", stake: 500, status: "won", timestamp: baseTime - 14399000, payout: 357, platform: "BetMGM", accountName: "Lisa Anderson", league: "NFL" as League, awayTeam: "Denver Broncos", homeTeam: "Las Vegas Raiders", timing: 2050 },
+    { id: "7c", match: "DEN @ LV", type: "ML DEN", odds: "-140", stake: 750, status: "won", timestamp: baseTime - 14398500, payout: 536, platform: "BetMGM", accountName: "David Martinez", league: "NFL" as League, awayTeam: "Denver Broncos", homeTeam: "Las Vegas Raiders", timing: 1890 },
+    
+    // DEN @ LV - ML DEN -140 - Caesars (batch with 3 accounts, all won) - 4 hours ago
+    { id: "7d", match: "DEN @ LV", type: "ML DEN", odds: "-140", stake: 600, status: "won", timestamp: baseTime - 14398000, payout: 429, platform: "Caesars", accountName: "Amanda Wilson", league: "NFL" as League, awayTeam: "Denver Broncos", homeTeam: "Las Vegas Raiders", timing: 1970 },
+    { id: "7e", match: "DEN @ LV", type: "ML DEN", odds: "-140", stake: 550, status: "won", timestamp: baseTime - 14397500, payout: 393, platform: "Caesars", accountName: "James Lee", league: "NFL" as League, awayTeam: "Denver Broncos", homeTeam: "Las Vegas Raiders", timing: 1830 },
+    { id: "7f", match: "DEN @ LV", type: "ML DEN", odds: "-140", stake: 700, status: "won", timestamp: baseTime - 14397000, payout: 500, platform: "Caesars", accountName: "Patricia Garcia", league: "NFL" as League, awayTeam: "Denver Broncos", homeTeam: "Las Vegas Raiders", timing: 2110 },
+    
+    // BKN @ MIL - O 225.5 -105 - DraftKings (batch with 4 accounts, all won) - 5 hours ago
+    { id: "8", match: "BKN @ MIL", type: "O 225.5", odds: "-105", stake: 750, status: "won", timestamp: baseTime - 18000000, payout: 714, platform: "DraftKings", accountName: "Jennifer Taylor", league: "NBA" as League, awayTeam: "Brooklyn Nets", homeTeam: "Milwaukee Bucks", timing: 1860 },
+    { id: "8a", match: "BKN @ MIL", type: "O 225.5", odds: "-105", stake: 600, status: "won", timestamp: baseTime - 17999500, payout: 571, platform: "DraftKings", accountName: "John Smith", league: "NBA" as League, awayTeam: "Brooklyn Nets", homeTeam: "Milwaukee Bucks", timing: 1990 },
+    { id: "8b", match: "BKN @ MIL", type: "O 225.5", odds: "-105", stake: 500, status: "won", timestamp: baseTime - 17999000, payout: 476, platform: "DraftKings", accountName: "Christopher Brown", league: "NBA" as League, awayTeam: "Brooklyn Nets", homeTeam: "Milwaukee Bucks", timing: 1740 },
+    { id: "8c", match: "BKN @ MIL", type: "O 225.5", odds: "-105", stake: 450, status: "won", timestamp: baseTime - 17998500, payout: 429, platform: "DraftKings", accountName: "Kevin Thompson", league: "NBA" as League, awayTeam: "Brooklyn Nets", homeTeam: "Milwaukee Bucks", timing: 2020 },
+    
+    // BKN @ MIL - O 225.5 -105 - FanDuel (batch with 3 accounts, all won) - 5 hours ago
+    { id: "8d", match: "BKN @ MIL", type: "O 225.5", odds: "-105", stake: 650, status: "won", timestamp: baseTime - 17998000, payout: 619, platform: "FanDuel", accountName: "Sarah Johnson", league: "NBA" as League, awayTeam: "Brooklyn Nets", homeTeam: "Milwaukee Bucks", timing: 1880 },
+    { id: "8e", match: "BKN @ MIL", type: "O 225.5", odds: "-105", stake: 550, status: "won", timestamp: baseTime - 17997500, payout: 524, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NBA" as League, awayTeam: "Brooklyn Nets", homeTeam: "Milwaukee Bucks", timing: 1930 },
+    { id: "8f", match: "BKN @ MIL", type: "O 225.5", odds: "-105", stake: 400, status: "won", timestamp: baseTime - 17997000, payout: 381, platform: "FanDuel", accountName: "Ryan O'Connor", league: "NBA" as League, awayTeam: "Brooklyn Nets", homeTeam: "Milwaukee Bucks", timing: 2070 },
+    
+    // CLE @ CHI - Spread +3.5 -110 - BetMGM (batch with 3 accounts, mix won/lost) - 6 hours ago
+    { id: "9", match: "CLE @ CHI", type: "Spread +3.5", odds: "-110", stake: 700, status: "won", timestamp: baseTime - 21600000, payout: 636, platform: "BetMGM", accountName: "Thomas Anderson", league: "NBA" as League, awayTeam: "Cleveland Cavaliers", homeTeam: "Chicago Bulls", timing: 1950 },
+    { id: "9a", match: "CLE @ CHI", type: "Spread +3.5", odds: "-110", stake: 600, status: "won", timestamp: baseTime - 21599500, payout: 545, platform: "BetMGM", accountName: "Daniel Kim", league: "NBA" as League, awayTeam: "Cleveland Cavaliers", homeTeam: "Chicago Bulls", timing: 1810 },
+    { id: "9b", match: "CLE @ CHI", type: "Spread +3.5", odds: "-110", stake: 500, status: "lost", timestamp: baseTime - 21599000, platform: "BetMGM", accountName: "Emily Davis", league: "NBA" as League, awayTeam: "Cleveland Cavaliers", homeTeam: "Chicago Bulls", error: "Connection timeout", errorScreenshot: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iIzFhMWExYSIvPjx0ZXh0IHg9IjE1MCIgeT0iMjUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Db25uZWN0aW9uIHRpbWVvdXQ8L3RleHQ+PC9zdmc+", timing: 3100 },
+    
+    // CLE @ CHI - Spread +3.5 -110 - DraftKings (batch with 4 accounts, all won) - 6 hours ago
+    { id: "9c", match: "CLE @ CHI", type: "Spread +3.5", odds: "-110", stake: 800, status: "won", timestamp: baseTime - 21598500, payout: 727, platform: "DraftKings", accountName: "Jennifer Taylor", league: "NBA" as League, awayTeam: "Cleveland Cavaliers", homeTeam: "Chicago Bulls", timing: 1790 },
+    { id: "9d", match: "CLE @ CHI", type: "Spread +3.5", odds: "-110", stake: 550, status: "won", timestamp: baseTime - 21598000, payout: 500, platform: "DraftKings", accountName: "John Smith", league: "NBA" as League, awayTeam: "Cleveland Cavaliers", homeTeam: "Chicago Bulls", timing: 2040 },
+    { id: "9e", match: "CLE @ CHI", type: "Spread +3.5", odds: "-110", stake: 450, status: "won", timestamp: baseTime - 21597500, payout: 409, platform: "DraftKings", accountName: "Patricia Garcia", league: "NBA" as League, awayTeam: "Cleveland Cavaliers", homeTeam: "Chicago Bulls", timing: 1920 },
+    { id: "9f", match: "CLE @ CHI", type: "Spread +3.5", odds: "-110", stake: 350, status: "won", timestamp: baseTime - 21597000, payout: 318, platform: "DraftKings", accountName: "Christopher Brown", league: "NBA" as League, awayTeam: "Cleveland Cavaliers", homeTeam: "Chicago Bulls", timing: 1980 },
+    
+    // GB @ MIN - ML GB +125 - FanDuel (batch with 4 accounts, all won) - 7 hours ago
+    { id: "10", match: "GB @ MIN", type: "ML GB", odds: "+125", stake: 600, status: "won", timestamp: baseTime - 25200000, payout: 750, platform: "FanDuel", accountName: "Sarah Johnson", league: "NFL" as League, awayTeam: "Green Bay Packers", homeTeam: "Minnesota Vikings", timing: 1870 },
+    { id: "10a", match: "GB @ MIN", type: "ML GB", odds: "+125", stake: 500, status: "won", timestamp: baseTime - 25199500, payout: 625, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NFL" as League, awayTeam: "Green Bay Packers", homeTeam: "Minnesota Vikings", timing: 2010 },
+    { id: "10b", match: "GB @ MIN", type: "ML GB", odds: "+125", stake: 450, status: "won", timestamp: baseTime - 25199000, payout: 563, platform: "FanDuel", accountName: "Ryan O'Connor", league: "NFL" as League, awayTeam: "Green Bay Packers", homeTeam: "Minnesota Vikings", timing: 1760 },
+    { id: "10c", match: "GB @ MIN", type: "ML GB", odds: "+125", stake: 400, status: "won", timestamp: baseTime - 25198500, payout: 500, platform: "FanDuel", accountName: "Kevin Thompson", league: "NFL" as League, awayTeam: "Green Bay Packers", homeTeam: "Minnesota Vikings", timing: 1940 },
+    
+    // GB @ MIN - ML GB +125 - BetMGM (batch with 3 accounts, all won) - 7 hours ago
+    { id: "10d", match: "GB @ MIN", type: "ML GB", odds: "+125", stake: 700, status: "won", timestamp: baseTime - 25198000, payout: 875, platform: "BetMGM", accountName: "Robert Williams", league: "NFL" as League, awayTeam: "Green Bay Packers", homeTeam: "Minnesota Vikings", timing: 1820 },
+    { id: "10e", match: "GB @ MIN", type: "ML GB", odds: "+125", stake: 550, status: "won", timestamp: baseTime - 25197500, payout: 688, platform: "BetMGM", accountName: "Michael Chen", league: "NFL" as League, awayTeam: "Green Bay Packers", homeTeam: "Minnesota Vikings", timing: 2090 },
+    { id: "10f", match: "GB @ MIN", type: "ML GB", odds: "+125", stake: 500, status: "won", timestamp: baseTime - 25197000, payout: 625, platform: "BetMGM", accountName: "Lisa Anderson", league: "NFL" as League, awayTeam: "Green Bay Packers", homeTeam: "Minnesota Vikings", timing: 1900 },
+    
+    // POR @ UTA - U 228.5 -108 - DraftKings (batch with 3 accounts, all won) - 8 hours ago
+    { id: "11", match: "POR @ UTA", type: "U 228.5", odds: "-108", stake: 650, status: "won", timestamp: baseTime - 28800000, payout: 602, platform: "DraftKings", accountName: "Jennifer Taylor", league: "NBA" as League, awayTeam: "Portland Trail Blazers", homeTeam: "Utah Jazz", timing: 1960 },
+    { id: "11a", match: "POR @ UTA", type: "U 228.5", odds: "-108", stake: 550, status: "won", timestamp: baseTime - 28799500, payout: 509, platform: "DraftKings", accountName: "John Smith", league: "NBA" as League, awayTeam: "Portland Trail Blazers", homeTeam: "Utah Jazz", timing: 1830 },
+    { id: "11b", match: "POR @ UTA", type: "U 228.5", odds: "-108", stake: 450, status: "won", timestamp: baseTime - 28799000, payout: 417, platform: "DraftKings", accountName: "Patricia Garcia", league: "NBA" as League, awayTeam: "Portland Trail Blazers", homeTeam: "Utah Jazz", timing: 2050 },
+    
+    // POR @ UTA - U 228.5 -108 - FanDuel (batch with 4 accounts, all won) - 8 hours ago
+    { id: "11c", match: "POR @ UTA", type: "U 228.5", odds: "-108", stake: 750, status: "won", timestamp: baseTime - 28798500, payout: 694, platform: "FanDuel", accountName: "Sarah Johnson", league: "NBA" as League, awayTeam: "Portland Trail Blazers", homeTeam: "Utah Jazz", timing: 1880 },
+    { id: "11d", match: "POR @ UTA", type: "U 228.5", odds: "-108", stake: 600, status: "won", timestamp: baseTime - 28798000, payout: 556, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NBA" as League, awayTeam: "Portland Trail Blazers", homeTeam: "Utah Jazz", timing: 1970 },
+    { id: "11e", match: "POR @ UTA", type: "U 228.5", odds: "-108", stake: 500, status: "won", timestamp: baseTime - 28797500, payout: 463, platform: "FanDuel", accountName: "Ryan O'Connor", league: "NBA" as League, awayTeam: "Portland Trail Blazers", homeTeam: "Utah Jazz", timing: 1910 },
+    { id: "11f", match: "POR @ UTA", type: "U 228.5", odds: "-108", stake: 400, status: "won", timestamp: baseTime - 28797000, payout: 370, platform: "FanDuel", accountName: "Kevin Thompson", league: "NBA" as League, awayTeam: "Portland Trail Blazers", homeTeam: "Utah Jazz", timing: 2030 },
   ];
 };
 
