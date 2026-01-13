@@ -190,13 +190,6 @@ export function BetHistoryBar() {
                     {trade.league && <LeagueLogo league={trade.league} className="w-3 h-3" />}
                     <span className="text-xs font-medium truncate">{trade.match}</span>
                   </div>
-                  {(trade.awayTeam || trade.homeTeam) && (
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-0.5">
-                      {trade.awayTeam && <span>{trade.awayTeam}</span>}
-                      {trade.awayTeam && trade.homeTeam && <span>@</span>}
-                      {trade.homeTeam && <span>{trade.homeTeam}</span>}
-                    </div>
-                  )}
                   <div className="text-[11px] text-muted-foreground">{trade.type} • {trade.odds}</div>
                   
                   <div className="flex items-center justify-between mt-1.5 text-[10px]">
