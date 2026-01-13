@@ -43,7 +43,7 @@ const mockBookOdds: BookOdds[] = [
   { book: "Betway", logo: "BW", spread: { away: "+1.5 (-155)", home: "-1.5 (+130)" }, moneyline: { away: "+100", home: "-130" }, total: { over: "-112", under: "-108" } },
 ];
 
-const marketTabs = ["Main Lines", "Team Markets", "First X Innings", "Innings", "Batter Props", "Pitcher Props"];
+// Only Main Lines tab is shown - other tabs removed per issue #22
 
 export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
   const [bettingDialog, setBettingDialog] = useState<{
@@ -116,22 +116,6 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
         <Info className="w-3.5 h-3.5 text-muted-foreground" />
       </div>
 
-      {/* Market Tabs */}
-      <div className="flex items-center gap-1 px-3 py-2 border-b border-panel-border bg-panel-header overflow-x-auto">
-        {marketTabs.map((tab, idx) => (
-          <button
-            key={tab}
-            className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded whitespace-nowrap transition-colors",
-              idx === 0
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-            )}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
 
       {/* Odds Grid */}
       <div className="flex-1 overflow-auto terminal-scrollbar">

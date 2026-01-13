@@ -687,6 +687,22 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     }
   }, [isOpen, match?.id, platform, market, side, odds, platformAccounts]);
 
+  // Handle ESC key to close dialog
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Cleanup timeouts and intervals on unmount
   useEffect(() => {
     return () => {
