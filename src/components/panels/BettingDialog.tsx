@@ -222,6 +222,12 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   };
 
   const handleAccountToggle = (accountId: string, checked: boolean) => {
+    // Prevent selecting offline accounts
+    const account = platformAccounts.find(acc => acc.id === accountId);
+    if (account?.phoneOffline) {
+      return;
+    }
+    
     setSelectedAccounts(prev => {
       const newMap = new Map(prev);
       if (checked) {
@@ -294,7 +300,8 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   };
 
   const handleTagSelection = (tag: string) => {
-    const accountsWithTag = platformAccounts.filter(acc => acc.tags.includes(tag));
+    // Filter to only include accounts with the tag that are not offline
+    const accountsWithTag = platformAccounts.filter(acc => acc.tags.includes(tag) && !acc.phoneOffline);
     if (accountsWithTag.length === 0) return;
 
     // Check if all accounts with this tag are already selected
@@ -664,12 +671,15 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
       elapsedTimeIntervalsRef.current.forEach(interval => clearInterval(interval));
       elapsedTimeIntervalsRef.current.clear();
       
-      // Default to select all accounts
+      // Default to select all accounts (excluding offline accounts)
       const allAccountsMap = new Map<string, number>();
       const allInputsMap = new Map<string, string>();
       platformAccounts.forEach(account => {
-        allAccountsMap.set(account.id, 0);
-        allInputsMap.set(account.id, '');
+        // Only select accounts that are not offline
+        if (!account.phoneOffline) {
+          allAccountsMap.set(account.id, 0);
+          allInputsMap.set(account.id, '');
+        }
       });
       setSelectedAccounts(allAccountsMap);
       setBetAmountInputs(allInputsMap);
@@ -840,6 +850,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
             id={`bet-checkbox-${account.id}`}
             checked={isSelected}
             onChange={(e) => handleAccountToggle(account.id, e.target.checked)}
+            disabled={account.phoneOffline}
             className="w-4 h-4"
           />
           <Input
@@ -855,7 +866,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
               }
             }}
             onBlur={() => handleBetAmountBlur(account.id)}
-            disabled={!isSelected}
+            disabled={!isSelected || account.phoneOffline}
             placeholder={`Max: $${maxBet.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
             className="flex-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
           />
