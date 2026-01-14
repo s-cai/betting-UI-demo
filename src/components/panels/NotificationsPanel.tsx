@@ -1,5 +1,5 @@
 import { Bell, AlertTriangle, TrendingUp, Clock, Settings, Info } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import type { Match } from "./SportsPanel";
 import { allMatches } from "./SportsPanel";
@@ -217,7 +217,19 @@ const typeStyles = {
 };
 
 export function NotificationsPanel({ onMatchSelect, onNavigateToOdds }: NotificationsPanelProps) {
-  const [filter, setFilter] = useState<"all" | "opportunity" | "alert" | "warning">("all");
+  // Load persisted filter from localStorage
+  const [filter, setFilter] = useState<"all" | "opportunity" | "alert" | "warning">(() => {
+    const saved = localStorage.getItem('betting-ui-notifications-filter');
+    if (saved && ["all", "opportunity", "alert", "warning"].includes(saved)) {
+      return saved as "all" | "opportunity" | "alert" | "warning";
+    }
+    return "all";
+  });
+  
+  // Persist filter changes
+  useEffect(() => {
+    localStorage.setItem('betting-ui-notifications-filter', filter);
+  }, [filter]);
   
   // Create notifications from available matches
   const mockNotifications = createNotificationsFromMatches(allMatches);

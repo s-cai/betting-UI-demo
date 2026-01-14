@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { History, CheckCircle, XCircle, Clock, Filter, Search, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBetHistory, type Bet, type League } from "@/contexts/BetHistoryContext";
@@ -81,8 +81,34 @@ interface BatchTrade {
 
 export function BetHistory() {
   const { bets } = useBetHistory();
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "won" | "lost">("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  // Load persisted filter states from localStorage
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "won" | "lost">(() => {
+    const saved = localStorage.getItem('betting-ui-history-status-filter');
+    if (saved && ["all", "pending", "won", "lost"].includes(saved)) {
+      return saved as "all" | "pending" | "won" | "lost";
+    }
+    return "all";
+  });
+  const [searchQuery, setSearchQuery] = useState(() => {
+    return localStorage.getItem('betting-ui-history-search-query') || "";
+  });
+  
+  // Refs for scroll containers
+  const leftScrollRef = useRef<HTMLDivElement>(null);
+  const rightScrollRef = useRef<HTMLDivElement>(null);
+  
+  // Persist filter states
+  useEffect(() => {
+    localStorage.setItem('betting-ui-history-status-filter', statusFilter);
+  }, [statusFilter]);
+  
+  useEffect(() => {
+    if (searchQuery) {
+      localStorage.setItem('betting-ui-history-search-query', searchQuery);
+    } else {
+      localStorage.removeItem('betting-ui-history-search-query');
+    }
+  }, [searchQuery]);
   
   // Group bets into batch trades (game x line x platform)
   // Each batch trade represents a conceptual big trade spread across multiple accounts
@@ -155,13 +181,56 @@ export function BetHistory() {
     });
   }, [batchTrades, statusFilter, searchQuery]);
 
-  // Select first batch trade by default
+  // Select batch trade - try to restore from localStorage, otherwise use first
   const [selectedBatchTrade, setSelectedBatchTrade] = useState<BatchTrade | null>(() => {
+    const savedKey = localStorage.getItem('betting-ui-history-selected-trade');
+    if (savedKey && filteredBatchTrades.length > 0) {
+      const savedTrade = filteredBatchTrades.find(t => t.key === savedKey);
+      if (savedTrade) {
+        return savedTrade;
+      }
+    }
     if (filteredBatchTrades.length > 0) {
       return filteredBatchTrades[0];
     }
     return null;
   });
+  
+  // Persist selected batch trade
+  useEffect(() => {
+    if (selectedBatchTrade) {
+      localStorage.setItem('betting-ui-history-selected-trade', selectedBatchTrade.key);
+    } else {
+      localStorage.removeItem('betting-ui-history-selected-trade');
+    }
+  }, [selectedBatchTrade]);
+  
+  // Restore scroll positions on mount
+  useEffect(() => {
+    const savedLeftScroll = localStorage.getItem('betting-ui-history-left-scroll');
+    const savedRightScroll = localStorage.getItem('betting-ui-history-right-scroll');
+    
+    if (savedLeftScroll && leftScrollRef.current) {
+      leftScrollRef.current.scrollTop = parseInt(savedLeftScroll, 10);
+    }
+    
+    if (savedRightScroll && rightScrollRef.current) {
+      rightScrollRef.current.scrollTop = parseInt(savedRightScroll, 10);
+    }
+  }, []);
+  
+  // Save scroll positions
+  const handleLeftScroll = () => {
+    if (leftScrollRef.current) {
+      localStorage.setItem('betting-ui-history-left-scroll', leftScrollRef.current.scrollTop.toString());
+    }
+  };
+  
+  const handleRightScroll = () => {
+    if (rightScrollRef.current) {
+      localStorage.setItem('betting-ui-history-right-scroll', rightScrollRef.current.scrollTop.toString());
+    }
+  };
 
   // Update selected batch trade when filters change
   useEffect(() => {
@@ -255,7 +324,11 @@ export function BetHistory() {
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Left Side - Batch Trade Listing (Scrollable) */}
         <div className="w-96 border-r border-[hsl(var(--border))] flex flex-col shrink-0">
-          <div className="flex-1 overflow-y-auto terminal-scrollbar p-4">
+          <div 
+            ref={leftScrollRef}
+            onScroll={handleLeftScroll}
+            className="flex-1 overflow-y-auto terminal-scrollbar p-4"
+          >
             {Object.keys(groupedBatchTrades).length === 0 ? (
               <div className="text-center text-muted-foreground py-12">
                 <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -317,7 +390,11 @@ export function BetHistory() {
         </div>
 
         {/* Right Side - After-Bet View (Reused from BettingDialog) */}
-        <div className="flex-1 overflow-y-auto terminal-scrollbar p-6">
+        <div 
+          ref={rightScrollRef}
+          onScroll={handleRightScroll}
+          className="flex-1 overflow-y-auto terminal-scrollbar p-6"
+        >
           {selectedBatchTrade ? (
             <div className="max-w-5xl">
               {/* Match Info Header with Platform at Top Level */}

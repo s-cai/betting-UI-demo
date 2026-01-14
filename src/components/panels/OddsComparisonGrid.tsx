@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Info } from "lucide-react";
 import type { Match } from "./SportsPanel";
@@ -59,6 +59,30 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
     side: '',
     odds: ''
   });
+  
+  // Ref for scroll container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Restore scroll position on mount or when match changes
+  useEffect(() => {
+    const savedScroll = localStorage.getItem(`betting-ui-odds-scroll-${match?.id || 'none'}`);
+    if (savedScroll && scrollContainerRef.current) {
+      // Use setTimeout to ensure DOM is ready
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          const scrollPosition = parseInt(savedScroll, 10);
+          scrollContainerRef.current.scrollTop = scrollPosition;
+        }
+      }, 0);
+    }
+  }, [match?.id]);
+  
+  // Save scroll position on scroll
+  const handleScroll = () => {
+    if (scrollContainerRef.current && match) {
+      localStorage.setItem(`betting-ui-odds-scroll-${match.id}`, scrollContainerRef.current.scrollTop.toString());
+    }
+  };
 
   const handleOddsClick = (platform: string, market: string, side: string, odds: string) => {
     setBettingDialog({
@@ -118,7 +142,11 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
 
 
       {/* Odds Grid */}
-      <div className="flex-1 overflow-auto terminal-scrollbar">
+      <div 
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-auto terminal-scrollbar"
+      >
         <table className="data-table w-full" style={{ tableLayout: 'fixed' }}>
           <thead className="sticky top-0 z-10">
             {/* Market Headers */}

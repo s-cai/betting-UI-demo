@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 type SportCategory = "football" | "basketball";
@@ -185,9 +185,65 @@ export const allMatches: Match[] = [
 ];
 
 export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps) {
-  const [activeCategory, setActiveCategory] = useState<SportCategory>("football");
-  const [activeLeague, setActiveLeague] = useState<League | null>(null);
-  const [statusFilter, setStatusFilter] = useState<"LIVE" | "PRE" | null>(null);
+  // Load persisted state from localStorage
+  const [activeCategory, setActiveCategory] = useState<SportCategory>(() => {
+    const saved = localStorage.getItem('betting-ui-sports-category');
+    return (saved === "football" || saved === "basketball") ? saved : "football";
+  });
+  const [activeLeague, setActiveLeague] = useState<League | null>(() => {
+    const saved = localStorage.getItem('betting-ui-sports-league');
+    if (saved && ["NFL", "NCAAF", "NBA", "NCAAB"].includes(saved)) {
+      return saved as League;
+    }
+    return null;
+  });
+  const [statusFilter, setStatusFilter] = useState<"LIVE" | "PRE" | null>(() => {
+    const saved = localStorage.getItem('betting-ui-sports-status-filter');
+    if (saved === "LIVE" || saved === "PRE") {
+      return saved;
+    }
+    return null;
+  });
+  
+  // Ref for scroll container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Persist filter states
+  useEffect(() => {
+    localStorage.setItem('betting-ui-sports-category', activeCategory);
+  }, [activeCategory]);
+  
+  useEffect(() => {
+    if (activeLeague) {
+      localStorage.setItem('betting-ui-sports-league', activeLeague);
+    } else {
+      localStorage.removeItem('betting-ui-sports-league');
+    }
+  }, [activeLeague]);
+  
+  useEffect(() => {
+    if (statusFilter) {
+      localStorage.setItem('betting-ui-sports-status-filter', statusFilter);
+    } else {
+      localStorage.removeItem('betting-ui-sports-status-filter');
+    }
+  }, [statusFilter]);
+  
+  // Restore scroll position on mount
+  useEffect(() => {
+    const savedScroll = localStorage.getItem('betting-ui-sports-scroll');
+    if (savedScroll && scrollContainerRef.current) {
+      const scrollPosition = parseInt(savedScroll, 10);
+      scrollContainerRef.current.scrollTop = scrollPosition;
+    }
+  }, []);
+  
+  // Save scroll position on scroll
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      localStorage.setItem('betting-ui-sports-scroll', scrollContainerRef.current.scrollTop.toString());
+    }
+  };
   
   const getMatchesForLeague = (league: League): Match[] => {
     return allMatches.filter(m => m.league === league);
@@ -358,7 +414,11 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
       </div>
 
       {/* Match List */}
-      <div className="flex-1 overflow-y-auto terminal-scrollbar">
+      <div 
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto terminal-scrollbar"
+      >
         {matches.map((match) => {
           return (
             <div
