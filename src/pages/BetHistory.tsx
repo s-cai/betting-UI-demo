@@ -34,7 +34,7 @@ const LeagueLogo = ({ league, className = "w-4 h-4" }: { league?: League; classN
       <img 
         src={logoUrl} 
         alt={league} 
-        className={cn("object-contain", className)}
+        className={cn("object-contain max-w-full max-h-full", className)}
         style={{ imageRendering: 'auto' }}
         loading="lazy"
       />
@@ -401,7 +401,7 @@ export function BetHistory() {
               <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6 mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    {selectedBatchTrade.league && <LeagueLogo league={selectedBatchTrade.league} className="w-5 h-5" />}
+                    {selectedBatchTrade.league && <LeagueLogo league={selectedBatchTrade.league} className="w-4 h-4" />}
                     <h2 className="text-xl font-semibold text-foreground">{selectedBatchTrade.match}</h2>
                   </div>
                   {selectedBatchTrade.platform && platformLogoMap[selectedBatchTrade.platform] && (

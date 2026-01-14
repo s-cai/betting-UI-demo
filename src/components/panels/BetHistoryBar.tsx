@@ -1,7 +1,7 @@
 import { History, ChevronLeft, ChevronRight, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { useBetHistory, type League } from "@/contexts/BetHistoryContext";
+import { useBetHistory, type League, type Bet } from "@/contexts/BetHistoryContext";
 
 // League logo URLs
 const leagueLogos: Record<"NFL" | "NBA", string> = {
@@ -18,7 +18,7 @@ const LeagueLogo = ({ league, className = "w-3 h-3" }: { league?: League; classN
       <img 
         src={logoUrl} 
         alt={league} 
-        className={cn("object-contain", className)}
+        className={cn("object-contain max-w-full max-h-full", className)}
         style={{ imageRendering: 'auto' }}
         loading="lazy"
       />
@@ -58,6 +58,7 @@ interface BatchTrade {
   league?: League;
   awayTeam?: string;
   homeTeam?: string;
+  bets: Bet[]; // Add bets array to calculate counts
 }
 
 export function BetHistoryBar() {
@@ -111,6 +112,7 @@ export function BetHistoryBar() {
         league: firstBet.league,
         awayTeam: firstBet.awayTeam,
         homeTeam: firstBet.homeTeam,
+        bets: batchBets, // Store bets array for status counts
       });
     });
     
@@ -216,7 +218,22 @@ export function BetHistoryBar() {
                   <div className="text-[11px] text-muted-foreground">{trade.type} • {trade.odds}</div>
                   
                   <div className="flex items-center justify-between mt-1.5 text-[10px]">
-                    <span className="text-muted-foreground">{trade.accountCount} accounts</span>
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <span>{trade.accountCount} accounts</span>
+                      {trade.bets && (
+                        <>
+                          <span className="text-signal-positive">
+                            {trade.bets.filter(b => b.status === "won").length}✓
+                          </span>
+                          <span className="text-signal-negative">
+                            {trade.bets.filter(b => b.status === "lost").length}✕
+                          </span>
+                          <span className="text-signal-warning">
+                            {trade.bets.filter(b => b.status === "pending").length}⏱
+                          </span>
+                        </>
+                      )}
+                    </div>
                     <span className={cn(
                       "font-mono text-xs",
                       trade.status === "won" && "text-signal-positive",
