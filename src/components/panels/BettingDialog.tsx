@@ -377,6 +377,24 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     });
   };
 
+  // Helper function to round to appropriate significant digits
+  // <=2 significant digits, or <=3 if the number has a leading 1
+  const roundToSignificantDigits = (value: number): number => {
+    if (value === 0) return 0;
+    
+    // Determine number of significant digits based on leading digit
+    const firstDigit = Math.floor(value / Math.pow(10, Math.floor(Math.log10(Math.abs(value)))));
+    const sigDigits = firstDigit === 1 ? 3 : 2;
+    
+    // Calculate magnitude
+    const magnitude = Math.pow(10, Math.floor(Math.log10(Math.abs(value))));
+    const normalized = value / magnitude;
+    
+    // Round to sigDigits and scale back
+    const rounded = Math.round(normalized * Math.pow(10, sigDigits - 1)) / Math.pow(10, sigDigits - 1);
+    return rounded * magnitude;
+  };
+
   const handleDistribute = () => {
     const totalAmount = parseFloat(distributionTotal);
     if (!totalAmount || totalAmount <= 0) return;
@@ -392,19 +410,32 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
 
     if (accountsWithMax.length === 0) return;
 
-    const perAccount = totalAmount / accountsWithMax.length;
+    // Create noisy distribution - add random variation to make amounts look different
+    const basePerAccount = totalAmount / accountsWithMax.length;
     let remaining = totalAmount;
     const distribution = new Map<string, number>();
 
-    // First pass: assign up to max for each account
+    // First pass: assign with noise (variation of ±15% from average)
     accountsWithMax.forEach(({ accountId, maxBet }) => {
-      const amount = Math.min(perAccount, maxBet);
+      // Add noise: random variation between -15% and +15% of base amount
+      const noiseFactor = 1 + (Math.random() - 0.5) * 0.3; // -0.15 to +0.15
+      let amount = basePerAccount * noiseFactor;
+      
+      // Ensure we don't exceed max bet
+      amount = Math.min(amount, maxBet);
+      
+      // Round to appropriate significant digits
+      amount = roundToSignificantDigits(amount);
+      
+      // Ensure minimum of $0.01
+      amount = Math.max(amount, 0.01);
+      
       distribution.set(accountId, amount);
       remaining -= amount;
     });
 
-    // Second pass: distribute remaining
-    if (remaining > 0) {
+    // Second pass: distribute remaining with noise
+    if (remaining > 0.01) {
       let iterations = 0;
       while (remaining > 0.01 && iterations < 100) {
         iterations++;
@@ -420,16 +451,36 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
 
         availableAccounts.forEach(({ accountId, maxBet }) => {
           const currentAmount = distribution.get(accountId) || 0;
-          const canAdd = Math.min(perRemaining, maxBet - currentAmount);
+          
+          // Add noise to remaining distribution
+          const noiseFactor = 1 + (Math.random() - 0.5) * 0.3;
+          let canAdd = Math.min(perRemaining * noiseFactor, maxBet - currentAmount);
+          
+          // Round to appropriate significant digits
+          canAdd = roundToSignificantDigits(canAdd);
+          
           if (canAdd > 0.01) {
-            distribution.set(accountId, currentAmount + canAdd);
-            remaining -= canAdd;
+            const newAmount = roundToSignificantDigits(currentAmount + canAdd);
+            distribution.set(accountId, Math.min(newAmount, maxBet));
+            remaining -= (newAmount - currentAmount);
             distributed = true;
           }
         });
 
         if (!distributed) break;
       }
+    }
+
+    // Final pass: ensure total matches (adjust last account if needed)
+    const currentTotal = Array.from(distribution.values()).reduce((sum, val) => sum + val, 0);
+    const difference = totalAmount - currentTotal;
+    if (Math.abs(difference) > 0.01) {
+      // Adjust the last account to make total exact
+      const lastAccountId = accountsWithMax[accountsWithMax.length - 1].accountId;
+      const lastAmount = distribution.get(lastAccountId) || 0;
+      const adjusted = roundToSignificantDigits(lastAmount + difference);
+      const maxBet = accountsWithMax[accountsWithMax.length - 1].maxBet;
+      distribution.set(lastAccountId, Math.min(Math.max(adjusted, 0.01), maxBet));
     }
 
     // Apply distribution
