@@ -29,6 +29,31 @@ interface BetHistoryContextType {
 
 const BetHistoryContext = createContext<BetHistoryContextType | undefined>(undefined);
 
+// Helper function to check if bets fall within today's noon-to-noon window
+const hasBetsInTodayWindow = (bets: Bet[]): boolean => {
+  if (bets.length === 0) return false;
+  
+  const now = new Date();
+  const currentHour = now.getHours();
+  const boundary = new Date(now);
+  boundary.setHours(12, 0, 0, 0);
+  
+  let periodStart: number;
+  let periodEnd: number;
+  
+  if (currentHour < 12) {
+    // Before noon: show bets from noon yesterday to noon today
+    periodStart = boundary.getTime() - (24 * 60 * 60 * 1000); // Noon yesterday
+    periodEnd = boundary.getTime(); // Noon today
+  } else {
+    // At or after noon: show bets from noon today to noon tomorrow
+    periodStart = boundary.getTime(); // Noon today
+    periodEnd = boundary.getTime() + (24 * 60 * 60 * 1000); // Noon tomorrow
+  }
+  
+  return bets.some(bet => bet.timestamp >= periodStart && bet.timestamp < periodEnd);
+};
+
 // Load bets from localStorage on init
 const BET_HISTORY_VERSION = '2.4'; // Increment to force reload demo data (more today's bets for scrollable list)
 const loadBetsFromStorage = (): Bet[] => {
@@ -38,14 +63,22 @@ const loadBetsFromStorage = (): Bet[] => {
     const saved = localStorage.getItem('betting-ui-bet-history');
     
     if (savedVersion === BET_HISTORY_VERSION && saved) {
-      return JSON.parse(saved);
+      const loadedBets = JSON.parse(saved);
+      // If loaded bets don't have any bets in today's window, regenerate demo data
+      if (!hasBetsInTodayWindow(loadedBets)) {
+        localStorage.removeItem('betting-ui-bet-history');
+        localStorage.setItem('betting-ui-bet-history-version', BET_HISTORY_VERSION);
+        // Fall through to generate new demo data
+      } else {
+        return loadedBets;
+      }
+    } else {
+      // Version mismatch or no saved data - clear and use demo data
+      localStorage.removeItem('betting-ui-bet-history');
+      localStorage.setItem('betting-ui-bet-history-version', BET_HISTORY_VERSION);
     }
-    
-    // Version mismatch or no saved data - clear and use demo data
-    localStorage.removeItem('betting-ui-bet-history');
-    localStorage.setItem('betting-ui-bet-history-version', BET_HISTORY_VERSION);
   } catch {
-    // Ignore errors
+    // Ignore errors and fall through to generate demo data
   }
   // Return mock bets as initial data with full details
   // Each bet group represents a batch event on game x line x platform
