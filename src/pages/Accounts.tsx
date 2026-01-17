@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { X, Filter } from "lucide-react";
+import { X, Filter, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -292,6 +292,7 @@ export function Accounts() {
   const [selectedPlatform, setSelectedPlatform] = useState<string>(platforms[0].id);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [showLimited, setShowLimited] = useState<boolean | null>(null); // null = all, true = limited only, false = unlimited only
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const handleSaveAccount = (updatedAccount: Account, platformId: string) => {
     updateAccount(platformId, updatedAccount.id, updatedAccount);
@@ -316,7 +317,7 @@ export function Accounts() {
             )}
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg shrink-0">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shrink-0">
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
@@ -387,9 +388,17 @@ export function Accounts() {
     return Array.from(tagSet).sort();
   }, [accounts, selectedPlatform]);
 
-  // Filter accounts based on selected platform, tags, and limit status
+  // Filter accounts based on selected platform, tags, limit status, and search query
   const filteredAccounts = useMemo(() => {
     let platformAccounts = accounts[selectedPlatform] || [];
+    
+    // Filter by search query (account name)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      platformAccounts = platformAccounts.filter(account =>
+        account.name.toLowerCase().includes(query)
+      );
+    }
     
     // Filter by tags
     if (selectedTags.size > 0) {
@@ -408,7 +417,7 @@ export function Accounts() {
     }
     
     return platformAccounts;
-  }, [accounts, selectedPlatform, selectedTags, showLimited]);
+  }, [accounts, selectedPlatform, selectedTags, showLimited, searchQuery]);
 
   // Calculate totals for the current platform
   const platformTotals = useMemo(() => {
@@ -629,6 +638,22 @@ export function Accounts() {
 
       {/* Main Content Area */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        {/* Quick Search */}
+        <div className="px-6 pt-6 pb-4 border-b border-[hsl(var(--border))] shrink-0">
+          <div className="max-w-[1400px] mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search accounts by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-full max-w-md"
+              />
+            </div>
+          </div>
+        </div>
+        
         <div className="flex-1 overflow-y-auto terminal-scrollbar p-6">
           <div className="max-w-[1400px] mx-auto">
             {renderPlatformSection()}
