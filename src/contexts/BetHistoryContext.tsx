@@ -55,7 +55,7 @@ const hasBetsInTodayWindow = (bets: Bet[]): boolean => {
 };
 
 // Load bets from localStorage on init
-const BET_HISTORY_VERSION = '2.4'; // Increment to force reload demo data (more today's bets for scrollable list)
+const BET_HISTORY_VERSION = '2.5'; // Increment to force reload demo data (added NCAAF demo bet)
 const loadBetsFromStorage = (): Bet[] => {
   try {
     // Check version - if it doesn't match, clear old data and use demo data
@@ -194,6 +194,11 @@ const loadBetsFromStorage = (): Bet[] => {
     { id: "11d", match: "POR @ UTA", type: "U 228.5", odds: "-108", stake: 600, status: "won", timestamp: baseTime - 28798000, payout: 556, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NBA" as League, awayTeam: "Portland Trail Blazers", homeTeam: "Utah Jazz", timing: 1970 },
     { id: "11e", match: "POR @ UTA", type: "U 228.5", odds: "-108", stake: 500, status: "won", timestamp: baseTime - 28797500, payout: 463, platform: "FanDuel", accountName: "Ryan O'Connor", league: "NBA" as League, awayTeam: "Portland Trail Blazers", homeTeam: "Utah Jazz", timing: 1910 },
     { id: "11f", match: "POR @ UTA", type: "U 228.5", odds: "-108", stake: 400, status: "won", timestamp: baseTime - 28797000, payout: 370, platform: "FanDuel", accountName: "Kevin Thompson", league: "NBA" as League, awayTeam: "Portland Trail Blazers", homeTeam: "Utah Jazz", timing: 2030 },
+    
+    // NCAAF demo bets - Alabama @ Georgia - ML ALA -150 - FanDuel (batch with 3 accounts, all won) - 2 hours ago
+    { id: "ncaaf1", match: "ALA @ UGA", type: "ML ALA", odds: "-150", stake: 750, status: "won", timestamp: baseTime - 7200000, payout: 500, platform: "FanDuel", accountName: "Sarah Johnson", league: "NCAAF" as League, awayTeam: "Alabama Crimson Tide", homeTeam: "Georgia Bulldogs", timing: 1950 },
+    { id: "ncaaf1a", match: "ALA @ UGA", type: "ML ALA", odds: "-150", stake: 600, status: "won", timestamp: baseTime - 7199500, payout: 400, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NCAAF" as League, awayTeam: "Alabama Crimson Tide", homeTeam: "Georgia Bulldogs", timing: 2100 },
+    { id: "ncaaf1b", match: "ALA @ UGA", type: "ML ALA", odds: "-150", stake: 500, status: "won", timestamp: baseTime - 7199000, payout: 333, platform: "FanDuel", accountName: "Ryan O'Connor", league: "NCAAF" as League, awayTeam: "Alabama Crimson Tide", homeTeam: "Georgia Bulldogs", timing: 1880 },
   ];
 };
 

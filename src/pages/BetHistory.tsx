@@ -41,9 +41,10 @@ const LeagueLogo = ({ league, className = "w-4 h-4" }: { league?: League; classN
     );
   }
   
-  // NCAAF and NCAAB use emojis
+  // NCAAF and NCAAB use emojis - use text size instead of width/height
+  const emojiSize = className.includes("w-2.5") ? "text-[10px]" : className.includes("w-3") ? "text-xs" : className.includes("w-4") ? "text-sm" : "text-xs";
   return (
-    <span className={className}>
+    <span className={emojiSize}>
       {league === "NCAAF" ? "🏈" : "🏀"}
     </span>
   );
@@ -401,7 +402,7 @@ export function BetHistory() {
               <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6 mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    {selectedBatchTrade.league && <LeagueLogo league={selectedBatchTrade.league} className="w-3 h-3" />}
+                    {selectedBatchTrade.league && <LeagueLogo league={selectedBatchTrade.league} className="w-4 h-4" />}
                     <h2 className="text-xl font-semibold text-foreground">{selectedBatchTrade.match}</h2>
                   </div>
                   {selectedBatchTrade.platform && platformLogoMap[selectedBatchTrade.platform] && (

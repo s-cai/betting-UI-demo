@@ -25,8 +25,10 @@ const LeagueLogo = ({ league, className = "w-3 h-3" }: { league?: League; classN
     );
   }
   
+  // For emojis, use text size instead of width/height
+  const emojiSize = className.includes("w-2.5") ? "text-[10px]" : className.includes("w-3") ? "text-xs" : "text-sm";
   return (
-    <span className={className}>
+    <span className={emojiSize}>
       {league === "NCAAF" ? "🏈" : "🏀"}
     </span>
   );
@@ -212,7 +214,7 @@ export function BetHistoryBar() {
                   </div>
                   
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    {trade.league && <LeagueLogo league={trade.league} className="w-2.5 h-2.5" />}
+                    {trade.league && <LeagueLogo league={trade.league} className="w-3 h-3" />}
                     <span className="text-xs font-medium truncate">{trade.match}</span>
                   </div>
                   <div className="text-[11px] text-muted-foreground">{trade.type} • {trade.odds}</div>
