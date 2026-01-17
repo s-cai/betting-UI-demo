@@ -344,6 +344,24 @@ export function Settings() {
                               />
                             </div>
                             <div className="flex items-center gap-3">
+                              <Label htmlFor="review-technical" className="text-xs text-muted-foreground cursor-pointer">
+                                Technical foul review
+                              </Label>
+                              <input
+                                type="checkbox"
+                                id="review-technical"
+                                checked={ncaafConfig.review.types.technicalFoul}
+                                onChange={(e) => setNcaafConfig({
+                                  ...ncaafConfig,
+                                  review: {
+                                    ...ncaafConfig.review,
+                                    types: { ...ncaafConfig.review.types, technicalFoul: e.target.checked }
+                                  }
+                                })}
+                                className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                              />
+                            </div>
+                            <div className="flex items-center gap-3">
                               <Label htmlFor="review-other" className="text-xs text-muted-foreground cursor-pointer">
                                 Other reviews
                               </Label>
