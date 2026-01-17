@@ -212,28 +212,46 @@ export function BetHistoryBar() {
                   </div>
                   
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    {trade.league && <LeagueLogo league={trade.league} className="w-3 h-3" />}
+                    {trade.league && <LeagueLogo league={trade.league} className="w-2.5 h-2.5" />}
                     <span className="text-xs font-medium truncate">{trade.match}</span>
                   </div>
                   <div className="text-[11px] text-muted-foreground">{trade.type} • {trade.odds}</div>
                   
-                  <div className="flex items-center justify-between mt-1.5 text-[10px]">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <span>{trade.accountCount} accounts</span>
-                      {trade.bets && (
-                        <>
-                          <span className="text-signal-positive">
-                            {trade.bets.filter(b => b.status === "won").length}✓
-                          </span>
-                          <span className="text-signal-negative">
-                            {trade.bets.filter(b => b.status === "lost").length}✕
-                          </span>
-                          <span className="text-signal-warning">
-                            {trade.bets.filter(b => b.status === "pending").length}⏱
-                          </span>
-                        </>
-                      )}
+                  {/* Account Status Summary with Color Coding */}
+                  {trade.bets && (
+                    <div className="flex items-center gap-2 mt-1.5 px-1.5 py-1 rounded bg-[hsl(var(--card))] border border-[hsl(var(--border))]">
+                      <span className="text-[10px] text-muted-foreground">{trade.accountCount} accounts:</span>
+                      <div className="flex items-center gap-1.5">
+                        {trade.bets.filter(b => b.status === "won").length > 0 && (
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[hsl(var(--signal-positive))]/20">
+                            <CheckCircle className="w-2.5 h-2.5 text-[hsl(var(--signal-positive))]" />
+                            <span className="text-[10px] font-medium text-[hsl(var(--signal-positive))]">
+                              {trade.bets.filter(b => b.status === "won").length}
+                            </span>
+                          </div>
+                        )}
+                        {trade.bets.filter(b => b.status === "lost").length > 0 && (
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[hsl(var(--signal-negative))]/20">
+                            <XCircle className="w-2.5 h-2.5 text-[hsl(var(--signal-negative))]" />
+                            <span className="text-[10px] font-medium text-[hsl(var(--signal-negative))]">
+                              {trade.bets.filter(b => b.status === "lost").length}
+                            </span>
+                          </div>
+                        )}
+                        {trade.bets.filter(b => b.status === "pending").length > 0 && (
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[hsl(var(--signal-warning))]/20">
+                            <Clock className="w-2.5 h-2.5 text-[hsl(var(--signal-warning))]" />
+                            <span className="text-[10px] font-medium text-[hsl(var(--signal-warning))]">
+                              {trade.bets.filter(b => b.status === "pending").length}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between mt-1.5 text-[10px]">
+                    <span className="text-muted-foreground">{trade.accountCount} accounts</span>
                     <span className={cn(
                       "font-mono text-xs",
                       trade.status === "won" && "text-signal-positive",
