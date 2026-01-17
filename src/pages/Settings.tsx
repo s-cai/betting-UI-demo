@@ -11,7 +11,7 @@ type League = "NCAAF" | "NFL" | "NBA" | "NCAAB";
 interface NCAAFAlertConfig {
   // Game conditions
   timeout: { enabled: boolean; types: { media: boolean; coachChallenge: boolean } };
-  review: { enabled: boolean; types: { flagrantFoul: boolean; other: boolean } };
+  review: { enabled: boolean; types: { flagrantFoul: boolean; technicalFoul: boolean; other: boolean } };
   overtime: { enabled: boolean };
   intermission: { enabled: boolean; types: { halftime: boolean; endOfQuarter: boolean } };
   delay: { enabled: boolean; types: { weather: boolean; hazardous: boolean } };
@@ -31,7 +31,7 @@ interface NCAAFAlertConfig {
 
 const defaultNCAAFConfig: NCAAFAlertConfig = {
   timeout: { enabled: true, types: { media: true, coachChallenge: true } },
-  review: { enabled: true, types: { flagrantFoul: true, other: true } },
+  review: { enabled: true, types: { flagrantFoul: true, technicalFoul: true, other: true } },
   overtime: { enabled: true },
   intermission: { enabled: true, types: { halftime: true, endOfQuarter: true } },
   delay: { enabled: true, types: { weather: true, hazardous: true } },
