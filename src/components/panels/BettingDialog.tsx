@@ -838,7 +838,8 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
         distributionInputRef.current?.focus();
       }, 100);
     }
-  }, [isOpen, match?.id, platform, market, side, odds, platformAccounts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, match?.id, platform, market, side, odds]);
 
   // Handle ESC key to close dialog
   useEffect(() => {
