@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import type { Match } from "./SportsPanel";
 import { useBetHistory } from "@/contexts/BetHistoryContext";
 import { useAccounts } from "@/contexts/AccountsContext";
-import type { Account } from "@/pages/Accounts";
+import type { Account, AccountStatus } from "@/pages/Accounts";
 
 const STATUS = {
   SENT: 'sent',
@@ -87,6 +87,59 @@ function calculateMaxBetSize(account: Account): number {
   return Math.min(availableCash, limit);
 }
 
+// Get account status, considering phoneOffline and cooldown
+function getAccountStatus(account: Account): AccountStatus {
+  if (account.phoneOffline) {
+    return 'offline';
+  }
+  if (account.status === 'busy' || account.status === 'cooldown') {
+    // Check if cooldown has expired
+    if (account.status === 'cooldown' && account.cooldownEndsAt) {
+      if (Date.now() >= account.cooldownEndsAt) {
+        return 'ready';
+      }
+    }
+    return account.status;
+  }
+  return account.status || 'ready';
+}
+
+// Get remaining cooldown seconds
+function getCooldownRemaining(account: Account): number {
+  if (account.status === 'cooldown' && account.cooldownEndsAt) {
+    const remaining = Math.max(0, Math.ceil((account.cooldownEndsAt - Date.now()) / 1000));
+    return remaining;
+  }
+  return 0;
+}
+
+// Get cooldown period from localStorage
+function getCooldownPeriod(): number {
+  try {
+    const saved = localStorage.getItem('betting-ui-cooldown-period');
+    if (saved) {
+      const parsed = parseInt(saved, 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
+    }
+  } catch {
+    // Ignore errors
+  }
+  return 10; // Default 10 seconds
+}
+
+// Status priority for sorting: ready > cooldown > busy > offline
+function getStatusPriority(status: AccountStatus): number {
+  switch (status) {
+    case 'ready': return 0;
+    case 'cooldown': return 1;
+    case 'busy': return 2;
+    case 'offline': return 3;
+    default: return 3;
+  }
+}
+
 function groupAccountsByType(accounts: Account[]) {
   const unlimited: Account[] = [];
   const limited: Account[] = [];
@@ -101,15 +154,25 @@ function groupAccountsByType(accounts: Account[]) {
   
   const sortWithinGroup = (group: Account[]) => {
     return group.sort((a, b) => {
-      const aTradable = !a.phoneOffline && !a.onHold;
-      const bTradable = !b.phoneOffline && !b.onHold;
+      // First sort by status priority: ready > cooldown > busy > offline
+      const aStatus = getAccountStatus(a);
+      const bStatus = getAccountStatus(b);
+      const aPriority = getStatusPriority(aStatus);
+      const bPriority = getStatusPriority(bStatus);
       
-      if (aTradable && !bTradable) return -1;
-      if (!aTradable && bTradable) return 1;
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority;
+      }
       
+      // Then sort by available bet size (min(balance, limit))
       const aMaxBet = calculateMaxBetSize(a);
       const bMaxBet = calculateMaxBetSize(b);
-      return bMaxBet - aMaxBet;
+      if (aMaxBet !== bMaxBet) {
+        return bMaxBet - aMaxBet;
+      }
+      
+      // Finally sort by name
+      return a.name.localeCompare(b.name);
     });
   };
   
@@ -121,6 +184,7 @@ function groupAccountsByType(accounts: Account[]) {
 
 export function BettingDialog({ isOpen, onClose, match, platform, market, side, odds }: BettingDialogProps) {
   const { bets, addBet, updateBet } = useBetHistory();
+  const { accounts, setAccountStatus } = useAccounts();
   const [selectedAccounts, setSelectedAccounts] = useState<Map<string, number>>(new Map());
   const [betAmountInputs, setBetAmountInputs] = useState<Map<string, string>>(new Map()); // Store raw input strings
   const [distributionTotal, setDistributionTotal] = useState<string>('');
@@ -131,6 +195,8 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   const betsRef = useRef(bets); // Track latest bets to avoid stale closures
   const elapsedTimeIntervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map()); // Track per-account intervals
   const distributionInputRef = useRef<HTMLInputElement>(null); // Ref for distribution input to auto-focus
+  const cooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null); // Track cooldown timer
+  const [currentTime, setCurrentTime] = useState(Date.now()); // Force re-render for cooldown countdown
 
   // Load predefined totals from localStorage
   const loadPredefinedTotals = (): number[] => {
@@ -155,10 +221,32 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     betsRef.current = bets;
   }, [bets]);
 
-  const { accounts } = useAccounts();
   const platformId = getPlatformId(platform);
   const platformAccounts = useMemo(() => accounts[platformId] || [], [accounts, platformId]);
   const groupedAccounts = useMemo(() => groupAccountsByType(platformAccounts), [platformAccounts]);
+  
+  // Update account statuses based on cooldown expiration and force re-render for countdown
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const updateCooldownStatuses = () => {
+      setCurrentTime(Date.now()); // Force re-render for countdown display
+      platformAccounts.forEach(account => {
+        if (account.status === 'cooldown' && account.cooldownEndsAt && Date.now() >= account.cooldownEndsAt) {
+          setAccountStatus(platformId, account.id, 'ready');
+        }
+      });
+    };
+    
+    const interval = setInterval(updateCooldownStatuses, 1000);
+    cooldownTimerRef.current = interval;
+    
+    return () => {
+      if (cooldownTimerRef.current) {
+        clearInterval(cooldownTimerRef.current);
+      }
+    };
+  }, [platformAccounts, platformId, setAccountStatus, isOpen]);
 
   // Get unique tags for the platform
   const availableTags = useMemo(() => {
@@ -219,9 +307,12 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   };
 
   const handleAccountToggle = (accountId: string, checked: boolean) => {
-    // Prevent selecting offline accounts
+    // Prevent selecting offline, busy, or cooldown accounts
     const account = platformAccounts.find(acc => acc.id === accountId);
-    if (account?.phoneOffline) {
+    if (!account) return;
+    
+    const status = getAccountStatus(account);
+    if (account.phoneOffline || status === 'busy' || status === 'cooldown') {
       return;
     }
     
@@ -564,6 +655,11 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
                   });
                 }
                 
+                // Mark account as cooldown after bet completes
+                const cooldownPeriod = getCooldownPeriod();
+                const cooldownEndsAt = Date.now() + (cooldownPeriod * 1000);
+                setAccountStatus(platformId, bet.account.id, 'cooldown', cooldownEndsAt);
+                
                 return updatedBet;
               } else {
                 const errorMessage = getRandomErrorMessage();
@@ -580,6 +676,11 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
                     timing: timing
                   });
                 }
+                
+                // Mark account as cooldown after bet completes (even if failed)
+                const cooldownPeriod = getCooldownPeriod();
+                const cooldownEndsAt = Date.now() + (cooldownPeriod * 1000);
+                setAccountStatus(platformId, bet.account.id, 'cooldown', cooldownEndsAt);
                 
                 return updatedBet;
               }
@@ -607,6 +708,9 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     selectedAccounts.forEach((amount, accountId) => {
       const account = platformAccounts.find(acc => acc.id === accountId);
       if (account && amount > 0) {
+        // Mark account as busy when sending bet
+        setAccountStatus(platformId, accountId, 'busy');
+        
         // Add bet to history immediately with "pending" status
         addBet({
           match: matchName,
@@ -879,6 +983,11 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     const maxBet = calculateMaxBetSize(account);
     const isSelected = selectedAccounts.has(account.id);
     const initials = account.name.split(' ').map(n => n[0]).join('');
+    const status = getAccountStatus(account);
+    const cooldownRemaining = getCooldownRemaining(account);
+    const isDisabled = account.phoneOffline || status === 'busy' || status === 'cooldown';
+    // currentTime is used to force re-render every second for cooldown countdown
+    void currentTime;
 
     return (
       <div
@@ -886,7 +995,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
         className={cn(
           "bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-4 transition-all",
           isSelected && "border-primary bg-accent/20",
-          account.phoneOffline && "opacity-50 grayscale"
+          isDisabled && "opacity-50 grayscale"
         )}
       >
         <div className="flex items-center gap-3 mb-3">
@@ -894,7 +1003,17 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-foreground mb-1">{account.name}</div>
+            <div className="flex items-center gap-2">
+              <div className="font-semibold text-foreground">{account.name}</div>
+              {status === 'busy' && (
+                <span className="text-lg" title="Account is busy making a bet">📲</span>
+              )}
+              {status === 'cooldown' && (
+                <span className="text-lg" title={`Account is cooling down (${cooldownRemaining}s remaining)`}>
+                  🧊 {cooldownRemaining > 0 ? cooldownRemaining : ''}
+                </span>
+              )}
+            </div>
             <div className="text-sm font-mono text-[hsl(var(--signal-positive))]">
               Balance: ${account.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
@@ -915,7 +1034,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
             id={`bet-checkbox-${account.id}`}
             checked={isSelected}
             onChange={(e) => handleAccountToggle(account.id, e.target.checked)}
-            disabled={account.phoneOffline}
+            disabled={isDisabled}
             className="w-4 h-4"
           />
           <Input
@@ -931,7 +1050,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
               }
             }}
             onBlur={() => handleBetAmountBlur(account.id)}
-            disabled={!isSelected || account.phoneOffline}
+            disabled={!isSelected || isDisabled}
             placeholder={`Max: $${maxBet.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
             className="flex-1 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
           />

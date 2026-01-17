@@ -78,6 +78,24 @@ export function Settings() {
 
   const [predefinedTotals, setPredefinedTotals] = useState<number[]>(loadPredefinedTotals);
 
+  // Load cooldown period from localStorage
+  const loadCooldownPeriod = (): number => {
+    try {
+      const saved = localStorage.getItem('betting-ui-cooldown-period');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Ignore errors
+    }
+    return 10; // Default 10 seconds
+  };
+
+  const [cooldownPeriod, setCooldownPeriod] = useState<number>(loadCooldownPeriod);
+
   // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
@@ -160,6 +178,31 @@ export function Settings() {
                   </div>
                   <p className="text-xs text-muted-foreground mt-3">
                     These amounts will appear as quick buttons in the betting dialog for fast distribution.
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="cooldown-period" className="text-sm font-medium text-muted-foreground mb-3 block">
+                    Account Cooldown Period (seconds)
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      id="cooldown-period"
+                      type="number"
+                      step="1"
+                      min="1"
+                      value={cooldownPeriod}
+                      onChange={(e) => {
+                        const newValue = parseInt(e.target.value, 10) || 10;
+                        setCooldownPeriod(newValue);
+                        localStorage.setItem('betting-ui-cooldown-period', newValue.toString());
+                      }}
+                      className="w-32"
+                    />
+                    <span className="text-sm text-muted-foreground">seconds</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    After an account completes a bet, it will enter a cooldown period for this many seconds before it can be used again.
                   </p>
                 </div>
               </div>

@@ -8,6 +8,34 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useAccounts } from "@/contexts/AccountsContext";
 import { getAllTagsFromAccounts, getTagColorClasses } from "@/lib/tagUtils";
 
+// Get account status, considering phoneOffline and cooldown
+function getAccountStatus(account: Account): AccountStatus {
+  if (account.phoneOffline) {
+    return 'offline';
+  }
+  if (account.status === 'busy' || account.status === 'cooldown') {
+    // Check if cooldown has expired
+    if (account.status === 'cooldown' && account.cooldownEndsAt) {
+      if (Date.now() >= account.cooldownEndsAt) {
+        return 'ready';
+      }
+    }
+    return account.status;
+  }
+  return account.status || 'ready';
+}
+
+// Get remaining cooldown seconds
+function getCooldownRemaining(account: Account): number {
+  if (account.status === 'cooldown' && account.cooldownEndsAt) {
+    const remaining = Math.max(0, Math.ceil((account.cooldownEndsAt - Date.now()) / 1000));
+    return remaining;
+  }
+  return 0;
+}
+
+export type AccountStatus = 'ready' | 'busy' | 'cooldown' | 'offline';
+
 export interface Account {
   id: string;
   name: string;
@@ -19,6 +47,8 @@ export interface Account {
   backupCash: number;
   notes: string;
   limitChangedAt?: number; // Timestamp when limit was decreased (for tracking limit-down accounts)
+  status?: AccountStatus; // Current account status
+  cooldownEndsAt?: number; // Timestamp when cooldown period ends
 }
 
 interface Platform {
@@ -416,12 +446,13 @@ function EditModal({ account, platformId, onClose, onSave }: EditModalProps) {
 }
 
 export function Accounts() {
-  const { accounts, updateAccount } = useAccounts();
+  const { accounts, updateAccount, setAccountStatus } = useAccounts();
   const [editingAccount, setEditingAccount] = useState<{ account: Account; platformId: string } | null>(null);
   const [selectedPlatform, setSelectedPlatform] = useState<string>(platforms[0].id);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [showLimited, setShowLimited] = useState<boolean | null>(null); // null = all, true = limited only, false = unlimited only
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [currentTime, setCurrentTime] = useState(Date.now()); // Force re-render for cooldown updates
 
   const handleSaveAccount = (updatedAccount: Account, platformId: string) => {
     updateAccount(platformId, updatedAccount.id, updatedAccount);
@@ -434,6 +465,10 @@ export function Accounts() {
 
   const renderAccountCard = (account: Account, platformId: string) => {
     const initials = account.name.split(' ').map(n => n[0]).join('');
+    const status = getAccountStatus(account);
+    const cooldownRemaining = getCooldownRemaining(account);
+    // currentTime is used to force re-render every second for cooldown countdown
+    void currentTime;
     
     return (
       <Tooltip key={account.id}>
@@ -450,10 +485,20 @@ export function Accounts() {
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-foreground truncate">{account.name}</div>
-                {account.onHold && (
-                  <span className="text-sm" title="Account On Hold">🚫</span>
-                )}
+                <div className="flex items-center gap-1.5">
+                  <div className="font-semibold text-sm text-foreground truncate">{account.name}</div>
+                  {status === 'busy' && (
+                    <span className="text-sm" title="Account is busy making a bet">📲</span>
+                  )}
+                  {status === 'cooldown' && (
+                    <span className="text-sm" title={`Account is cooling down (${cooldownRemaining}s remaining)`}>
+                      🧊 {cooldownRemaining > 0 ? cooldownRemaining : ''}
+                    </span>
+                  )}
+                  {account.onHold && (
+                    <span className="text-sm" title="Account On Hold">🚫</span>
+                  )}
+                </div>
               </div>
             </div>
             
@@ -585,6 +630,21 @@ export function Accounts() {
       }
     });
   };
+
+  // Update cooldown statuses and force re-render
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+      const platformAccounts = accounts[selectedPlatform] || [];
+      platformAccounts.forEach(account => {
+        if (account.status === 'cooldown' && account.cooldownEndsAt && Date.now() >= account.cooldownEndsAt) {
+          setAccountStatus(selectedPlatform, account.id, 'ready');
+        }
+      });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [accounts, selectedPlatform, setAccountStatus]);
 
   const renderPlatformSection = () => {
     const platform = platforms.find(p => p.id === selectedPlatform);

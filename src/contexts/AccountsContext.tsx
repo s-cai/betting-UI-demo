@@ -1,10 +1,11 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-import { Account, accountData } from "@/pages/Accounts";
+import { Account, accountData, AccountStatus } from "@/pages/Accounts";
 
 interface AccountsContextType {
   accounts: Record<string, Account[]>;
   setAccounts: React.Dispatch<React.SetStateAction<Record<string, Account[]>>>;
   updateAccount: (platformId: string, accountId: string, updatedAccount: Account) => void;
+  setAccountStatus: (platformId: string, accountId: string, status: AccountStatus, cooldownEndsAt?: number) => void;
 }
 
 const AccountsContext = createContext<AccountsContextType | undefined>(undefined);
@@ -42,8 +43,21 @@ export function AccountsProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const setAccountStatus = (platformId: string, accountId: string, status: AccountStatus, cooldownEndsAt?: number) => {
+    setAccounts(prev => {
+      return {
+        ...prev,
+        [platformId]: prev[platformId].map(acc => 
+          acc.id === accountId 
+            ? { ...acc, status, cooldownEndsAt } 
+            : acc
+        )
+      };
+    });
+  };
+
   return (
-    <AccountsContext.Provider value={{ accounts, setAccounts, updateAccount }}>
+    <AccountsContext.Provider value={{ accounts, setAccounts, updateAccount, setAccountStatus }}>
       {children}
     </AccountsContext.Provider>
   );
