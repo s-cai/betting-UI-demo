@@ -215,6 +215,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   const recentBetIdsRef = useRef<Map<string, string>>(new Map()); // Track accountId -> betId for recently added bets
   const betsRef = useRef(bets); // Track latest bets to avoid stale closures
   const elapsedTimeIntervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map()); // Track per-account intervals
+  const distributionInputRef = useRef<HTMLInputElement>(null); // Ref for distribution input to auto-focus
 
   // Update bets ref when bets change
   useEffect(() => {
@@ -746,6 +747,11 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
       setSelectedAccounts(allAccountsMap);
       setBetAmountInputs(allInputsMap);
       setDistributionTotal('');
+      
+      // Auto-focus distribution input after a short delay to ensure dialog is rendered
+      setTimeout(() => {
+        distributionInputRef.current?.focus();
+      }, 100);
     }
   }, [isOpen, match?.id, platform, market, side, odds, platformAccounts]);
 
@@ -1042,12 +1048,26 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
                     Distribute Total Amount:
                   </Label>
                   <Input
+                    ref={distributionInputRef}
                     id="distribution-total"
                     type="number"
                     step="0.01"
                     min="0"
                     value={distributionTotal}
                     onChange={(e) => setDistributionTotal(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) {
+                        e.preventDefault();
+                        handleDistribute();
+                      } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        handleDistribute();
+                        // Small delay to ensure distribution completes before sending
+                        setTimeout(() => {
+                          handleSendAllBets();
+                        }, 50);
+                      }
+                    }}
                     placeholder="Enter total amount"
                     className="flex-1 min-w-[200px]"
                   />
