@@ -92,11 +92,12 @@ This is a professional-grade betting interface designed for arbitrage betting an
     - Bet amount inputs for each selected account
     - Tag-based account selection (color-coded tags)
     - Distribution tool: Enter total amount and distribute across selected accounts
-      - **Noisy Distribution Algorithm**: When distributing a total amount across accounts, the system uses a noisy distribution algorithm to make bet amounts appear more natural and less uniform:
-        - Adds random variation (±15%) to each account's share to avoid identical amounts
-        - Rounds amounts to whole numbers with ≤2 significant digits (or ≤3 if leading digit is 1)
-        - Examples: $333.33 becomes $330 or $340, $1000/3 might become $320, $340, $340 instead of $333.33 each
-        - This makes bets look like they came from different sources rather than a single automated distribution
+  - **Noisy Distribution Algorithm**: When distributing a total amount across accounts, the system uses a noisy distribution algorithm to make bet amounts appear more natural and less uniform:
+    - Adds random variation (±15%) to each account's share to avoid identical amounts
+    - Prioritizes rounding to 2 significant digits for all amounts
+    - Falls back to 3 significant digits only when necessary to achieve the correct total
+    - Examples: $333.33 becomes $330 or $340, $1000/3 might become $320, $340, $340 instead of $333.33 each
+    - This makes bets look like they came from different sources rather than a single automated distribution
     - Total bet size calculation
     - "Send All Bets" button
   - **After Bet View**:

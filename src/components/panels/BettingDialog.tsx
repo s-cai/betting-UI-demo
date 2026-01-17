@@ -395,21 +395,21 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     });
   };
 
-  // Helper function to round to appropriate significant digits
-  // <=2 significant digits, or <=3 if the number has a leading 1
-  const roundToSignificantDigits = (value: number): number => {
+  // Helper function to round to 2 significant digits (preferred)
+  const roundTo2SignificantDigits = (value: number): number => {
     if (value === 0) return 0;
-    
-    // Determine number of significant digits based on leading digit
-    const firstDigit = Math.floor(value / Math.pow(10, Math.floor(Math.log10(Math.abs(value)))));
-    const sigDigits = firstDigit === 1 ? 3 : 2;
-    
-    // Calculate magnitude
     const magnitude = Math.pow(10, Math.floor(Math.log10(Math.abs(value))));
     const normalized = value / magnitude;
-    
-    // Round to sigDigits and scale back
-    const rounded = Math.round(normalized * Math.pow(10, sigDigits - 1)) / Math.pow(10, sigDigits - 1);
+    const rounded = Math.round(normalized * 10) / 10; // Round to 2 sig digits
+    return rounded * magnitude;
+  };
+
+  // Helper function to round to 3 significant digits (fallback when 2 is impossible)
+  const roundTo3SignificantDigits = (value: number): number => {
+    if (value === 0) return 0;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(Math.abs(value))));
+    const normalized = value / magnitude;
+    const rounded = Math.round(normalized * 100) / 100; // Round to 3 sig digits
     return rounded * magnitude;
   };
 
@@ -433,11 +433,12 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     const distribution = new Map<string, number>();
 
     // First pass: assign with noise (variation of ±15% from average)
+    // Prioritize 2 significant digits
     accountsWithMax.forEach(({ accountId, maxBet }) => {
       const noiseFactor = 1 + (Math.random() - 0.5) * 0.3;
       let amt = basePerAccount * noiseFactor;
       amt = Math.min(amt, maxBet);
-      amt = roundToSignificantDigits(amt);
+      amt = roundTo2SignificantDigits(amt); // Prioritize 2 sig digits
       amt = Math.max(amt, 0.01);
       distribution.set(accountId, amt);
       remaining -= amt;
@@ -462,9 +463,9 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
           const currentAmount = distribution.get(accountId) || 0;
           const noiseFactor = 1 + (Math.random() - 0.5) * 0.3;
           let canAdd = Math.min(perRemaining * noiseFactor, maxBet - currentAmount);
-          canAdd = roundToSignificantDigits(canAdd);
+          canAdd = roundTo2SignificantDigits(canAdd); // Prioritize 2 sig digits
           if (canAdd > 0.01) {
-            const newAmount = roundToSignificantDigits(currentAmount + canAdd);
+            const newAmount = roundTo2SignificantDigits(currentAmount + canAdd); // Prioritize 2 sig digits
             distribution.set(accountId, Math.min(newAmount, maxBet));
             remaining -= (newAmount - currentAmount);
             distributed = true;
@@ -476,14 +477,30 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     }
 
     // Final pass: ensure total matches
+    // Try to use 2 significant digits first, fall back to 3 if necessary
     const currentTotal = Array.from(distribution.values()).reduce((sum, val) => sum + val, 0);
     const difference = totalAmount - currentTotal;
     if (Math.abs(difference) > 0.01) {
       const lastAccountId = accountsWithMax[accountsWithMax.length - 1].accountId;
       const lastAmount = distribution.get(lastAccountId) || 0;
-      const adjusted = roundToSignificantDigits(lastAmount + difference);
+      
+      // First try with 2 significant digits
+      let adjusted = roundTo2SignificantDigits(lastAmount + difference);
       const maxBet = accountsWithMax[accountsWithMax.length - 1].maxBet;
-      distribution.set(lastAccountId, Math.min(Math.max(adjusted, 0.01), maxBet));
+      adjusted = Math.min(Math.max(adjusted, 0.01), maxBet);
+      
+      // Check if 2 sig digits achieves the target total (within tolerance)
+      const newTotal = Array.from(distribution.entries()).reduce((sum, [id, val]) => {
+        return sum + (id === lastAccountId ? adjusted : val);
+      }, 0);
+      
+      // If 2 sig digits doesn't work well enough, allow 3 sig digits for this adjustment
+      if (Math.abs(totalAmount - newTotal) > 0.01) {
+        adjusted = roundTo3SignificantDigits(lastAmount + difference);
+        adjusted = Math.min(Math.max(adjusted, 0.01), maxBet);
+      }
+      
+      distribution.set(lastAccountId, adjusted);
     }
 
     setSelectedAccounts(distribution);
