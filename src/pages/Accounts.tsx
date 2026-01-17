@@ -17,6 +17,7 @@ export interface Account {
   tags: string[];
   backupCash: number;
   notes: string;
+  limitChangedAt?: number; // Timestamp when limit was decreased (for tracking limit-down accounts)
 }
 
 interface Platform {
@@ -44,13 +45,13 @@ export const platforms: Platform[] = [
 export const accountData: Record<string, Account[]> = {
   fanduel: [
     { id: 'fd1', name: 'John Smith', balance: 1250.50, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Premium'], backupCash: 5000.00, notes: 'High-value customer, prefers football bets' },
-    { id: 'fd2', name: 'Sarah Johnson', balance: 850.25, limit: 500.00, phoneOffline: false, onHold: false, tags: ['New'], backupCash: 2000.00, notes: 'New account, monitor activity' },
+    { id: 'fd2', name: 'Sarah Johnson', balance: 850.25, limit: 500.00, phoneOffline: false, onHold: false, tags: ['New'], backupCash: 2000.00, notes: 'New account, monitor activity', limitChangedAt: Date.now() - 6 * 60 * 60 * 1000 }, // Limit decreased 6 hours ago
     { id: 'fd3', name: 'Michael Chen', balance: 2100.75, limit: null, phoneOffline: true, onHold: false, tags: ['Premium'], backupCash: 10000.00, notes: 'Phone disconnected, investigate' },
-    { id: 'fd4', name: 'Emily Davis', balance: 450.00, limit: 200.00, phoneOffline: false, onHold: true, tags: [], backupCash: 1000.00, notes: 'Account on hold pending verification' },
+    { id: 'fd4', name: 'Emily Davis', balance: 450.00, limit: 200.00, phoneOffline: false, onHold: true, tags: [], backupCash: 1000.00, notes: 'Account on hold pending verification', limitChangedAt: Date.now() - 12 * 60 * 60 * 1000 }, // Limit decreased 12 hours ago
     { id: 'fd5', name: 'Thomas Anderson', balance: 3500.00, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Active'], backupCash: 20000.00, notes: 'Very active bettor, high volume' },
     { id: 'fd6', name: 'Maria Rodriguez', balance: 980.00, limit: 1500.00, phoneOffline: false, onHold: false, tags: ['Premium'], backupCash: 4000.00, notes: 'Regular customer, prefers basketball' },
     { id: 'fd7', name: 'Kevin Thompson', balance: 2200.50, limit: null, phoneOffline: false, onHold: false, tags: ['VIP'], backupCash: 12000.00, notes: 'Top tier customer, excellent track record' },
-    { id: 'fd8', name: 'Jessica White', balance: 650.75, limit: 800.00, phoneOffline: false, onHold: false, tags: ['New', 'Active'], backupCash: 2500.00, notes: 'New account, showing good activity' },
+    { id: 'fd8', name: 'Jessica White', balance: 650.75, limit: 800.00, phoneOffline: false, onHold: false, tags: ['New', 'Active'], backupCash: 2500.00, notes: 'New account, showing good activity', limitChangedAt: Date.now() - 18 * 60 * 60 * 1000 }, // Limit decreased 18 hours ago
     { id: 'fd9', name: 'Daniel Kim', balance: 1800.25, limit: null, phoneOffline: false, onHold: false, tags: ['Premium', 'Active'], backupCash: 7500.00, notes: 'Consistent bettor, multiple sports' },
     { id: 'fd10', name: 'Rachel Green', balance: 420.00, limit: 300.00, phoneOffline: false, onHold: false, tags: ['New'], backupCash: 1500.00, notes: 'Recently opened account' },
     { id: 'fd11', name: 'Mark Johnson', balance: 2750.00, limit: null, phoneOffline: true, onHold: false, tags: ['VIP', 'Premium'], backupCash: 15000.00, notes: 'Phone offline, check connection' },
@@ -61,12 +62,12 @@ export const accountData: Record<string, Account[]> = {
   ],
   betmgm: [
     { id: 'mgm1', name: 'Robert Williams', balance: 3200.00, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Active'], backupCash: 15000.00, notes: 'Top customer, frequent bettor' },
-    { id: 'mgm2', name: 'Lisa Anderson', balance: 675.50, limit: 1000.00, phoneOffline: false, onHold: false, tags: ['Premium'], backupCash: 3000.00, notes: 'Prefers basketball and baseball' },
+    { id: 'mgm2', name: 'Lisa Anderson', balance: 675.50, limit: 1000.00, phoneOffline: false, onHold: false, tags: ['Premium'], backupCash: 3000.00, notes: 'Prefers basketball and baseball', limitChangedAt: Date.now() - 3 * 60 * 60 * 1000 }, // Limit decreased 3 hours ago
     { id: 'mgm3', name: 'David Martinez', balance: 1200.25, limit: null, phoneOffline: true, onHold: false, tags: ['New'], backupCash: 5000.00, notes: 'Phone offline for 2 days' }
   ],
   draftkings: [
     { id: 'dk1', name: 'Jennifer Taylor', balance: 890.00, limit: null, phoneOffline: false, onHold: false, tags: ['VIP', 'Premium', 'Active'], backupCash: 8000.00, notes: 'Very active, multiple daily bets' },
-    { id: 'dk2', name: 'Christopher Brown', balance: 1500.75, limit: 2000.00, phoneOffline: false, onHold: false, tags: ['Premium'], backupCash: 6000.00, notes: 'Conservative bettor, low risk tolerance' },
+    { id: 'dk2', name: 'Christopher Brown', balance: 1500.75, limit: 2000.00, phoneOffline: false, onHold: false, tags: ['Premium'], backupCash: 6000.00, notes: 'Conservative bettor, low risk tolerance', limitChangedAt: Date.now() - 8 * 60 * 60 * 1000 }, // Limit decreased 8 hours ago
     { id: 'dk3', name: 'Amanda Wilson', balance: 525.50, limit: 500.00, phoneOffline: false, onHold: true, tags: ['Warning'], backupCash: 1500.00, notes: 'Account flagged for review' },
     { id: 'dk4', name: 'James Lee', balance: 2100.00, limit: null, phoneOffline: true, onHold: false, tags: ['Premium'], backupCash: 12000.00, notes: 'Phone offline, check connectivity' },
     { id: 'dk5', name: 'Patricia Garcia', balance: 750.25, limit: null, phoneOffline: false, onHold: false, tags: ['New'], backupCash: 2500.00, notes: 'New account setup last week' }
