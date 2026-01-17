@@ -816,12 +816,13 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
       elapsedTimeIntervalsRef.current.forEach(interval => clearInterval(interval));
       elapsedTimeIntervalsRef.current.clear();
       
-      // Default to select all accounts (excluding offline accounts)
+      // Default to select only ready accounts (not offline, not busy, not in cooldown)
       const allAccountsMap = new Map<string, number>();
       const allInputsMap = new Map<string, string>();
       platformAccounts.forEach(account => {
-        // Only select accounts that are not offline
-        if (!account.phoneOffline) {
+        const status = getAccountStatus(account);
+        // Only select accounts that are ready to bet
+        if (status === 'ready') {
           allAccountsMap.set(account.id, 0);
           allInputsMap.set(account.id, '');
         }
