@@ -290,10 +290,15 @@ This mental model matches how users think: they make big trades, which are then 
    - Status updates: SENT → ACKED → SUCCEEDED/FAILED (with 40% failure rate)
    - User can close dialog to return to odds view
 4. **Notifications**: Filtered by type using local state in `NotificationsPanel`
-5. **Account Status**: 
-   - Account data managed in `AccountsContext` (React Context)
+5. **Account Management & Betting View Sync**: 
+   - **Single Source of Truth**: Account data is managed in `AccountsContext` (React Context)
+   - Both the Accounts management page and BettingDialog use the same `AccountsContext` via `useAccounts()` hook
+   - When accounts are edited (cash balance, limits, tags) in the Accounts page, changes are immediately reflected in:
+     - The Accounts page itself
+     - The BettingDialog when placing bets
+     - The AccountOverviewBar summary
+   - This ensures consistency across all views - account data is never duplicated or out of sync
    - `AccountOverviewBar` aggregates account data from the shared context
-   - Updates automatically when accounts are edited in the Accounts page
    - Calculates per-platform summaries for online/limited/offline statuses
 
 ### Styling System
