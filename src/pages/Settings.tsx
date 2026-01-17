@@ -580,317 +580,330 @@ export function Settings() {
                         Betting Conditions
                       </h4>
 
-                      {/* Closing Line Movement */}
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <Label htmlFor="closing-line-enabled" className="text-sm font-medium text-foreground cursor-pointer">
-                            Closing Line Movement
-                          </Label>
-                          <input
-                            type="checkbox"
-                            id="closing-line-enabled"
-                            checked={ncaafConfig.closingLineMovement.enabled}
-                            onChange={(e) => setNcaafConfig({
-                              ...ncaafConfig,
-                              closingLineMovement: { ...ncaafConfig.closingLineMovement, enabled: e.target.checked }
-                            })}
-                            className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                          />
-                        </div>
-                        {ncaafConfig.closingLineMovement.enabled && (
-                          <div className="ml-6 space-y-2">
-                            <div className="flex items-center gap-3">
-                              <Label htmlFor="closing-spread" className="text-xs text-muted-foreground cursor-pointer">
-                                Spread
-                              </Label>
-                              <input
-                                type="checkbox"
-                                id="closing-spread"
-                                checked={ncaafConfig.closingLineMovement.markets.spread}
-                                onChange={(e) => setNcaafConfig({
-                                  ...ncaafConfig,
-                                  closingLineMovement: {
-                                    ...ncaafConfig.closingLineMovement,
-                                    markets: { ...ncaafConfig.closingLineMovement.markets, spread: e.target.checked }
-                                  }
-                                })}
-                                className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                              />
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Label htmlFor="closing-total" className="text-xs text-muted-foreground cursor-pointer">
-                                Total
-                              </Label>
-                              <input
-                                type="checkbox"
-                                id="closing-total"
-                                checked={ncaafConfig.closingLineMovement.markets.total}
-                                onChange={(e) => setNcaafConfig({
-                                  ...ncaafConfig,
-                                  closingLineMovement: {
-                                    ...ncaafConfig.closingLineMovement,
-                                    markets: { ...ncaafConfig.closingLineMovement.markets, total: e.target.checked }
-                                  }
-                                })}
-                                className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                              />
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Label htmlFor="closing-ml" className="text-xs text-muted-foreground cursor-pointer">
-                                Moneyline
-                              </Label>
-                              <input
-                                type="checkbox"
-                                id="closing-ml"
-                                checked={ncaafConfig.closingLineMovement.markets.moneyline}
-                                onChange={(e) => setNcaafConfig({
-                                  ...ncaafConfig,
-                                  closingLineMovement: {
-                                    ...ncaafConfig.closingLineMovement,
-                                    markets: { ...ncaafConfig.closingLineMovement.markets, moneyline: e.target.checked }
-                                  }
-                                })}
-                                className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                              />
-                            </div>
+                      {/* Moneyline Subsection */}
+                      <div className="space-y-3 pl-4 border-l-2 border-[hsl(var(--border))]">
+                        <h5 className="text-xs font-semibold text-foreground uppercase tracking-wide">
+                          Moneyline
+                        </h5>
+                        
+                        {/* Closing Line Movement - Moneyline */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Label htmlFor="closing-ml-enabled" className="text-sm font-medium text-foreground cursor-pointer">
+                              Closing Line Movement
+                            </Label>
+                            <input
+                              type="checkbox"
+                              id="closing-ml-enabled"
+                              checked={ncaafConfig.closingLineMovement.enabled && ncaafConfig.closingLineMovement.markets.moneyline}
+                              onChange={(e) => setNcaafConfig({
+                                ...ncaafConfig,
+                                closingLineMovement: {
+                                  ...ncaafConfig.closingLineMovement,
+                                  enabled: e.target.checked || ncaafConfig.closingLineMovement.markets.spread || ncaafConfig.closingLineMovement.markets.total,
+                                  markets: { ...ncaafConfig.closingLineMovement.markets, moneyline: e.target.checked }
+                                }
+                              })}
+                              className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                            />
                           </div>
-                        )}
+                        </div>
+
+                        {/* Underdog Becomes Favorite */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Label htmlFor="underdog-fav-enabled" className="text-sm font-medium text-foreground cursor-pointer">
+                              Underdog Becomes Favorite
+                            </Label>
+                            <input
+                              type="checkbox"
+                              id="underdog-fav-enabled"
+                              checked={ncaafConfig.underdogBecomesFavorite.enabled}
+                              onChange={(e) => setNcaafConfig({
+                                ...ncaafConfig,
+                                underdogBecomesFavorite: { ...ncaafConfig.underdogBecomesFavorite, enabled: e.target.checked }
+                              })}
+                              className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                            />
+                          </div>
+                          {ncaafConfig.underdogBecomesFavorite.enabled && (
+                            <div className="ml-6">
+                              <div className="flex items-center gap-3">
+                                <Label htmlFor="underdog-fav-threshold" className="text-xs text-muted-foreground">
+                                  Minimum odds change
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    id="underdog-fav-threshold"
+                                    value={ncaafConfig.underdogBecomesFavorite.minOddsChange}
+                                    onChange={(e) => setNcaafConfig({
+                                      ...ncaafConfig,
+                                      underdogBecomesFavorite: {
+                                        ...ncaafConfig.underdogBecomesFavorite,
+                                        minOddsChange: parseInt(e.target.value) || 400
+                                      }
+                                    })}
+                                    className="w-20 h-8 text-xs"
+                                    min="1"
+                                  />
+                                  <span className="text-xs text-muted-foreground">points</span>
+                                </div>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground mt-1 ml-0">
+                                Alerts when underdog (e.g., +{ncaafConfig.underdogBecomesFavorite.minOddsChange}) becomes favorite (e.g., -100)
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Upset Alert */}
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <Label htmlFor="upset-enabled" className="text-sm font-medium text-foreground cursor-pointer">
-                            Upset Alert
-                          </Label>
-                          <input
-                            type="checkbox"
-                            id="upset-enabled"
-                            checked={ncaafConfig.upsetAlert.enabled}
-                            onChange={(e) => setNcaafConfig({
-                              ...ncaafConfig,
-                              upsetAlert: { ...ncaafConfig.upsetAlert, enabled: e.target.checked }
-                            })}
-                            className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                          />
-                        </div>
-                        {ncaafConfig.upsetAlert.enabled && (
-                          <div className="ml-6 space-y-3">
-                            <div className="flex items-center gap-3">
-                              <Label htmlFor="upset-threshold" className="text-xs text-muted-foreground">
-                                Point underdog threshold
-                              </Label>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  id="upset-threshold"
-                                  value={ncaafConfig.upsetAlert.pointThreshold}
-                                  onChange={(e) => setNcaafConfig({
-                                    ...ncaafConfig,
-                                    upsetAlert: {
-                                      ...ncaafConfig.upsetAlert,
-                                      pointThreshold: parseInt(e.target.value) || 10
-                                    }
-                                  })}
-                                  className="w-20 h-8 text-xs"
-                                  min="1"
-                                />
-                                <span className="text-xs text-muted-foreground">points</span>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <Label className="text-xs text-muted-foreground block">Alert checkpoints:</Label>
-                              <div className="space-y-1.5">
-                                <div className="flex items-center gap-3">
-                                  <Label htmlFor="upset-ht" className="text-xs text-muted-foreground cursor-pointer">
-                                    Halftime
-                                  </Label>
-                                  <input
-                                    type="checkbox"
-                                    id="upset-ht"
-                                    checked={ncaafConfig.upsetAlert.checkpoints.halftime}
-                                    onChange={(e) => setNcaafConfig({
-                                      ...ncaafConfig,
-                                      upsetAlert: {
-                                        ...ncaafConfig.upsetAlert,
-                                        checkpoints: { ...ncaafConfig.upsetAlert.checkpoints, halftime: e.target.checked }
-                                      }
-                                    })}
-                                    className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                                  />
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <Label htmlFor="upset-16" className="text-xs text-muted-foreground cursor-pointer">
-                                    16 min timeout
-                                  </Label>
-                                  <input
-                                    type="checkbox"
-                                    id="upset-16"
-                                    checked={ncaafConfig.upsetAlert.checkpoints.timeout16}
-                                    onChange={(e) => setNcaafConfig({
-                                      ...ncaafConfig,
-                                      upsetAlert: {
-                                        ...ncaafConfig.upsetAlert,
-                                        checkpoints: { ...ncaafConfig.upsetAlert.checkpoints, timeout16: e.target.checked }
-                                      }
-                                    })}
-                                    className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                                  />
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <Label htmlFor="upset-12" className="text-xs text-muted-foreground cursor-pointer">
-                                    12 min timeout
-                                  </Label>
-                                  <input
-                                    type="checkbox"
-                                    id="upset-12"
-                                    checked={ncaafConfig.upsetAlert.checkpoints.timeout12}
-                                    onChange={(e) => setNcaafConfig({
-                                      ...ncaafConfig,
-                                      upsetAlert: {
-                                        ...ncaafConfig.upsetAlert,
-                                        checkpoints: { ...ncaafConfig.upsetAlert.checkpoints, timeout12: e.target.checked }
-                                      }
-                                    })}
-                                    className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                                  />
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <Label htmlFor="upset-8" className="text-xs text-muted-foreground cursor-pointer">
-                                    8 min timeout
-                                  </Label>
-                                  <input
-                                    type="checkbox"
-                                    id="upset-8"
-                                    checked={ncaafConfig.upsetAlert.checkpoints.timeout8}
-                                    onChange={(e) => setNcaafConfig({
-                                      ...ncaafConfig,
-                                      upsetAlert: {
-                                        ...ncaafConfig.upsetAlert,
-                                        checkpoints: { ...ncaafConfig.upsetAlert.checkpoints, timeout8: e.target.checked }
-                                      }
-                                    })}
-                                    className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                                  />
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <Label htmlFor="upset-4" className="text-xs text-muted-foreground cursor-pointer">
-                                    4 min timeout
-                                  </Label>
-                                  <input
-                                    type="checkbox"
-                                    id="upset-4"
-                                    checked={ncaafConfig.upsetAlert.checkpoints.timeout4}
-                                    onChange={(e) => setNcaafConfig({
-                                      ...ncaafConfig,
-                                      upsetAlert: {
-                                        ...ncaafConfig.upsetAlert,
-                                        checkpoints: { ...ncaafConfig.upsetAlert.checkpoints, timeout4: e.target.checked }
-                                      }
-                                    })}
-                                    className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                                  />
-                                </div>
-                              </div>
-                            </div>
+                      {/* Spread Subsection */}
+                      <div className="space-y-3 pl-4 border-l-2 border-[hsl(var(--border))]">
+                        <h5 className="text-xs font-semibold text-foreground uppercase tracking-wide">
+                          Spread
+                        </h5>
+                        
+                        {/* Closing Line Movement - Spread */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Label htmlFor="closing-spread-enabled" className="text-sm font-medium text-foreground cursor-pointer">
+                              Closing Line Movement
+                            </Label>
+                            <input
+                              type="checkbox"
+                              id="closing-spread-enabled"
+                              checked={ncaafConfig.closingLineMovement.enabled && ncaafConfig.closingLineMovement.markets.spread}
+                              onChange={(e) => setNcaafConfig({
+                                ...ncaafConfig,
+                                closingLineMovement: {
+                                  ...ncaafConfig.closingLineMovement,
+                                  enabled: e.target.checked || ncaafConfig.closingLineMovement.markets.moneyline || ncaafConfig.closingLineMovement.markets.total,
+                                  markets: { ...ncaafConfig.closingLineMovement.markets, spread: e.target.checked }
+                                }
+                              })}
+                              className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                            />
                           </div>
-                        )}
+                        </div>
+
+                        {/* Upset Alert */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Label htmlFor="upset-enabled" className="text-sm font-medium text-foreground cursor-pointer">
+                              Upset Alert
+                            </Label>
+                            <input
+                              type="checkbox"
+                              id="upset-enabled"
+                              checked={ncaafConfig.upsetAlert.enabled}
+                              onChange={(e) => setNcaafConfig({
+                                ...ncaafConfig,
+                                upsetAlert: { ...ncaafConfig.upsetAlert, enabled: e.target.checked }
+                              })}
+                              className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                            />
+                          </div>
+                          {ncaafConfig.upsetAlert.enabled && (
+                            <div className="ml-6 space-y-3">
+                              <div className="flex items-center gap-3">
+                                <Label htmlFor="upset-threshold" className="text-xs text-muted-foreground">
+                                  Point underdog threshold
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    id="upset-threshold"
+                                    value={ncaafConfig.upsetAlert.pointThreshold}
+                                    onChange={(e) => setNcaafConfig({
+                                      ...ncaafConfig,
+                                      upsetAlert: {
+                                        ...ncaafConfig.upsetAlert,
+                                        pointThreshold: parseInt(e.target.value) || 10
+                                      }
+                                    })}
+                                    className="w-20 h-8 text-xs"
+                                    min="1"
+                                  />
+                                  <span className="text-xs text-muted-foreground">points</span>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <Label className="text-xs text-muted-foreground block">Alert checkpoints:</Label>
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center gap-3">
+                                    <Label htmlFor="upset-ht" className="text-xs text-muted-foreground cursor-pointer">
+                                      Halftime
+                                    </Label>
+                                    <input
+                                      type="checkbox"
+                                      id="upset-ht"
+                                      checked={ncaafConfig.upsetAlert.checkpoints.halftime}
+                                      onChange={(e) => setNcaafConfig({
+                                        ...ncaafConfig,
+                                        upsetAlert: {
+                                          ...ncaafConfig.upsetAlert,
+                                          checkpoints: { ...ncaafConfig.upsetAlert.checkpoints, halftime: e.target.checked }
+                                        }
+                                      })}
+                                      className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <Label htmlFor="upset-16" className="text-xs text-muted-foreground cursor-pointer">
+                                      16 min timeout
+                                    </Label>
+                                    <input
+                                      type="checkbox"
+                                      id="upset-16"
+                                      checked={ncaafConfig.upsetAlert.checkpoints.timeout16}
+                                      onChange={(e) => setNcaafConfig({
+                                        ...ncaafConfig,
+                                        upsetAlert: {
+                                          ...ncaafConfig.upsetAlert,
+                                          checkpoints: { ...ncaafConfig.upsetAlert.checkpoints, timeout16: e.target.checked }
+                                        }
+                                      })}
+                                      className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <Label htmlFor="upset-12" className="text-xs text-muted-foreground cursor-pointer">
+                                      12 min timeout
+                                    </Label>
+                                    <input
+                                      type="checkbox"
+                                      id="upset-12"
+                                      checked={ncaafConfig.upsetAlert.checkpoints.timeout12}
+                                      onChange={(e) => setNcaafConfig({
+                                        ...ncaafConfig,
+                                        upsetAlert: {
+                                          ...ncaafConfig.upsetAlert,
+                                          checkpoints: { ...ncaafConfig.upsetAlert.checkpoints, timeout12: e.target.checked }
+                                        }
+                                      })}
+                                      className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <Label htmlFor="upset-8" className="text-xs text-muted-foreground cursor-pointer">
+                                      8 min timeout
+                                    </Label>
+                                    <input
+                                      type="checkbox"
+                                      id="upset-8"
+                                      checked={ncaafConfig.upsetAlert.checkpoints.timeout8}
+                                      onChange={(e) => setNcaafConfig({
+                                        ...ncaafConfig,
+                                        upsetAlert: {
+                                          ...ncaafConfig.upsetAlert,
+                                          checkpoints: { ...ncaafConfig.upsetAlert.checkpoints, timeout8: e.target.checked }
+                                        }
+                                      })}
+                                      className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <Label htmlFor="upset-4" className="text-xs text-muted-foreground cursor-pointer">
+                                      4 min timeout
+                                    </Label>
+                                    <input
+                                      type="checkbox"
+                                      id="upset-4"
+                                      checked={ncaafConfig.upsetAlert.checkpoints.timeout4}
+                                      onChange={(e) => setNcaafConfig({
+                                        ...ncaafConfig,
+                                        upsetAlert: {
+                                          ...ncaafConfig.upsetAlert,
+                                          checkpoints: { ...ncaafConfig.upsetAlert.checkpoints, timeout4: e.target.checked }
+                                        }
+                                      })}
+                                      className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Total Deviation */}
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <Label htmlFor="total-dev-enabled" className="text-sm font-medium text-foreground cursor-pointer">
-                            Total Deviation from Pregame Closing
-                          </Label>
-                          <input
-                            type="checkbox"
-                            id="total-dev-enabled"
-                            checked={ncaafConfig.totalDeviation.enabled}
-                            onChange={(e) => setNcaafConfig({
-                              ...ncaafConfig,
-                              totalDeviation: { ...ncaafConfig.totalDeviation, enabled: e.target.checked }
-                            })}
-                            className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                          />
-                        </div>
-                        {ncaafConfig.totalDeviation.enabled && (
-                          <div className="ml-6">
-                            <div className="flex items-center gap-3">
-                              <Label htmlFor="total-dev-threshold" className="text-xs text-muted-foreground">
-                                Deviation threshold
-                              </Label>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  id="total-dev-threshold"
-                                  value={ncaafConfig.totalDeviation.threshold}
-                                  onChange={(e) => setNcaafConfig({
-                                    ...ncaafConfig,
-                                    totalDeviation: {
-                                      ...ncaafConfig.totalDeviation,
-                                      threshold: parseInt(e.target.value) || 15
-                                    }
-                                  })}
-                                  className="w-20 h-8 text-xs"
-                                  min="1"
-                                />
-                                <span className="text-xs text-muted-foreground">points</span>
-                              </div>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground mt-1 ml-0">
-                              Alerts when total deviates ±{ncaafConfig.totalDeviation.threshold} points from pregame closing
-                            </p>
+                      {/* Total Subsection */}
+                      <div className="space-y-3 pl-4 border-l-2 border-[hsl(var(--border))]">
+                        <h5 className="text-xs font-semibold text-foreground uppercase tracking-wide">
+                          Total
+                        </h5>
+                        
+                        {/* Closing Line Movement - Total */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Label htmlFor="closing-total-enabled" className="text-sm font-medium text-foreground cursor-pointer">
+                              Closing Line Movement
+                            </Label>
+                            <input
+                              type="checkbox"
+                              id="closing-total-enabled"
+                              checked={ncaafConfig.closingLineMovement.enabled && ncaafConfig.closingLineMovement.markets.total}
+                              onChange={(e) => setNcaafConfig({
+                                ...ncaafConfig,
+                                closingLineMovement: {
+                                  ...ncaafConfig.closingLineMovement,
+                                  enabled: e.target.checked || ncaafConfig.closingLineMovement.markets.moneyline || ncaafConfig.closingLineMovement.markets.spread,
+                                  markets: { ...ncaafConfig.closingLineMovement.markets, total: e.target.checked }
+                                }
+                              })}
+                              className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                            />
                           </div>
-                        )}
-                      </div>
+                        </div>
 
-                      {/* Underdog Becomes Favorite */}
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <Label htmlFor="underdog-fav-enabled" className="text-sm font-medium text-foreground cursor-pointer">
-                            Underdog Becomes Favorite
-                          </Label>
-                          <input
-                            type="checkbox"
-                            id="underdog-fav-enabled"
-                            checked={ncaafConfig.underdogBecomesFavorite.enabled}
-                            onChange={(e) => setNcaafConfig({
-                              ...ncaafConfig,
-                              underdogBecomesFavorite: { ...ncaafConfig.underdogBecomesFavorite, enabled: e.target.checked }
-                            })}
-                            className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
-                          />
-                        </div>
-                        {ncaafConfig.underdogBecomesFavorite.enabled && (
-                          <div className="ml-6">
-                            <div className="flex items-center gap-3">
-                              <Label htmlFor="underdog-fav-threshold" className="text-xs text-muted-foreground">
-                                Minimum odds change
-                              </Label>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  id="underdog-fav-threshold"
-                                  value={ncaafConfig.underdogBecomesFavorite.minOddsChange}
-                                  onChange={(e) => setNcaafConfig({
-                                    ...ncaafConfig,
-                                    underdogBecomesFavorite: {
-                                      ...ncaafConfig.underdogBecomesFavorite,
-                                      minOddsChange: parseInt(e.target.value) || 400
-                                    }
-                                  })}
-                                  className="w-20 h-8 text-xs"
-                                  min="1"
-                                />
-                                <span className="text-xs text-muted-foreground">points</span>
-                              </div>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground mt-1 ml-0">
-                              Alerts when underdog (e.g., +{ncaafConfig.underdogBecomesFavorite.minOddsChange}) becomes favorite (e.g., -100)
-                            </p>
+                        {/* Total Deviation */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Label htmlFor="total-dev-enabled" className="text-sm font-medium text-foreground cursor-pointer">
+                              Total Deviation from Pregame Closing
+                            </Label>
+                            <input
+                              type="checkbox"
+                              id="total-dev-enabled"
+                              checked={ncaafConfig.totalDeviation.enabled}
+                              onChange={(e) => setNcaafConfig({
+                                ...ncaafConfig,
+                                totalDeviation: { ...ncaafConfig.totalDeviation, enabled: e.target.checked }
+                              })}
+                              className="w-4 h-4 rounded border-[hsl(var(--border))] text-primary focus:ring-2 focus:ring-primary"
+                            />
                           </div>
-                        )}
+                          {ncaafConfig.totalDeviation.enabled && (
+                            <div className="ml-6">
+                              <div className="flex items-center gap-3">
+                                <Label htmlFor="total-dev-threshold" className="text-xs text-muted-foreground">
+                                  Deviation threshold
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    id="total-dev-threshold"
+                                    value={ncaafConfig.totalDeviation.threshold}
+                                    onChange={(e) => setNcaafConfig({
+                                      ...ncaafConfig,
+                                      totalDeviation: {
+                                        ...ncaafConfig.totalDeviation,
+                                        threshold: parseInt(e.target.value) || 15
+                                      }
+                                    })}
+                                    className="w-20 h-8 text-xs"
+                                    min="1"
+                                  />
+                                  <span className="text-xs text-muted-foreground">points</span>
+                                </div>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground mt-1 ml-0">
+                                Alerts when total deviates ±{ncaafConfig.totalDeviation.threshold} points from pregame closing
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </CollapsibleContent>
