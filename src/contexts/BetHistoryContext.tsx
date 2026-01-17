@@ -8,7 +8,7 @@ export interface Bet {
   type: string;
   odds: string;
   stake: number; // Changed to number for easier calculations
-  status: "won" | "lost" | "pending";
+  status: "won" | "lost" | "pending" | "cancelled";
   timestamp: number; // Store as timestamp for sorting
   payout?: number;
   platform?: string;

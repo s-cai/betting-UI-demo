@@ -197,6 +197,8 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   const distributionInputRef = useRef<HTMLInputElement>(null); // Ref for distribution input to auto-focus
   const cooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null); // Track cooldown timer
   const [currentTime, setCurrentTime] = useState(Date.now()); // Force re-render for cooldown countdown
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; accountId: string } | null>(null);
+  const accountTimeoutMapRef = useRef<Map<string, ReturnType<typeof setTimeout>[]>>(new Map()); // Track timeouts per account
 
   // Load predefined totals from localStorage
   const loadPredefinedTotals = (): number[] => {
@@ -612,6 +614,12 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
         ));
       }, 500 + (index * 200));
       timeoutRefs.current.push(timeout);
+      
+      // Track timeout for this account
+      if (!accountTimeoutMapRef.current.has(bet.account.id)) {
+        accountTimeoutMapRef.current.set(bet.account.id, []);
+      }
+      accountTimeoutMapRef.current.get(bet.account.id)!.push(timeout);
     });
 
     // Second phase: After all bets are ACKED, continue to SUCCEEDED/FAILED
@@ -689,9 +697,23 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
           }));
         }, finalDelay);
         timeoutRefs.current.push(timeout);
+        
+        // Track timeout for this account immediately when created
+        if (!accountTimeoutMapRef.current.has(bet.account.id)) {
+          accountTimeoutMapRef.current.set(bet.account.id, []);
+        }
+        accountTimeoutMapRef.current.get(bet.account.id)!.push(timeout);
       });
     }, ackDelay);
     timeoutRefs.current.push(finalTimeout);
+    
+    // Track final timeout for all accounts (it affects all bets)
+    bets.forEach(bet => {
+      if (!accountTimeoutMapRef.current.has(bet.account.id)) {
+        accountTimeoutMapRef.current.set(bet.account.id, []);
+      }
+      accountTimeoutMapRef.current.get(bet.account.id)!.push(finalTimeout);
+    });
   };
 
   const handleSendAllBets = () => {
@@ -798,6 +820,60 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   //   setViewMode('before');
   // };
 
+  const handleAbortAccount = (accountId: string) => {
+    // Cancel all timeouts for this account
+    const accountTimeouts = accountTimeoutMapRef.current.get(accountId);
+    if (accountTimeouts) {
+      accountTimeouts.forEach(timeout => clearTimeout(timeout));
+      accountTimeoutMapRef.current.delete(accountId);
+    }
+    
+    // Also remove from timeoutRefs (we track them there too for cleanup)
+    // Note: We can't directly identify which timeouts belong to which account in timeoutRefs,
+    // but the account-specific ones are already cleared above
+    
+    // Stop elapsed time interval for this account
+    const interval = elapsedTimeIntervalsRef.current.get(accountId);
+    if (interval) {
+      clearInterval(interval);
+      elapsedTimeIntervalsRef.current.delete(accountId);
+    }
+    
+    // Remove bet from sentBets
+    setSentBets(prev => {
+      const updated = prev.filter(b => b.account.id !== accountId);
+      return updated;
+    });
+    
+    // Mark account as ready
+    setAccountStatus(platformId, accountId, 'ready');
+    
+    // Update bet in history to cancelled if it exists
+    const betId = recentBetIdsRef.current.get(accountId);
+    if (betId) {
+      updateBet(betId, {
+        status: "cancelled"
+      });
+      recentBetIdsRef.current.delete(accountId);
+    }
+    
+    // Close context menu
+    setContextMenu(null);
+  };
+
+  const handleAccountRightClick = (e: React.MouseEvent, account: Account) => {
+    const status = getAccountStatus(account);
+    if (status === 'busy') {
+      e.preventDefault();
+      e.stopPropagation();
+      setContextMenu({
+        x: e.clientX,
+        y: e.clientY,
+        accountId: account.id
+      });
+    }
+  };
+
   const handleClose = () => {
     // Clear all timeouts
     timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
@@ -809,6 +885,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     setBetAmountInputs(new Map());
     setDistributionTotal('');
     // Keep sentBets and viewMode to preserve after-bet view
+    setContextMenu(null);
     onClose();
   };
 
@@ -826,6 +903,12 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
       // Clear all elapsed time intervals
       elapsedTimeIntervalsRef.current.forEach(interval => clearInterval(interval));
       elapsedTimeIntervalsRef.current.clear();
+      
+      // Clear account timeout map
+      accountTimeoutMapRef.current.clear();
+      
+      // Close context menu if open
+      setContextMenu(null);
       
       // Default to select only ready accounts (not offline, not busy, not in cooldown)
       const allAccountsMap = new Map<string, number>();
@@ -859,7 +942,11 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        handleClose();
+        if (contextMenu) {
+          setContextMenu(null);
+        } else {
+          handleClose();
+        }
       }
     };
 
@@ -867,7 +954,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     return () => {
       window.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen, contextMenu]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup timeouts and intervals on unmount
   useEffect(() => {
@@ -1005,6 +1092,7 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     return (
       <div
         key={account.id}
+        onContextMenu={(e) => handleAccountRightClick(e, account)}
         className={cn(
           "bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-4 transition-all",
           isSelected && "border-primary bg-accent/20",
@@ -1315,6 +1403,30 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
           )}
         </div>
       </div>
+      
+      {/* Context Menu for Busy Accounts */}
+      {contextMenu && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setContextMenu(null)}
+          />
+          <div
+            className="fixed z-50 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md shadow-lg py-1 min-w-[150px]"
+            style={{
+              left: contextMenu.x,
+              top: contextMenu.y
+            }}
+          >
+            <button
+              onClick={() => handleAbortAccount(contextMenu.accountId)}
+              className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-accent/50 transition-colors"
+            >
+              Abort Operation
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
