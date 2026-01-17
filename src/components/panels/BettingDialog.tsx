@@ -781,22 +781,6 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     onClose();
   };
 
-  const handleResetForNewBet = () => {
-    // Clear all timeouts
-    timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
-    timeoutRefs.current = [];
-    
-    // Clear all elapsed time intervals
-    elapsedTimeIntervalsRef.current.forEach(interval => clearInterval(interval));
-    elapsedTimeIntervalsRef.current.clear();
-    
-    // Reset everything for a new bet
-    setSelectedAccounts(new Map());
-    setBetAmountInputs(new Map());
-    setDistributionTotal('');
-    setSentBets([]);
-    setViewMode('before');
-  };
 
   // Reset state when dialog opens or key props change
   useEffect(() => {
@@ -1055,14 +1039,6 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
             <h2 className="text-lg font-semibold text-foreground">
               {viewMode === 'after' ? 'Bet Status' : 'Place Bet'}
             </h2>
-            {viewMode === 'after' && (
-              <button
-                onClick={handleResetForNewBet}
-                className="text-xs px-3 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-all"
-              >
-                New Bet
-              </button>
-            )}
           </div>
           <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
