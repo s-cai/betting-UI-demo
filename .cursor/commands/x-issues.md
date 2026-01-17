@@ -3,6 +3,12 @@
 Go through current open issues for the repo at https://github.com/s-cai/betting-UI-demo/issues
 one by one, in ascending order of issue number.
 
-After finishing _each_ issue, verify in browser, and commit after this verification.
+For _each_ issue:
+1. **Record start timestamp** using `Get-Date` (PowerShell) or equivalent before starting work
+2. Work on the issue
+3. Verify in browser
+4. Commit after verification
+5. **Record end timestamp** using `Get-Date` (PowerShell) or equivalent after committing
+6. **Calculate and store** the actual wall clock time (end - start)
 
-At the end, summarize changes and push all commits.  Be sure to include wall clock time taken for each task.
+At the end, summarize changes and push all commits. **Include actual measured wall clock time** (not estimates) for each task in the summary.
