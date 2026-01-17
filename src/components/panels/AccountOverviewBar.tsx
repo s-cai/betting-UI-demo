@@ -1,4 +1,4 @@
-import { ChevronUp, ChevronDown, Wifi, WifiOff, AlertTriangle, DollarSign } from "lucide-react";
+import { ChevronUp, ChevronDown, Wifi, WifiOff, DollarSign, TrendingDown } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { platforms, Account } from "@/pages/Accounts";
@@ -9,13 +9,13 @@ interface PlatformSummary {
   platformName: string;
   logo: string;
   online: { balance: number; count: number };
-  limited: { balance: number; count: number };
   offline: { balance: number; count: number };
+  limitDownCount: number; // Count of accounts whose limit decreased in last 24 hours
 }
 
-function getAccountStatus(account: Account): "online" | "limited" | "offline" {
+function getAccountStatus(account: Account): "online" | "offline" {
   if (account.phoneOffline) return "offline";
-  if (account.onHold) return "limited";
+  // Limited accounts (onHold) are now counted as online
   return "online";
 }
 
@@ -24,6 +24,9 @@ export function AccountOverviewBar() {
   const { accounts } = useAccounts();
 
   const platformSummaries = useMemo<PlatformSummary[]>(() => {
+    const now = Date.now();
+    const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+    
     return platforms.map(platform => {
       const platformAccounts = accounts[platform.id] || [];
       
@@ -32,14 +35,19 @@ export function AccountOverviewBar() {
         platformName: platform.name,
         logo: platform.logo,
         online: { balance: 0, count: 0 },
-        limited: { balance: 0, count: 0 },
-        offline: { balance: 0, count: 0 }
+        offline: { balance: 0, count: 0 },
+        limitDownCount: 0
       };
 
       platformAccounts.forEach(account => {
         const status = getAccountStatus(account);
         summary[status].balance += account.balance;
         summary[status].count += 1;
+        
+        // Count accounts whose limit decreased in the last 24 hours
+        if (account.limitChangedAt && account.limitChangedAt >= twentyFourHoursAgo) {
+          summary.limitDownCount += 1;
+        }
       });
 
       return summary;
@@ -48,18 +56,16 @@ export function AccountOverviewBar() {
 
   const totalStats = useMemo(() => {
     let online = 0;
-    let limited = 0;
     let offline = 0;
     let totalBalance = 0;
 
     platformSummaries.forEach(summary => {
       online += summary.online.count;
-      limited += summary.limited.count;
       offline += summary.offline.count;
-      totalBalance += summary.online.balance + summary.limited.balance + summary.offline.balance;
+      totalBalance += summary.online.balance + summary.offline.balance;
     });
 
-    return { online, limited, offline, totalBalance };
+    return { online, offline, totalBalance };
   }, [platformSummaries]);
 
   return (
@@ -88,11 +94,6 @@ export function AccountOverviewBar() {
               <span className="text-muted-foreground">Online</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <AlertTriangle className="w-3.5 h-3.5 text-signal-warning" />
-              <span className="font-mono">{totalStats.limited}</span>
-              <span className="text-muted-foreground">Limited</span>
-            </div>
-            <div className="flex items-center gap-1.5">
               <WifiOff className="w-3.5 h-3.5 text-signal-offline" />
               <span className="font-mono">{totalStats.offline}</span>
               <span className="text-muted-foreground">Offline</span>
@@ -108,7 +109,7 @@ export function AccountOverviewBar() {
         <div className="px-4 pb-3 overflow-x-auto terminal-scrollbar">
           <div className="flex gap-2">
             {platformSummaries.map((summary) => {
-              const totalBalance = summary.online.balance + summary.limited.balance + summary.offline.balance;
+              const totalBalance = summary.online.balance + summary.offline.balance;
               return (
                 <div
                   key={summary.platformId}
@@ -126,7 +127,7 @@ export function AccountOverviewBar() {
                   </div>
                   
                   <div className="space-y-2">
-                    {/* Online */}
+                    {/* Online (includes limited accounts) */}
                     {summary.online.count > 0 && (
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-1.5">
@@ -138,22 +139,6 @@ export function AccountOverviewBar() {
                             ${summary.online.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                           <span className="text-muted-foreground">({summary.online.count})</span>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Limited */}
-                    {summary.limited.count > 0 && (
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1.5">
-                          <AlertTriangle className="w-3 h-3 text-signal-warning" />
-                          <span className="text-muted-foreground">Limited:</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-signal-warning font-medium">
-                            ${summary.limited.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </span>
-                          <span className="text-muted-foreground">({summary.limited.count})</span>
                         </div>
                       </div>
                     )}
@@ -171,6 +156,19 @@ export function AccountOverviewBar() {
                           </span>
                           <span className="text-muted-foreground">({summary.offline.count})</span>
                         </div>
+                      </div>
+                    )}
+                    
+                    {/* Limit Down (last 24 hours) */}
+                    {summary.limitDownCount > 0 && (
+                      <div className="flex items-center justify-between text-xs pt-1 border-t border-[hsl(var(--border))]">
+                        <div className="flex items-center gap-1.5">
+                          <TrendingDown className="w-3 h-3 text-[hsl(var(--signal-warning))]" />
+                          <span className="text-muted-foreground">Limit ↓ (24h):</span>
+                        </div>
+                        <span className="font-mono text-[hsl(var(--signal-warning))] font-medium">
+                          {summary.limitDownCount}
+                        </span>
                       </div>
                     )}
                   </div>
