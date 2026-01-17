@@ -149,9 +149,9 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
       >
         <table className="data-table w-full" style={{ tableLayout: 'fixed' }}>
           <thead className="sticky top-0 z-10">
-            {/* Market Headers */}
+            {/* Column Headers */}
             <tr className="bg-panel-header">
-              <th className="text-left" style={{ width: '14%' }}>Moneyline</th>
+              <th className="text-left" style={{ width: '14%' }}>Team</th>
               <th className="text-center" style={{ width: '9%' }}>Best Odds</th>
               <th className="text-center" style={{ width: '9%' }}>Close Odds</th>
               {mockBookOdds.map((odds) => (
@@ -188,15 +188,17 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
             </tr>
           </thead>
           <tbody>
+            {/* Moneyline Section */}
+            <tr className="bg-panel-header/50">
+              <td colSpan={9} className="text-xs font-medium py-2">
+                Moneyline
+              </td>
+            </tr>
+
             {/* Away Team Row */}
             <tr className="hover:bg-accent/30 border-b border-border/30">
               <td className="text-xs font-medium">
-                <div className="flex items-center gap-2">
-                  {mockBookOdds[0].hasOpen && (
-                    <span className="text-[10px] px-1.5 py-0.5 bg-signal-positive-muted text-signal-positive rounded">Open</span>
-                  )}
-                  {match.awayTeam}
-                </div>
+                {match.awayTeam}
               </td>
               <td className="text-center">
                 <button className="odds-cell odds-cell-best font-mono text-sm px-3">
@@ -224,12 +226,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
             {/* Home Team Row */}
             <tr className="hover:bg-accent/30 border-b border-border/30">
               <td className="text-xs font-medium">
-                <div className="flex items-center gap-2">
-                  {mockBookOdds[0].hasOpen && (
-                    <span className="text-[10px] px-1.5 py-0.5 bg-signal-positive-muted text-signal-positive rounded">Open</span>
-                  )}
-                  {match.homeTeam}
-                </div>
+                {match.homeTeam}
               </td>
               <td className="text-center">
                 <button className="odds-cell font-mono text-sm px-3">
@@ -264,10 +261,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
             {/* Away Spread Row */}
             <tr className="hover:bg-accent/30 border-b border-border/30">
               <td className="text-xs font-medium">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] px-1.5 py-0.5 bg-signal-positive-muted text-signal-positive rounded">Open</span>
-                  {match.awayTeam}
-                </div>
+                {match.awayTeam}
               </td>
               <td className="text-center">
                 <button className="odds-cell odds-cell-best font-mono text-xs px-2">
@@ -295,10 +289,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
             {/* Home Spread Row */}
             <tr className="hover:bg-accent/30 border-b border-border/30">
               <td className="text-xs font-medium">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] px-1.5 py-0.5 bg-signal-positive-muted text-signal-positive rounded">Open</span>
-                  {match.homeTeam}
-                </div>
+                {match.homeTeam}
               </td>
               <td className="text-center">
                 <button className="odds-cell font-mono text-xs px-2">
