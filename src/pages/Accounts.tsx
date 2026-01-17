@@ -441,41 +441,39 @@ export function Accounts() {
           <div
             onContextMenu={(e) => handleAccountRightClick(e, account, platformId)}
             className={cn(
-              "bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-5 cursor-pointer transition-all hover:bg-accent/50 hover:border-primary",
+              "bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-3 cursor-pointer transition-all hover:bg-accent/50 hover:border-primary",
               account.phoneOffline && "opacity-50 grayscale"
             )}
           >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs shrink-0">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white font-bold text-[10px] shrink-0">
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-foreground mb-1">{account.name}</div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {account.onHold && (
-                    <span className="text-lg" title="Account On Hold">🚫</span>
-                  )}
-                </div>
+                <div className="font-semibold text-sm text-foreground truncate">{account.name}</div>
+                {account.onHold && (
+                  <span className="text-sm" title="Account On Hold">🚫</span>
+                )}
               </div>
             </div>
             
-            <div className="font-mono text-xl font-bold text-[hsl(var(--signal-positive))] mb-1">
+            <div className="font-mono text-base font-bold text-[hsl(var(--signal-positive))] mb-0.5">
               ${account.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             
             {account.limit !== null && (
-              <div className="font-mono text-sm text-[hsl(var(--signal-negative))] mb-2">
+              <div className="font-mono text-xs text-[hsl(var(--signal-negative))] mb-1.5">
                 Limit: ${account.limit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             )}
             
             {account.tags && account.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
+              <div className="flex flex-wrap gap-1 mt-1.5">
                 {account.tags.map(tag => (
                   <span
                     key={tag}
                     className={cn(
-                      "px-2 py-0.5 rounded text-xs font-semibold uppercase",
+                      "px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase leading-tight",
                       tag.toLowerCase() === 'vip' && "bg-[hsl(var(--signal-warning))] text-[hsl(var(--background))]",
                       tag.toLowerCase() === 'premium' && "bg-primary text-primary-foreground",
                       tag.toLowerCase() === 'new' && "bg-[hsl(var(--signal-positive))] text-white",
@@ -635,15 +633,15 @@ export function Accounts() {
           </div>
         </div>
         
-        <div className="space-y-6">
+        <div className="space-y-4">
           {grouped.unlimited.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-5 bg-[hsl(var(--panel-bg))] rounded-md border border-[hsl(var(--panel-border))]">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 p-4 bg-[hsl(var(--panel-bg))] rounded-md border border-[hsl(var(--panel-border))]">
               {grouped.unlimited.map(account => renderAccountCard(account, platform.id))}
             </div>
           )}
           
           {grouped.limited.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-5 bg-[hsl(var(--panel-bg))] rounded-md border border-[hsl(var(--panel-border))]">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 p-4 bg-[hsl(var(--panel-bg))] rounded-md border border-[hsl(var(--panel-border))]">
               {grouped.limited.map(account => renderAccountCard(account, platform.id))}
             </div>
           )}
