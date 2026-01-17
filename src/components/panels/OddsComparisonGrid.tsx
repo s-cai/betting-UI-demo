@@ -189,8 +189,8 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
           </thead>
           <tbody>
             {/* Moneyline Section */}
-            <tr className="bg-panel-header/50">
-              <td colSpan={9} className="text-xs font-medium py-2">
+            <tr className="bg-[hsl(var(--panel-header))] border-t border-b border-[hsl(var(--border))]">
+              <td colSpan={9} className="text-sm font-semibold uppercase tracking-wide py-2.5 px-4 text-foreground">
                 Moneyline
               </td>
             </tr>
@@ -249,11 +249,11 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
             </tr>
 
             {/* Spread Section */}
-            <tr className="bg-panel-header/50">
-              <td colSpan={9} className="text-xs font-medium py-2">
+            <tr className="bg-[hsl(var(--panel-header))] border-t border-b border-[hsl(var(--border))]">
+              <td colSpan={9} className="text-sm font-semibold uppercase tracking-wide py-2.5 px-4 text-foreground">
                 <div className="flex items-center gap-2">
                   Spread
-                  <span className="text-[10px] text-muted-foreground cursor-pointer hover:text-foreground">Alts ▾</span>
+                  <span className="text-[10px] font-normal normal-case text-muted-foreground cursor-pointer hover:text-foreground">Alts ▾</span>
                 </div>
               </td>
             </tr>
@@ -312,8 +312,8 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
             </tr>
 
             {/* Total Section */}
-            <tr className="bg-panel-header/50">
-              <td colSpan={9} className="text-xs font-medium py-2">
+            <tr className="bg-[hsl(var(--panel-header))] border-t border-b border-[hsl(var(--border))]">
+              <td colSpan={9} className="text-sm font-semibold uppercase tracking-wide py-2.5 px-4 text-foreground">
                 Total
               </td>
             </tr>
