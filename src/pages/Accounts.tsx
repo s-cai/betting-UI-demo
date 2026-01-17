@@ -1,11 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
-import { X, Filter, Search } from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { X, Filter, Search, Plus, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAccounts } from "@/contexts/AccountsContext";
+import { getAllTagsFromAccounts, getTagColorClasses } from "@/lib/tagUtils";
 
 export interface Account {
   id: string;
@@ -154,13 +155,20 @@ interface EditModalProps {
 }
 
 function EditModal({ account, platformId, onClose, onSave }: EditModalProps) {
+  const { accounts } = useAccounts();
   const [formData, setFormData] = useState({
     balance: account?.balance.toString() || '0',
     limit: account?.limit?.toString() || '',
     onHold: account?.onHold || false,
-    tags: account?.tags.join(', ') || '',
+    selectedTags: new Set<string>(account?.tags || []),
     notes: account?.notes || ''
   });
+  const [newTagInput, setNewTagInput] = useState('');
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Get all available tags from all accounts
+  const allTags = useMemo(() => getAllTagsFromAccounts(accounts), [accounts]);
 
   // Update form data when account changes
   useEffect(() => {
@@ -169,13 +177,52 @@ function EditModal({ account, platformId, onClose, onSave }: EditModalProps) {
         balance: account.balance.toString(),
         limit: account.limit?.toString() || '',
         onHold: account.onHold,
-        tags: account.tags.join(', ') || '',
+        selectedTags: new Set(account.tags || []),
         notes: account.notes || ''
       });
     }
   }, [account]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowTagDropdown(false);
+      }
+    };
+    if (showTagDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showTagDropdown]);
+
   if (!account) return null;
+
+  const handleAddTag = (tag: string) => {
+    if (tag.trim()) {
+      setFormData({
+        ...formData,
+        selectedTags: new Set([...formData.selectedTags, tag.trim()])
+      });
+      setNewTagInput('');
+      setShowTagDropdown(false);
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    const newTags = new Set(formData.selectedTags);
+    newTags.delete(tag);
+    setFormData({
+      ...formData,
+      selectedTags: newTags
+    });
+  };
+
+  const handleAddNewTag = () => {
+    if (newTagInput.trim() && !formData.selectedTags.has(newTagInput.trim())) {
+      handleAddTag(newTagInput.trim());
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,7 +231,7 @@ function EditModal({ account, platformId, onClose, onSave }: EditModalProps) {
       balance: parseFloat(formData.balance) || 0,
       limit: formData.limit ? parseFloat(formData.limit) : null,
       onHold: formData.onHold,
-      tags: formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(t => t) : [],
+      tags: Array.from(formData.selectedTags),
       notes: formData.notes
     };
     onSave(updatedAccount, platformId);
@@ -245,13 +292,95 @@ function EditModal({ account, platformId, onClose, onSave }: EditModalProps) {
             </div>
             
             <div>
-              <Label htmlFor="edit-tags">Colored Tags (comma-separated)</Label>
-              <Input
-                id="edit-tags"
-                value={formData.tags}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                placeholder="e.g., VIP, Premium, New"
-              />
+              <Label>Colored Tags</Label>
+              
+              {/* Selected Tags Display */}
+              <div className="flex flex-wrap gap-2 mb-2 min-h-[2.5rem] p-2 border border-[hsl(var(--border))] rounded-md bg-[hsl(var(--card))]">
+                {formData.selectedTags.size === 0 ? (
+                  <span className="text-sm text-muted-foreground">No tags selected</span>
+                ) : (
+                  Array.from(formData.selectedTags).map(tag => (
+                    <div
+                      key={tag}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold uppercase border",
+                        getTagColorClasses(tag)
+                      )}
+                    >
+                      <span>{tag}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="hover:opacity-70 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Tag Selector Dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowTagDropdown(!showTagDropdown)}
+                  className="w-full flex items-center justify-between px-3 py-2 border border-[hsl(var(--border))] rounded-md bg-[hsl(var(--card))] text-sm hover:bg-accent/50 transition-all"
+                >
+                  <span className="text-muted-foreground">Select or add tag</span>
+                  <ChevronDown className={cn("w-4 h-4 transition-transform", showTagDropdown && "rotate-180")} />
+                </button>
+                
+                {showTagDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {/* Existing Tags */}
+                    <div className="p-2 space-y-1">
+                      {allTags
+                        .filter(tag => !formData.selectedTags.has(tag))
+                        .map(tag => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => handleAddTag(tag)}
+                            className={cn(
+                              "w-full text-left px-3 py-2 rounded-md text-sm hover:bg-accent/50 transition-all flex items-center gap-2",
+                              getTagColorClasses(tag)
+                            )}
+                          >
+                            <span className="font-semibold uppercase">{tag}</span>
+                          </button>
+                        ))}
+                    </div>
+                    
+                    {/* Add New Tag */}
+                    <div className="p-2 border-t border-[hsl(var(--border))]">
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          value={newTagInput}
+                          onChange={(e) => setNewTagInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddNewTag();
+                            }
+                          }}
+                          placeholder="New tag name..."
+                          className="flex-1 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddNewTag}
+                          disabled={!newTagInput.trim() || formData.selectedTags.has(newTagInput.trim())}
+                          className="px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             
             <div>
@@ -440,19 +569,23 @@ export function Accounts() {
   };
 
   const getTagColors = (tag: string) => {
-    const tagLower = tag.toLowerCase();
-    if (tagLower === 'vip') {
-      return "bg-[hsl(var(--signal-warning))] text-[hsl(var(--background))] border-[hsl(var(--signal-warning))]";
-    } else if (tagLower === 'premium') {
-      return "bg-primary text-primary-foreground border-primary";
-    } else if (tagLower === 'new') {
-      return "bg-[hsl(var(--signal-positive))] text-white border-[hsl(var(--signal-positive))]";
-    } else if (tagLower === 'active') {
-      return "bg-primary text-primary-foreground border-primary";
-    } else if (tagLower === 'warning') {
-      return "bg-[hsl(var(--signal-warning))] text-white border-[hsl(var(--signal-warning))]";
+    return getTagColorClasses(tag);
+  };
+
+  const handleRemoveTagFromPlatform = (tag: string) => {
+    if (!confirm(`Remove tag "${tag}" from all accounts in this platform?`)) {
+      return;
     }
-    return "bg-[hsl(var(--card))] text-muted-foreground border-[hsl(var(--border))]";
+    const platformAccounts = accounts[selectedPlatform] || [];
+    platformAccounts.forEach(account => {
+      if (account.tags.includes(tag)) {
+        const updatedAccount = {
+          ...account,
+          tags: account.tags.filter(t => t !== tag)
+        };
+        updateAccount(selectedPlatform, account.id, updatedAccount);
+      }
+    });
   };
 
   const renderPlatformSection = () => {
@@ -600,22 +733,30 @@ export function Accounts() {
               </div>
               <div className="space-y-2">
                 {availableTags.map(tag => (
-                  <button
-                    key={tag}
-                    onClick={() => toggleTag(tag)}
-                    className={cn(
-                      "w-full px-3 py-2 text-sm rounded-md border transition-all text-left flex items-center justify-between font-semibold uppercase",
-                      getTagColors(tag),
-                      selectedTags.has(tag)
-                        ? "opacity-100"
-                        : "opacity-50 hover:opacity-75"
-                    )}
-                  >
-                    <span>{tag}</span>
-                    {selectedTags.has(tag) && (
-                      <span className="text-current">✓</span>
-                    )}
-                  </button>
+                  <div key={tag} className="flex items-center gap-1 group">
+                    <button
+                      onClick={() => toggleTag(tag)}
+                      className={cn(
+                        "flex-1 px-3 py-2 text-sm rounded-md border transition-all text-left flex items-center justify-between font-semibold uppercase",
+                        getTagColors(tag),
+                        selectedTags.has(tag)
+                          ? "opacity-100"
+                          : "opacity-50 hover:opacity-75"
+                      )}
+                    >
+                      <span>{tag}</span>
+                      {selectedTags.has(tag) && (
+                        <span className="text-current">✓</span>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleRemoveTagFromPlatform(tag)}
+                      className="opacity-0 group-hover:opacity-100 px-2 py-2 text-muted-foreground hover:text-foreground transition-all"
+                      title={`Remove "${tag}" from all accounts in this platform`}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
