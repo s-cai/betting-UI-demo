@@ -197,7 +197,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
 
             {/* Away Team Row */}
             <tr className="hover:bg-accent/30 border-b border-border/30">
-              <td className="text-xs font-medium">
+              <td className="text-xs font-medium pl-6">
                 {match.awayTeam}
               </td>
               <td className="text-center">
@@ -225,7 +225,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
             
             {/* Home Team Row */}
             <tr className="hover:bg-accent/30 border-b border-border/30">
-              <td className="text-xs font-medium">
+              <td className="text-xs font-medium pl-6">
                 {match.homeTeam}
               </td>
               <td className="text-center">
@@ -260,7 +260,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
 
             {/* Away Spread Row */}
             <tr className="hover:bg-accent/30 border-b border-border/30">
-              <td className="text-xs font-medium">
+              <td className="text-xs font-medium pl-6">
                 {match.awayTeam}
               </td>
               <td className="text-center">
@@ -288,7 +288,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
 
             {/* Home Spread Row */}
             <tr className="hover:bg-accent/30 border-b border-border/30">
-              <td className="text-xs font-medium">
+              <td className="text-xs font-medium pl-6">
                 {match.homeTeam}
               </td>
               <td className="text-center">
@@ -320,7 +320,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
 
             {/* Over Row */}
             <tr className="hover:bg-accent/30 border-b border-border/30">
-              <td className="text-xs font-medium">Over {match.total.line}</td>
+              <td className="text-xs font-medium pl-6">Over {match.total.line}</td>
               <td className="text-center">
                 <button className="odds-cell odds-cell-best font-mono text-xs px-2">
                   -102
@@ -346,7 +346,7 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
 
             {/* Under Row */}
             <tr className="hover:bg-accent/30">
-              <td className="text-xs font-medium">Under {match.total.line}</td>
+              <td className="text-xs font-medium pl-6">Under {match.total.line}</td>
               <td className="text-center">
                 <button className="odds-cell font-mono text-xs px-2">
                   -105
