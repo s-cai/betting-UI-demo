@@ -446,7 +446,7 @@ export function Accounts() {
             )}
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shrink-0">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs shrink-0">
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
