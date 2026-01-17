@@ -217,6 +217,24 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
   const elapsedTimeIntervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map()); // Track per-account intervals
   const distributionInputRef = useRef<HTMLInputElement>(null); // Ref for distribution input to auto-focus
 
+  // Load predefined totals from localStorage
+  const loadPredefinedTotals = (): number[] => {
+    try {
+      const saved = localStorage.getItem('betting-ui-predefined-totals');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.every((n: unknown) => typeof n === 'number' && n > 0)) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Ignore errors
+    }
+    return [500, 1500, 4000, 10000]; // Default values
+  };
+
+  const [predefinedTotals, setPredefinedTotals] = useState<number[]>(loadPredefinedTotals);
+
   // Update bets ref when bets change
   useEffect(() => {
     betsRef.current = bets;
@@ -395,8 +413,8 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     return rounded * magnitude;
   };
 
-  const handleDistribute = () => {
-    const totalAmount = parseFloat(distributionTotal);
+  // Shared distribution logic
+  const performDistribution = (totalAmount: number) => {
     if (!totalAmount || totalAmount <= 0) return;
 
     const selectedAccountIds = Array.from(selectedAccounts.keys());
@@ -410,28 +428,19 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
 
     if (accountsWithMax.length === 0) return;
 
-    // Create noisy distribution - add random variation to make amounts look different
     const basePerAccount = totalAmount / accountsWithMax.length;
     let remaining = totalAmount;
     const distribution = new Map<string, number>();
 
     // First pass: assign with noise (variation of ±15% from average)
     accountsWithMax.forEach(({ accountId, maxBet }) => {
-      // Add noise: random variation between -15% and +15% of base amount
-      const noiseFactor = 1 + (Math.random() - 0.5) * 0.3; // -0.15 to +0.15
-      let amount = basePerAccount * noiseFactor;
-      
-      // Ensure we don't exceed max bet
-      amount = Math.min(amount, maxBet);
-      
-      // Round to appropriate significant digits
-      amount = roundToSignificantDigits(amount);
-      
-      // Ensure minimum of $0.01
-      amount = Math.max(amount, 0.01);
-      
-      distribution.set(accountId, amount);
-      remaining -= amount;
+      const noiseFactor = 1 + (Math.random() - 0.5) * 0.3;
+      let amt = basePerAccount * noiseFactor;
+      amt = Math.min(amt, maxBet);
+      amt = roundToSignificantDigits(amt);
+      amt = Math.max(amt, 0.01);
+      distribution.set(accountId, amt);
+      remaining -= amt;
     });
 
     // Second pass: distribute remaining with noise
@@ -451,14 +460,9 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
 
         availableAccounts.forEach(({ accountId, maxBet }) => {
           const currentAmount = distribution.get(accountId) || 0;
-          
-          // Add noise to remaining distribution
           const noiseFactor = 1 + (Math.random() - 0.5) * 0.3;
           let canAdd = Math.min(perRemaining * noiseFactor, maxBet - currentAmount);
-          
-          // Round to appropriate significant digits
           canAdd = roundToSignificantDigits(canAdd);
-          
           if (canAdd > 0.01) {
             const newAmount = roundToSignificantDigits(currentAmount + canAdd);
             distribution.set(accountId, Math.min(newAmount, maxBet));
@@ -471,11 +475,10 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
       }
     }
 
-    // Final pass: ensure total matches (adjust last account if needed)
+    // Final pass: ensure total matches
     const currentTotal = Array.from(distribution.values()).reduce((sum, val) => sum + val, 0);
     const difference = totalAmount - currentTotal;
     if (Math.abs(difference) > 0.01) {
-      // Adjust the last account to make total exact
       const lastAccountId = accountsWithMax[accountsWithMax.length - 1].accountId;
       const lastAmount = distribution.get(lastAccountId) || 0;
       const adjusted = roundToSignificantDigits(lastAmount + difference);
@@ -483,17 +486,24 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
       distribution.set(lastAccountId, Math.min(Math.max(adjusted, 0.01), maxBet));
     }
 
-    // Apply distribution
     setSelectedAccounts(distribution);
-    // Update input strings to match distributed amounts
     setBetAmountInputs(prev => {
       const newMap = new Map(prev);
-      distribution.forEach((amount, accountId) => {
-        newMap.set(accountId, amount.toFixed(2));
+      distribution.forEach((amt, accountId) => {
+        newMap.set(accountId, amt.toFixed(2));
       });
       return newMap;
     });
     setDistributionTotal('');
+  };
+
+  const handlePredefinedTotal = (amount: number) => {
+    performDistribution(amount);
+  };
+
+  const handleDistribute = () => {
+    const totalAmount = parseFloat(distributionTotal);
+    performDistribution(totalAmount);
   };
 
   const getRandomErrorMessage = () => {
@@ -798,6 +808,9 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
       setSelectedAccounts(allAccountsMap);
       setBetAmountInputs(allInputsMap);
       setDistributionTotal('');
+      
+      // Reload predefined totals from localStorage when dialog opens
+      setPredefinedTotals(loadPredefinedTotals());
       
       // Auto-focus distribution input after a short delay to ensure dialog is rendered
       setTimeout(() => {
@@ -1128,6 +1141,20 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
                   >
                     Distribute Across Selected Accounts
                   </button>
+                </div>
+                
+                {/* Predefined Total Buttons */}
+                <div className="flex items-center gap-2 flex-wrap mt-3">
+                  <span className="text-xs text-muted-foreground">Quick amounts:</span>
+                  {predefinedTotals.map((amount) => (
+                    <button
+                      key={amount}
+                      onClick={() => handlePredefinedTotal(amount)}
+                      className="px-3 py-1.5 text-xs font-medium bg-[hsl(var(--muted))] text-foreground rounded-md hover:bg-[hsl(var(--muted))]/80 transition-all border border-[hsl(var(--border))]"
+                    >
+                      ${amount.toLocaleString()}
+                    </button>
+                  ))}
                 </div>
               </div>
 

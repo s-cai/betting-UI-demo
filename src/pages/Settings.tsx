@@ -60,6 +60,24 @@ export function Settings() {
     NCAAB: false,
   });
 
+  // Load predefined totals from localStorage
+  const loadPredefinedTotals = (): number[] => {
+    try {
+      const saved = localStorage.getItem('betting-ui-predefined-totals');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.every((n: unknown) => typeof n === 'number' && n > 0)) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Ignore errors
+    }
+    return [500, 1500, 4000, 10000]; // Default values
+  };
+
+  const [predefinedTotals, setPredefinedTotals] = useState<number[]>(loadPredefinedTotals);
+
   // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
@@ -99,6 +117,50 @@ export function Settings() {
                   <div className="text-base text-foreground font-medium">
                     {traderName}
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Betting Preferences */}
+            <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Info className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold text-foreground">Betting Preferences</h2>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground mb-3 block">
+                    Predefined Total Amounts (for quick distribution)
+                  </label>
+                  <div className="space-y-2">
+                    {predefinedTotals.map((amount, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <Label htmlFor={`predefined-total-${index}`} className="text-sm w-20">
+                          Amount {index + 1}:
+                        </Label>
+                        <Input
+                          id={`predefined-total-${index}`}
+                          type="number"
+                          step="100"
+                          min="0"
+                          value={amount}
+                          onChange={(e) => {
+                            const newValue = parseFloat(e.target.value) || 0;
+                            const newTotals = [...predefinedTotals];
+                            newTotals[index] = newValue;
+                            setPredefinedTotals(newTotals);
+                            localStorage.setItem('betting-ui-predefined-totals', JSON.stringify(newTotals));
+                          }}
+                          className="w-32"
+                        />
+                        <span className="text-sm text-muted-foreground">${amount.toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    These amounts will appear as quick buttons in the betting dialog for fast distribution.
+                  </p>
                 </div>
               </div>
             </div>
