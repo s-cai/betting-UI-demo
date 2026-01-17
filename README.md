@@ -15,6 +15,14 @@ This is a professional-grade betting interface designed for arbitrage betting an
 - **Multi-Sport Support**: Football (NFL, NCAAF) and Basketball (NBA, NCAAB)
 - **Bet History Tracking**: View batch trades (conceptual big trades) with account-level details. Each batch trade represents a game × line × platform combination, showing all accounts that participated in that trade.
 - **Account Management**: Comprehensive account management system with platform selection, filtering, and editing capabilities
+- **Account Status Management**: Real-time account status tracking with busy/cooldown states:
+  - **Busy State** (📲): Account is actively making a bet
+  - **Cooldown State** (🧊): Account is in a post-bet cooldown period (configurable, default 10 seconds) with live countdown
+  - **Ready State**: Account is available for betting
+  - **Offline State**: Account is unavailable
+  - Status indicators visible on both Accounts page and Betting Dialog
+  - Smart account sorting: ready → cooldown → busy → offline, then by available bet size, then by name
+  - Right-click abort functionality for busy accounts
 - **Smart Notifications**: Real-time alerts for arbitrage opportunities, line movements, game events, and account warnings
 
 ### 🎨 User Interface
@@ -116,6 +124,18 @@ This is a professional-grade betting interface designed for arbitrage betting an
       - ✕ (red) - Bet failed (with error message)
   - **Failure Rate**: 40% failure rate, 60% success rate for testing
   - **Error Messages**: Random error messages for failed bets (Insufficient funds, Bet limit exceeded, Connection timeout, etc.)
+  - **Account Status Management**:
+    - Accounts automatically enter "busy" (📲) state when a bet is sent
+    - After bet completion (success or failure), accounts enter "cooldown" (🧊) state for a configurable period (default 10 seconds, set in Settings)
+    - Cooldown countdown displayed in real-time
+    - Accounts are sorted by usability: ready → cooldown → busy → offline
+    - Default account selection: Only "ready" accounts are selected when dialog opens
+    - Busy/cooldown/offline accounts have disabled checkboxes and bet amount inputs
+    - **Right-click Abort**: Right-click on busy accounts to abort current operations:
+      - Cancels pending bet timeouts
+      - Removes bet from after-bet view
+      - Marks account as ready
+      - Updates bet history to "cancelled" status
 
 #### `NotificationsPanel.tsx`
 - **Location**: `src/components/panels/NotificationsPanel.tsx`
@@ -204,6 +224,8 @@ This is a professional-grade betting interface designed for arbitrage betting an
       - **Phone Offline**: Entire card is greyed out with grayscale filter
       - **On Hold**: 🚫 emoji badge displayed
       - **Colored Tags**: Visual tags with color coding (VIP, Premium, New, Active, Warning)
+      - **Busy Status**: 📲 emoji when account is actively making a bet
+      - **Cooldown Status**: 🧊 emoji with live countdown when account is in cooldown period
   - **Account Grouping**: Accounts are visually grouped by:
     - Unlimited accounts (no betting limit)
     - Limited accounts (with betting limits)
@@ -447,13 +469,17 @@ npm run preview
 3. **Select a Platform**: Use the left sidebar to switch between platforms
 4. **Filter Accounts**: Use tag filters or limit status filters to narrow down accounts
 5. **View Account Details**: Hover over account cards to see backup cash and notes
-6. **Edit Accounts**: Right-click any account card to edit:
+6. **View Account Status**: Account cards display real-time status indicators:
+   - 📲 Busy: Account is actively making a bet
+   - 🧊 Cooldown: Account is in post-bet cooldown period (with live countdown)
+   - No indicator: Account is ready for betting
+7. **Edit Accounts**: Right-click any account card to edit:
    - Cash balance
    - Betting limits
    - On hold status
    - Custom tags
    - Notes
-7. **Account Summary**: Check the bottom bar for aggregated account statistics across all platforms
+8. **Account Summary**: Check the bottom bar for aggregated account statistics across all platforms
 
 #### Betting View
 
@@ -466,17 +492,24 @@ npm run preview
    - Side (away/home, over/under)
    - Default odds
 4. **Select Accounts**:
-   - Check individual account checkboxes
+   - By default, only "ready" accounts are pre-selected
+   - Check individual account checkboxes (busy/cooldown/offline accounts are disabled)
    - Or use tag-based selection buttons to select all accounts with a specific tag
+   - Accounts are sorted by usability: ready → cooldown → busy → offline
+   - Status indicators: 📲 (busy), 🧊 (cooldown with countdown)
 5. **Enter Bet Amounts**:
    - Enter amounts individually for each selected account
    - Or use the distribution tool: enter a total amount and click "Distribute"
+   - Busy/cooldown/offline accounts have disabled input fields
 6. **Send Bets**: Click "Send All Bets" to submit
+   - Selected accounts automatically enter "busy" state (📲)
 7. **Track Status**: After sending, view real-time status updates:
    - ✓ (gray) - Sent to phone
    - ✓ (green) - Acknowledged by phone
    - ✓✓ (green) - Bet succeeded
    - ✕ (red) - Bet failed (hover to see error message)
+   - After bet completion, accounts enter cooldown state (🧊) for the configured period
+8. **Abort Operations**: Right-click on busy accounts to access context menu and abort current operations
 
 ### Build
 
@@ -584,7 +617,7 @@ The application uses a **dashboard-style layout** optimized for information dens
 Each account contains:
 - **Basic Info**: ID, holder name, platform association
 - **Financial**: Cash balance, betting limit (null for unlimited), backup cash
-- **Status**: Phone offline status, on-hold flag
+- **Status**: Phone offline status, on-hold flag, account status (ready/busy/cooldown/offline), cooldown end timestamp
 - **Metadata**: Tags array, custom notes
 
 ### Account Display Logic
@@ -596,6 +629,11 @@ Each account contains:
 5. **Sorting**: Within each group, accounts are sorted by:
    - Tradability (tradable accounts first)
    - Balance (descending)
+6. **Status Indicators**: Real-time status display:
+   - 📲 Busy: Account is actively making a bet
+   - 🧊 Cooldown: Account is in post-bet cooldown period (with live countdown)
+   - Ready: Account is available for betting (no indicator shown)
+   - Offline: Account is unavailable (grayed out)
 
 ### Tag Color System
 
@@ -630,6 +668,44 @@ The `AccountOverviewBar` component aggregates account data across all platforms:
 4. **Automatic Updates**: Uses `useMemo` with `accounts` dependency to recalculate when account data changes
 5. **Display Format**: Each platform card shows status breakdowns with formatted dollar amounts and account counts
 
+### Account Status Management
+
+The application tracks account status in real-time to prevent conflicts and manage account availability:
+
+1. **Status Types**:
+   - **Ready**: Account is available for betting (default state)
+   - **Busy** (📲): Account is actively making a bet
+   - **Cooldown** (🧊): Account is in post-bet cooldown period with live countdown
+   - **Offline**: Account is unavailable (phone offline or on hold)
+
+2. **Status Transitions**:
+   - When a bet is sent: Account status changes to "busy"
+   - After bet completion (success or failure): Account enters "cooldown" state
+   - Cooldown period: Configurable in Settings (default 10 seconds)
+   - After cooldown expires: Account returns to "ready" state
+   - Manual abort: Right-click busy account → "Abort Operation" → Account returns to "ready"
+
+3. **Status Display**:
+   - **Accounts Page**: Status indicators (📲 busy, 🧊 cooldown with countdown) shown on account cards
+   - **Betting Dialog**: Status indicators with smart sorting:
+     - Primary sort: ready → cooldown → busy → offline
+     - Secondary sort: Available bet size (`min(balance, limit)`)
+     - Tertiary sort: Account name
+   - Real-time countdown updates every second for cooldown periods
+
+4. **Status Configuration**:
+   - Cooldown period can be configured in Settings page
+   - Stored in local storage as `betting-ui-cooldown-period`
+   - Default value: 10 seconds
+
+5. **Abort Functionality**:
+   - Right-click on busy accounts in Betting Dialog to access context menu
+   - "Abort Operation" option:
+     - Cancels all pending timeouts for that account
+     - Removes bet from after-bet view
+     - Marks account as ready
+     - Updates bet history to "cancelled" status
+
 ## Browser Support
 
 The application works in all modern browsers that support:
@@ -656,21 +732,6 @@ The application works in all modern browsers that support:
 - **Sample Data**: Demo account data is included in `Accounts.tsx` for demonstration purposes. All accounts are editable via right-click.
 - **State Persistence**: Changes made through the edit modal are saved to React Context state and persist until the page is refreshed. For production, integrate with a backend API for persistent storage.
 - **Real-time Updates**: Account edits automatically update the Account Overview Bar at the bottom of the screen via React Context.
-
-## Future Enhancements
-
-Potential areas for expansion:
-
-- **Real-time Data**: WebSocket integration for live odds updates
-- **Bet Placement**: Integration with sportsbook APIs
-- **Arbitrage Calculator**: Automatic ROI calculations
-- **Account Persistence**: Backend integration for saving account changes
-- **Historical Analysis**: Betting performance analytics
-- **Multi-language Support**: Internationalization
-- **Mobile Responsive**: Optimized mobile layout
-- **Dark/Light Theme Toggle**: Theme switching capability
-- **Bet History Integration**: Link placed bets to bet history tracking
-- **Real-time Account Updates**: Update account balances after successful bets
 
 ## License
 
