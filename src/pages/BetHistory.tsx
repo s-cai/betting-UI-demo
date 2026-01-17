@@ -353,7 +353,7 @@ export function BetHistory() {
                         >
                           <div className="flex items-center gap-2 mb-1">
                             {getStatusIcon(trade.status)}
-                            {trade.league && <LeagueLogo league={trade.league} className="w-3.5 h-3.5" />}
+                            {trade.league && <LeagueLogo league={trade.league} className="w-2.5 h-2.5" />}
                             {(trade.awayTeam || trade.homeTeam) ? (
                               <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                 {trade.awayTeam && <span className="font-semibold text-sm text-foreground truncate">{trade.awayTeam}</span>}
@@ -401,7 +401,7 @@ export function BetHistory() {
               <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-6 mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    {selectedBatchTrade.league && <LeagueLogo league={selectedBatchTrade.league} className="w-4 h-4" />}
+                    {selectedBatchTrade.league && <LeagueLogo league={selectedBatchTrade.league} className="w-3 h-3" />}
                     <h2 className="text-xl font-semibold text-foreground">{selectedBatchTrade.match}</h2>
                   </div>
                   {selectedBatchTrade.platform && platformLogoMap[selectedBatchTrade.platform] && (
