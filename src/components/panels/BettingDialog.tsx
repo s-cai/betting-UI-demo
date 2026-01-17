@@ -705,11 +705,15 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
     recentBetIdsRef.current.clear(); // Clear previous tracking
     
     const sendTime = Date.now();
+    
+    // First, collect all accounts and bets, then update state in batch
+    const accountsToUpdate: Array<{ platformId: string; accountId: string }> = [];
+    
     selectedAccounts.forEach((amount, accountId) => {
       const account = platformAccounts.find(acc => acc.id === accountId);
       if (account && amount > 0) {
-        // Mark account as busy when sending bet
-        setAccountStatus(platformId, accountId, 'busy');
+        // Mark account for busy status update
+        accountsToUpdate.push({ platformId, accountId });
         
         // Add bet to history immediately with "pending" status
         addBet({
@@ -736,8 +740,15 @@ export function BettingDialog({ isOpen, onClose, match, platform, market, side, 
       }
     });
     
+    // Set sent bets and view mode first, before updating account statuses
+    // This ensures the after-bet view is set before any re-renders from status updates
     setSentBets(newSentBets);
     setViewMode('after');
+    
+    // Then update all account statuses to busy (this may cause re-renders, but sentBets is already set)
+    accountsToUpdate.forEach(({ platformId, accountId }) => {
+      setAccountStatus(platformId, accountId, 'busy');
+    });
     
     // Find bet IDs after a short delay to allow state to update
     setTimeout(() => {
