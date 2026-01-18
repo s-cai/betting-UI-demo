@@ -252,8 +252,7 @@ export function BetHistoryBar() {
                     </div>
                   )}
                   
-                  <div className="flex items-center justify-between mt-1.5 text-[10px]">
-                    <span className="text-muted-foreground">{trade.accountCount} accounts</span>
+                  <div className="flex items-center justify-end mt-1.5 text-[10px]">
                     <span className={cn(
                       "font-mono text-xs",
                       trade.status === "won" && "text-signal-positive",
