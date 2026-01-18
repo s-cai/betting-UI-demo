@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { History, CheckCircle, XCircle, Clock, Filter, Search, Calendar } from "lucide-react";
+import { History, CheckCircle, XCircle, Clock, Filter, Search, Calendar, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBetHistory, type Bet, type League } from "@/contexts/BetHistoryContext";
 import { Input } from "@/components/ui/input";
@@ -265,6 +265,41 @@ export function BetHistory() {
     return groups;
   }, [filteredBatchTrades]);
 
+  // Calculate past day performance (last 24 hours)
+  const pastDayPerformance = useMemo(() => {
+    const now = Date.now();
+    const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+    
+    const pastDayBets = bets.filter(bet => bet.timestamp >= twentyFourHoursAgo);
+    
+    const totalStake = pastDayBets.reduce((sum, bet) => sum + bet.stake, 0);
+    const wonBets = pastDayBets.filter(bet => bet.status === "won");
+    const lostBets = pastDayBets.filter(bet => bet.status === "lost");
+    const pendingBets = pastDayBets.filter(bet => bet.status === "pending");
+    
+    const totalWon = wonBets.reduce((sum, bet) => sum + (bet.payout || 0), 0);
+    const totalLost = lostBets.reduce((sum, bet) => sum + bet.stake, 0);
+    const totalSucceeded = wonBets.reduce((sum, bet) => sum + bet.stake, 0);
+    
+    const profitLoss = totalWon - totalLost;
+    const winRate = wonBets.length + lostBets.length > 0 
+      ? (wonBets.length / (wonBets.length + lostBets.length)) * 100 
+      : 0;
+    
+    return {
+      totalBets: pastDayBets.length,
+      totalStake,
+      totalSucceeded,
+      wonCount: wonBets.length,
+      lostCount: lostBets.length,
+      pendingCount: pendingBets.length,
+      totalWon,
+      totalLost,
+      profitLoss,
+      winRate
+    };
+  }, [bets]);
+
 
   const getStatusIcon = (status: Bet['status']) => {
     switch (status) {
@@ -284,6 +319,70 @@ export function BetHistory() {
         <div className="flex items-center gap-3 mb-4">
           <History className="w-5 h-5 text-foreground" />
           <h1 className="text-xl font-semibold text-foreground">Bet History</h1>
+        </div>
+
+        {/* Past Day Performance Summary */}
+        <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-4 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Calendar className="w-4 h-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Past 24 Hours Performance</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground mb-1">Total Bets</span>
+              <span className="text-lg font-bold font-mono text-foreground">{pastDayPerformance.totalBets}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground mb-1">Total Stake</span>
+              <span className="text-lg font-bold font-mono text-primary">
+                ${pastDayPerformance.totalStake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground mb-1">Won</span>
+              <div className="flex items-center gap-1">
+                <CheckCircle className="w-4 h-4 text-[hsl(var(--signal-positive))]" />
+                <span className="text-lg font-bold font-mono text-[hsl(var(--signal-positive))]">
+                  {pastDayPerformance.wonCount}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground mb-1">Lost</span>
+              <div className="flex items-center gap-1">
+                <XCircle className="w-4 h-4 text-[hsl(var(--signal-negative))]" />
+                <span className="text-lg font-bold font-mono text-[hsl(var(--signal-negative))]">
+                  {pastDayPerformance.lostCount}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground mb-1">Win Rate</span>
+              <span className="text-lg font-bold font-mono text-foreground">
+                {pastDayPerformance.winRate.toFixed(1)}%
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground mb-1">P/L</span>
+              <div className="flex items-center gap-1">
+                {pastDayPerformance.profitLoss >= 0 ? (
+                  <>
+                    <TrendingUp className="w-4 h-4 text-[hsl(var(--signal-positive))]" />
+                    <span className="text-lg font-bold font-mono text-[hsl(var(--signal-positive))]">
+                      +${Math.abs(pastDayPerformance.profitLoss).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <TrendingDown className="w-4 h-4 text-[hsl(var(--signal-negative))]" />
+                    <span className="text-lg font-bold font-mono text-[hsl(var(--signal-negative))]">
+                      -${Math.abs(pastDayPerformance.profitLoss).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
