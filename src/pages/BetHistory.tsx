@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { History, CheckCircle, XCircle, Clock, Filter, Search, Calendar, TrendingUp, TrendingDown } from "lucide-react";
+import { History, CheckCircle, XCircle, Clock, Filter, Search, Calendar, TrendingUp, TrendingDown, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBetHistory, type Bet, type League } from "@/contexts/BetHistoryContext";
 import { Input } from "@/components/ui/input";
@@ -93,6 +93,12 @@ export function BetHistory() {
   const [searchQuery, setSearchQuery] = useState(() => {
     return localStorage.getItem('betting-ui-history-search-query') || "";
   });
+  const [performanceDays, setPerformanceDays] = useState<number>(() => {
+    const saved = localStorage.getItem('betting-ui-history-performance-days');
+    return saved ? parseInt(saved, 10) : 1;
+  });
+  const [showDaysDropdown, setShowDaysDropdown] = useState(false);
+  const daysDropdownRef = useRef<HTMLDivElement>(null);
   
   // Refs for scroll containers
   const leftScrollRef = useRef<HTMLDivElement>(null);
@@ -110,6 +116,21 @@ export function BetHistory() {
       localStorage.removeItem('betting-ui-history-search-query');
     }
   }, [searchQuery]);
+
+  useEffect(() => {
+    localStorage.setItem('betting-ui-history-performance-days', performanceDays.toString());
+  }, [performanceDays]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (daysDropdownRef.current && !daysDropdownRef.current.contains(event.target as Node)) {
+        setShowDaysDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   
   // Group bets into batch trades (game x line x platform)
   // Each batch trade represents a conceptual big trade spread across multiple accounts
@@ -265,12 +286,12 @@ export function BetHistory() {
     return groups;
   }, [filteredBatchTrades]);
 
-  // Calculate past day performance (last 24 hours)
+  // Calculate performance for selected number of days
   const pastDayPerformance = useMemo(() => {
     const now = Date.now();
-    const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+    const daysAgo = now - (performanceDays * 24 * 60 * 60 * 1000);
     
-    const pastDayBets = bets.filter(bet => bet.timestamp >= twentyFourHoursAgo);
+    const pastDayBets = bets.filter(bet => bet.timestamp >= daysAgo);
     
     const totalStake = pastDayBets.reduce((sum, bet) => sum + bet.stake, 0);
     const wonBets = pastDayBets.filter(bet => bet.status === "won");
@@ -298,7 +319,7 @@ export function BetHistory() {
       profitLoss,
       winRate
     };
-  }, [bets]);
+  }, [bets, performanceDays]);
 
 
   const getStatusIcon = (status: Bet['status']) => {
@@ -323,9 +344,41 @@ export function BetHistory() {
 
         {/* Past Day Performance Summary */}
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md p-4 mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold text-foreground">Past 24 Hours Performance</h2>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold text-foreground">
+                Past {performanceDays === 1 ? '24 Hours' : `${performanceDays} Days`} Performance
+              </h2>
+            </div>
+            <div className="relative" ref={daysDropdownRef}>
+              <button
+                onClick={() => setShowDaysDropdown(!showDaysDropdown)}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-[hsl(var(--muted))] text-foreground rounded-md hover:bg-[hsl(var(--muted))]/80 transition-all border border-[hsl(var(--border))]"
+              >
+                <span>{performanceDays === 1 ? '1 Day' : `${performanceDays} Days`}</span>
+                <ChevronDown className={cn("w-3 h-3 transition-transform", showDaysDropdown && "rotate-180")} />
+              </button>
+              {showDaysDropdown && (
+                <div className="absolute right-0 mt-1 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-md shadow-lg z-10 min-w-[120px]">
+                  {[1, 7, 14, 30, 90].map((days) => (
+                    <button
+                      key={days}
+                      onClick={() => {
+                        setPerformanceDays(days);
+                        setShowDaysDropdown(false);
+                      }}
+                      className={cn(
+                        "w-full text-left px-3 py-2 text-xs hover:bg-accent/50 transition-all first:rounded-t-md last:rounded-b-md",
+                        performanceDays === days && "bg-accent font-semibold"
+                      )}
+                    >
+                      {days === 1 ? '1 Day' : `${days} Days`}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <div className="flex flex-col">
