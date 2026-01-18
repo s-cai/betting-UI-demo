@@ -11,4 +11,4 @@ For _each_ issue:
 5. **Record end timestamp** using `Get-Date` (PowerShell) or equivalent after committing
 6. **Calculate and store** the actual wall clock time (end - start)
 
-At the end, summarize changes and push all commits. **Include actual measured wall clock time** (not estimates) for each task in the summary.
+At the end, summarize changes and push all commits. **Include actual measured wall clock time** (not estimates) for each task in the summary - just the duration, no need to mention exact times in the summary.
