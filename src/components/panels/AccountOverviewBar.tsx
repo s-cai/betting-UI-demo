@@ -58,14 +58,16 @@ export function AccountOverviewBar() {
     let online = 0;
     let offline = 0;
     let totalBalance = 0;
+    let limitDown = 0;
 
     platformSummaries.forEach(summary => {
       online += summary.online.count;
       offline += summary.offline.count;
       totalBalance += summary.online.balance + summary.offline.balance;
+      limitDown += summary.limitDownCount;
     });
 
-    return { online, offline, totalBalance };
+    return { online, offline, totalBalance, limitDown };
   }, [platformSummaries]);
 
   return (
@@ -97,6 +99,11 @@ export function AccountOverviewBar() {
               <WifiOff className="w-3.5 h-3.5 text-signal-offline" />
               <span className="font-mono">{totalStats.offline}</span>
               <span className="text-muted-foreground">Offline</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <TrendingDown className="w-3.5 h-3.5 text-[hsl(var(--signal-warning))]" />
+              <span className="font-mono">{totalStats.limitDown}</span>
+              <span className="text-muted-foreground">Limit ↓ (24h)</span>
             </div>
           </div>
         </div>
