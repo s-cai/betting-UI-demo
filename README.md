@@ -22,8 +22,9 @@ This is a professional-grade betting interface designed for arbitrage betting an
   - **Offline State**: Account is unavailable
   - Status indicators visible on both Accounts page and Betting Dialog
   - Smart account sorting: ready → cooldown → busy → offline, then by available bet size, then by name
-  - Right-click abort functionality for busy accounts
-- **Smart Notifications**: Real-time alerts for arbitrage opportunities, line movements, game events, and account warnings
+  - Right-click abort functionality for busy accounts (Betting Dialog only)
+- **Settings & Preferences**: Configure cooldown period and quick bet distribution amounts, toggle light/dark theme, and view demo alert configuration
+- **Smart Notifications**: Demo alert feed seeded from live matches (click a card to jump to the match)
 
 ### 🎨 User Interface
 
@@ -36,7 +37,7 @@ This is a professional-grade betting interface designed for arbitrage betting an
   - Expandable account overview bar
 - **Best Odds Highlighting**: Visual indicators for the best available odds across sportsbooks
 - **Custom Scrollbars**: Terminal-style thin scrollbars for a professional look
-- **Status Indicators**: Color-coded signals for online/limited/offline accounts and bet statuses
+- **Status Indicators**: Color-coded signals for online/offline accounts, on-hold flags, and bet statuses
 
 ## Component Architecture
 
@@ -78,11 +79,10 @@ This is a professional-grade betting interface designed for arbitrage betting an
 - **Location**: `src/components/panels/OddsComparisonGrid.tsx`
 - **Purpose**: Detailed odds comparison table across multiple sportsbooks
 - **Features**:
-  - Market tabs (Main Lines, Team Markets, First X Innings, etc.)
-  - Side-by-side comparison of 6+ sportsbooks
-  - Best odds and average odds columns
+  - Single Main Lines table (Moneyline, Spread, Total)
+  - Side-by-side comparison of 8 sportsbooks with logo fallbacks
+  - Best Odds and Close Odds columns
   - Clickable odds cells for betting actions (opens BettingDialog)
-  - "Open" status indicators for available markets
   - Sticky table headers for scrolling
 
 #### `BettingDialog.tsx`
@@ -100,6 +100,7 @@ This is a professional-grade betting interface designed for arbitrage betting an
     - Bet amount inputs for each selected account
     - Tag-based account selection (color-coded tags)
     - Distribution tool: Enter total amount and distribute across selected accounts
+    - Quick amount buttons (configured in Settings)
   - **Noisy Distribution Algorithm**: When distributing a total amount across accounts, the system uses a noisy distribution algorithm to make bet amounts appear more natural and less uniform:
     - Adds random variation (±15%) to each account's share to avoid identical amounts
     - Prioritizes rounding to 2 significant digits for all amounts
@@ -122,7 +123,7 @@ This is a professional-grade betting interface designed for arbitrage betting an
       - ✓ (green) - Acknowledged by phone
       - ✓✓ (green) - Bet succeeded
       - ✕ (red) - Bet failed (with error message)
-  - **Failure Rate**: 40% failure rate, 60% success rate for testing
+  - **Failure Rate**: 20% failure rate, 80% success rate for testing
   - **Error Messages**: Random error messages for failed bets (Insufficient funds, Bet limit exceeded, Connection timeout, etc.)
   - **Account Status Management**:
     - Accounts automatically enter "busy" (📲) state when a bet is sent
@@ -147,6 +148,8 @@ This is a professional-grade betting interface designed for arbitrage betting an
     - **Alert**: Red (line movements, important changes)
     - **Warning**: Yellow (account limits, game pauses)
     - **Info**: Gray (game events, half-time)
+  - Demo alerts seeded from available matches (aligned to NCAA config options)
+  - Clicking a notification jumps to the related match in the odds view
   - Grid layout (2 columns)
   - Match context display
   - Time-based sorting
@@ -186,6 +189,7 @@ This is a professional-grade betting interface designed for arbitrage betting an
       - Payout information for won bets
   - **Filtering**: Filter batch trades by status (all/pending/won/lost) and search
   - **Statistics**: Counts batch trades (not individual account bets)
+  - **Performance Summary**: Past 1/7/14/30/90 days snapshot (total stake, won/lost, win rate, P/L)
 
 #### `AccountOverviewBar.tsx`
 - **Location**: `src/components/panels/AccountOverviewBar.tsx`
@@ -194,18 +198,17 @@ This is a professional-grade betting interface designed for arbitrage betting an
   - Expandable/collapsible bar (auto height when expanded, 40px when collapsed)
   - **Header Summary**:
     - Total balance across all platforms and accounts
-    - Total account counts by status (online/limited/offline)
+    - Total account counts by status (online/offline)
+    - Limit-down count (accounts whose limit dropped in the last 24 hours)
   - **Platform Summary Cards**: One card per platform showing:
     - Platform logo and name
-    - **Online Accounts**: Balance and count for accounts that are not phone offline and not on hold
-    - **Limited Accounts**: Balance and count for accounts that are on hold
+    - **Online Accounts**: Balance and count for accounts that are not phone offline (includes on-hold accounts)
     - **Offline Accounts**: Balance and count for accounts with phone offline status
     - Each status shows formatted dollar balance and account count in parentheses
   - **Real-time Updates**: Automatically recalculates when account data changes in the Accounts page
   - **Data Source**: Aggregates from all demo accounts defined in `Accounts.tsx`
   - **Status Logic**:
-    - **Online**: `!phoneOffline && !onHold` (green indicator)
-    - **Limited**: `onHold === true` (yellow/warning indicator)
+    - **Online**: `!phoneOffline` (green indicator)
     - **Offline**: `phoneOffline === true` (gray indicator)
   - **Supported Platforms**: FanDuel, BetMGM, DraftKings, Caesars, PointsBet, Bet365, Unibet, WynnBET
 
@@ -239,18 +242,20 @@ This is a professional-grade betting interface designed for arbitrage betting an
       - Cash balance
       - Betting limits (leave empty for unlimited)
       - On hold status (checkbox)
-      - Custom colored labels/tags (comma-separated)
+      - Custom colored labels/tags (select existing or add new)
       - Custom notes
   - **Filtering System**:
     - **Tag Filtering**: Dynamic tag filters showing only tags available for the selected platform
       - Tags are color-coded to match account card tag colors
       - Multiple tag selection supported
       - Selected tags show checkmark indicator
+      - Remove a tag from all accounts on the current platform via the delete icon
     - **Limit Status Filtering**: Filter by account limit status
       - All Accounts (default)
       - Unlimited Only
       - Limited Only
     - **Clear Filters**: Button to reset all filters
+    - **Search**: Filter accounts by name
   - **Layout**:
     - Left sidebar (256px) with platform selection and filters
     - Main content area showing filtered accounts in a responsive grid
@@ -261,6 +266,7 @@ This is a professional-grade betting interface designed for arbitrage betting an
 The application uses shadcn/ui components built on Radix UI primitives:
 
 - **Toast System**: Custom toast notifications (`toast.tsx`, `toaster.tsx`)
+- **Sonner Toasts**: Additional toast layer (`sonner.tsx`)
 - **Tooltips**: Contextual help tooltips (`tooltip.tsx`)
 - **Form Elements**: Input, textarea, label, select components
 - **Layout**: Separator, skeleton, progress indicators
@@ -295,9 +301,10 @@ This mental model matches how users think: they make big trades, which are then 
 ### State Management
 
 - **Local State**: React `useState` hooks for component-level state
-- **Routing**: React Router for navigation (currently single-page with 404 handler)
+- **Routing**: React Router initialized with a single `/` route; view switching happens via internal `activeSection` state
 - **Data Fetching**: TanStack Query (React Query) configured for future API integration
 - **Theme**: CSS custom properties (CSS variables) for theming
+- **Persistence**: UI state and demo data stored in `localStorage` (active section, filters, selected match, bet history, tag colors, settings)
 
 ### Data Flow
 
@@ -380,6 +387,7 @@ interface BookOdds {
 - **TypeScript**: Type safety
 - **Vite**: Build tool and dev server
 - **React Router**: Client-side routing
+- **next-themes**: Theme toggling (light/dark)
 
 ### Styling
 - **Tailwind CSS**: Utility-first CSS framework
@@ -391,6 +399,7 @@ interface BookOdds {
 - **Radix UI**: Accessible component primitives
 - **Lucide React**: Icon library
 - **shadcn/ui**: Pre-built component system
+- **Sonner**: Toast notifications
 - **class-variance-authority**: Component variants
 - **clsx & tailwind-merge**: Conditional class utilities
 
@@ -438,20 +447,13 @@ npm run dev
 
 ### GitHub Pages
 
-This application is automatically deployed to GitHub Pages using GitHub Actions.
+This application is configured for GitHub Pages (via Vite `base`), but no deployment workflow is included in this repo.
 
 **Live Site**: [https://s-cai.github.io/betting-UI-demo/](https://s-cai.github.io/betting-UI-demo/)
 
-**How it works:**
-- Every push to the `master` or `main` branch triggers an automatic build and deployment
-- The workflow builds the production bundle and deploys it to GitHub Pages
-- The site is available at `https://[username].github.io/betting-UI-demo/`
-
 **Manual Deployment:**
-You can also trigger a manual deployment by:
-1. Going to the "Actions" tab in your GitHub repository
-2. Selecting the "Deploy to GitHub Pages" workflow
-3. Clicking "Run workflow"
+1. Build the app (`npm run build`)
+2. Deploy the `dist/` folder to GitHub Pages (e.g., `gh-pages` branch) or add your own GitHub Actions workflow
 
 **Local Production Build:**
 To test the production build locally:
@@ -511,6 +513,15 @@ npm run preview
    - After bet completion, accounts enter cooldown state (🧊) for the configured period
 8. **Abort Operations**: Right-click on busy accounts to access context menu and abort current operations
 
+#### Settings View
+
+1. Click the **Settings** icon in the left sidebar
+2. **Betting Preferences**:
+   - Configure predefined total amounts for quick distribution buttons
+   - Set the account cooldown period (seconds)
+3. **Appearance**: Toggle light/dark theme (stored in localStorage)
+4. **Alerts Configuration**: NCAA Football alert toggles are demo-only and do not affect the Alerts panel yet
+
 ### Build
 
 Build the application for production:
@@ -550,6 +561,7 @@ npm run preview
 │   ├── components/
 │   │   ├── layout/         # Layout components
 │   │   │   └── Sidebar.tsx
+│   │   ├── NavLink.tsx
 │   │   ├── panels/         # Main feature panels
 │   │   │   ├── AccountOverviewBar.tsx
 │   │   │   ├── BetHistoryBar.tsx
@@ -559,16 +571,21 @@ npm run preview
 │   │   │   └── SportsPanel.tsx
 │   │   └── ui/             # shadcn/ui components
 │   ├── contexts/           # React Context providers
-│   │   └── AccountsContext.tsx  # Shared account state
+│   │   ├── AccountsContext.tsx  # Shared account state
+│   │   └── BetHistoryContext.tsx
 │   ├── hooks/              # Custom React hooks
 │   │   ├── use-mobile.tsx
 │   │   └── use-toast.ts
 │   ├── lib/                # Utility functions
+│   │   ├── tagUtils.ts
 │   │   └── utils.ts
 │   ├── pages/              # Page components
 │   │   ├── Index.tsx       # Main dashboard
 │   │   ├── Accounts.tsx    # Account management page
+│   │   ├── BetHistory.tsx
+│   │   ├── Settings.tsx
 │   │   └── NotFound.tsx
+│   ├── App.css
 │   ├── App.tsx             # Root component
 │   ├── main.tsx            # Entry point
 │   ├── index.css           # Global styles & theme
@@ -618,6 +635,7 @@ Each account contains:
 - **Basic Info**: ID, holder name, platform association
 - **Financial**: Cash balance, betting limit (null for unlimited), backup cash
 - **Status**: Phone offline status, on-hold flag, account status (ready/busy/cooldown/offline), cooldown end timestamp
+- **Limit Tracking**: `limitChangedAt` timestamp when a limit is decreased (used for limit-down counts)
 - **Metadata**: Tags array, custom notes
 
 ### Account Display Logic
@@ -637,7 +655,7 @@ Each account contains:
 
 ### Tag Color System
 
-Tags use consistent color coding throughout the interface:
+Tags use consistent color coding throughout the interface. Default colors exist for common tags, and new tags get auto-generated colors saved in localStorage:
 - **VIP**: Warning yellow background (`--signal-warning`) with dark text
 - **Premium**: Primary blue background with white text
 - **New**: Positive green background (`--signal-positive`) with white text
@@ -652,7 +670,8 @@ Tags use consistent color coding throughout the interface:
   - The Accounts page (local view updates)
   - The AccountOverviewBar (aggregates recalculate automatically)
 - All account fields are editable except the holder name (read-only)
-- Tag editing supports comma-separated values
+- Tag editing supports selecting existing tags or adding new ones
+- Tag colors are cached in localStorage for consistency
 - Changes persist in memory until page refresh
 
 ### Account Summary Logic
@@ -661,12 +680,12 @@ The `AccountOverviewBar` component aggregates account data across all platforms:
 
 1. **Data Source**: Reads from `AccountsContext` which is shared with the Accounts page
 2. **Per-Platform Aggregation**: For each platform, calculates:
-   - **Online**: Sum of balances and count of accounts where `!phoneOffline && !onHold`
-   - **Limited**: Sum of balances and count of accounts where `onHold === true`
+   - **Online**: Sum of balances and count of accounts where `!phoneOffline`
    - **Offline**: Sum of balances and count of accounts where `phoneOffline === true`
+   - **Limit ↓ (24h)**: Count of accounts where `limitChangedAt` is within the last 24 hours
 3. **Total Summary**: Header shows combined totals across all platforms
 4. **Automatic Updates**: Uses `useMemo` with `accounts` dependency to recalculate when account data changes
-5. **Display Format**: Each platform card shows status breakdowns with formatted dollar amounts and account counts
+5. **Display Format**: Each platform card shows status breakdowns and the limit-down count with formatted dollar amounts and account counts
 
 ### Account Status Management
 
@@ -731,6 +750,7 @@ The application works in all modern browsers that support:
 - **Platform Logos**: The logos are custom SVG designs matching each platform's brand colors. Replace them with official logos from each platform's media kit if needed for production use.
 - **Sample Data**: Demo account data is included in `Accounts.tsx` for demonstration purposes. All accounts are editable via right-click.
 - **State Persistence**: Changes made through the edit modal are saved to React Context state and persist until the page is refreshed. For production, integrate with a backend API for persistent storage.
+- **Bet History Persistence**: Bet history is stored in localStorage with a versioned demo dataset; data is regenerated when the version changes or the current day has no bets.
 - **Real-time Updates**: Account edits automatically update the Account Overview Bar at the bottom of the screen via React Context.
 
 ## License

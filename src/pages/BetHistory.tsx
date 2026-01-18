@@ -386,9 +386,9 @@ export function BetHistory() {
               <span className="text-lg font-bold font-mono text-foreground">{pastDayPerformance.totalBets}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground mb-1">Total Stake</span>
+              <span className="text-xs text-muted-foreground mb-1">Succeeded / Total Stake</span>
               <span className="text-lg font-bold font-mono text-primary">
-                ${pastDayPerformance.totalStake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${pastDayPerformance.totalSucceeded.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / ${pastDayPerformance.totalStake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <div className="flex flex-col">
