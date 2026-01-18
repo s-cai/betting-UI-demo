@@ -393,19 +393,29 @@ export function BetHistory() {
             </div>
             <div className="flex flex-col">
               <span className="text-xs text-muted-foreground mb-1">Won</span>
-              <div className="flex items-center gap-1">
-                <CheckCircle className="w-4 h-4 text-[hsl(var(--signal-positive))]" />
-                <span className="text-lg font-bold font-mono text-[hsl(var(--signal-positive))]">
-                  {pastDayPerformance.wonCount}
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4 text-[hsl(var(--signal-positive))]" />
+                  <span className="text-lg font-bold font-mono text-[hsl(var(--signal-positive))]">
+                    {pastDayPerformance.wonCount}
+                  </span>
+                </div>
+                <span className="text-xs font-mono text-[hsl(var(--signal-positive))]">
+                  ${pastDayPerformance.totalWon.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
             <div className="flex flex-col">
               <span className="text-xs text-muted-foreground mb-1">Lost</span>
-              <div className="flex items-center gap-1">
-                <XCircle className="w-4 h-4 text-[hsl(var(--signal-negative))]" />
-                <span className="text-lg font-bold font-mono text-[hsl(var(--signal-negative))]">
-                  {pastDayPerformance.lostCount}
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1">
+                  <XCircle className="w-4 h-4 text-[hsl(var(--signal-negative))]" />
+                  <span className="text-lg font-bold font-mono text-[hsl(var(--signal-negative))]">
+                    {pastDayPerformance.lostCount}
+                  </span>
+                </div>
+                <span className="text-xs font-mono text-[hsl(var(--signal-negative))]">
+                  ${pastDayPerformance.totalLost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
