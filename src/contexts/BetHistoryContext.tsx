@@ -55,7 +55,7 @@ const hasBetsInTodayWindow = (bets: Bet[]): boolean => {
 };
 
 // Load bets from localStorage on init
-const BET_HISTORY_VERSION = '2.5'; // Increment to force reload demo data (added NCAAF demo bet)
+const BET_HISTORY_VERSION = '2.6'; // Increment to force reload demo data (added bets for different time periods)
 const loadBetsFromStorage = (): Bet[] => {
   try {
     // Check version - if it doesn't match, clear old data and use demo data
@@ -199,6 +199,46 @@ const loadBetsFromStorage = (): Bet[] => {
     { id: "ncaaf1", match: "ALA @ UGA", type: "ML ALA", odds: "-150", stake: 750, status: "won", timestamp: baseTime - 7200000, payout: 500, platform: "FanDuel", accountName: "Sarah Johnson", league: "NCAAF" as League, awayTeam: "Alabama Crimson Tide", homeTeam: "Georgia Bulldogs", timing: 1950 },
     { id: "ncaaf1a", match: "ALA @ UGA", type: "ML ALA", odds: "-150", stake: 600, status: "won", timestamp: baseTime - 7199500, payout: 400, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NCAAF" as League, awayTeam: "Alabama Crimson Tide", homeTeam: "Georgia Bulldogs", timing: 2100 },
     { id: "ncaaf1b", match: "ALA @ UGA", type: "ML ALA", odds: "-150", stake: 500, status: "won", timestamp: baseTime - 7199000, payout: 333, platform: "FanDuel", accountName: "Ryan O'Connor", league: "NCAAF" as League, awayTeam: "Alabama Crimson Tide", homeTeam: "Georgia Bulldogs", timing: 1880 },
+    
+    // Additional bets for 7+ days period - 2 days ago
+    { id: "day2-1", match: "HOU @ DAL", type: "ML HOU", odds: "+110", stake: 800, status: "won", timestamp: baseTime - (2 * 24 * 60 * 60 * 1000), payout: 880, platform: "DraftKings", accountName: "John Smith", league: "NFL" as League, awayTeam: "Houston Texans", homeTeam: "Dallas Cowboys", timing: 1920 },
+    { id: "day2-1a", match: "HOU @ DAL", type: "ML HOU", odds: "+110", stake: 650, status: "won", timestamp: baseTime - (2 * 24 * 60 * 60 * 1000) + 500, payout: 715, platform: "DraftKings", accountName: "Jennifer Taylor", league: "NFL" as League, awayTeam: "Houston Texans", homeTeam: "Dallas Cowboys", timing: 1850 },
+    { id: "day2-1b", match: "HOU @ DAL", type: "ML HOU", odds: "+110", stake: 550, status: "won", timestamp: baseTime - (2 * 24 * 60 * 60 * 1000) + 1000, payout: 605, platform: "DraftKings", accountName: "Christopher Brown", league: "NFL" as League, awayTeam: "Houston Texans", homeTeam: "Dallas Cowboys", timing: 1980 },
+    
+    // 3 days ago
+    { id: "day3-1", match: "LAC @ DEN", type: "Spread -3.5", odds: "-110", stake: 700, status: "won", timestamp: baseTime - (3 * 24 * 60 * 60 * 1000), payout: 636, platform: "FanDuel", accountName: "Sarah Johnson", league: "NFL" as League, awayTeam: "LA Chargers", homeTeam: "Denver Broncos", timing: 1870 },
+    { id: "day3-1a", match: "LAC @ DEN", type: "Spread -3.5", odds: "-110", stake: 600, status: "won", timestamp: baseTime - (3 * 24 * 60 * 60 * 1000) + 500, payout: 545, platform: "FanDuel", accountName: "Thomas Anderson", league: "NFL" as League, awayTeam: "LA Chargers", homeTeam: "Denver Broncos", timing: 2010 },
+    { id: "day3-1b", match: "LAC @ DEN", type: "Spread -3.5", odds: "-110", stake: 500, status: "lost", timestamp: baseTime - (3 * 24 * 60 * 60 * 1000) + 1000, platform: "FanDuel", accountName: "Emily Davis", league: "NFL" as League, awayTeam: "LA Chargers", homeTeam: "Denver Broncos", error: "Bet limit exceeded", timing: 3100 },
+    
+    // 5 days ago
+    { id: "day5-1", match: "BOS @ MIA", type: "O 220.5", odds: "-105", stake: 750, status: "won", timestamp: baseTime - (5 * 24 * 60 * 60 * 1000), payout: 714, platform: "BetMGM", accountName: "Michael Chen", league: "NBA" as League, awayTeam: "Boston Celtics", homeTeam: "Miami Heat", timing: 1890 },
+    { id: "day5-1a", match: "BOS @ MIA", type: "O 220.5", odds: "-105", stake: 600, status: "won", timestamp: baseTime - (5 * 24 * 60 * 60 * 1000) + 500, payout: 571, platform: "BetMGM", accountName: "Robert Williams", league: "NBA" as League, awayTeam: "Boston Celtics", homeTeam: "Miami Heat", timing: 1960 },
+    { id: "day5-1b", match: "BOS @ MIA", type: "O 220.5", odds: "-105", stake: 550, status: "won", timestamp: baseTime - (5 * 24 * 60 * 60 * 1000) + 1000, payout: 524, platform: "BetMGM", accountName: "Lisa Anderson", league: "NBA" as League, awayTeam: "Boston Celtics", homeTeam: "Miami Heat", timing: 1820 },
+    
+    // 10 days ago
+    { id: "day10-1", match: "NYG @ PHI", type: "ML PHI", odds: "-120", stake: 850, status: "won", timestamp: baseTime - (10 * 24 * 60 * 60 * 1000), payout: 708, platform: "Caesars", accountName: "Amanda Wilson", league: "NFL" as League, awayTeam: "NY Giants", homeTeam: "Philadelphia Eagles", timing: 1940 },
+    { id: "day10-1a", match: "NYG @ PHI", type: "ML PHI", odds: "-120", stake: 700, status: "won", timestamp: baseTime - (10 * 24 * 60 * 60 * 1000) + 500, payout: 583, platform: "Caesars", accountName: "James Lee", league: "NFL" as League, awayTeam: "NY Giants", homeTeam: "Philadelphia Eagles", timing: 1870 },
+    { id: "day10-1b", match: "NYG @ PHI", type: "ML PHI", odds: "-120", stake: 600, status: "won", timestamp: baseTime - (10 * 24 * 60 * 60 * 1000) + 1000, payout: 500, platform: "Caesars", accountName: "Patricia Garcia", league: "NFL" as League, awayTeam: "NY Giants", homeTeam: "Philadelphia Eagles", timing: 2010 },
+    
+    // 20 days ago
+    { id: "day20-1", match: "GSW @ LAL", type: "Spread +4.5", odds: "-110", stake: 800, status: "won", timestamp: baseTime - (20 * 24 * 60 * 60 * 1000), payout: 727, platform: "DraftKings", accountName: "Jennifer Taylor", league: "NBA" as League, awayTeam: "GS Warriors", homeTeam: "LA Lakers", timing: 1880 },
+    { id: "day20-1a", match: "GSW @ LAL", type: "Spread +4.5", odds: "-110", stake: 650, status: "won", timestamp: baseTime - (20 * 24 * 60 * 60 * 1000) + 500, payout: 591, platform: "DraftKings", accountName: "John Smith", league: "NBA" as League, awayTeam: "GS Warriors", homeTeam: "LA Lakers", timing: 1950 },
+    { id: "day20-1b", match: "GSW @ LAL", type: "Spread +4.5", odds: "-110", stake: 550, status: "lost", timestamp: baseTime - (20 * 24 * 60 * 60 * 1000) + 1000, platform: "DraftKings", accountName: "Christopher Brown", league: "NBA" as League, awayTeam: "GS Warriors", homeTeam: "LA Lakers", error: "Insufficient funds", timing: 3200 },
+    
+    // 45 days ago
+    { id: "day45-1", match: "BAL @ PIT", type: "ML BAL", odds: "-140", stake: 900, status: "won", timestamp: baseTime - (45 * 24 * 60 * 60 * 1000), payout: 643, platform: "FanDuel", accountName: "Sarah Johnson", league: "NFL" as League, awayTeam: "Baltimore Ravens", homeTeam: "Pittsburgh Steelers", timing: 1920 },
+    { id: "day45-1a", match: "BAL @ PIT", type: "ML BAL", odds: "-140", stake: 750, status: "won", timestamp: baseTime - (45 * 24 * 60 * 60 * 1000) + 500, payout: 536, platform: "FanDuel", accountName: "Maria Rodriguez", league: "NFL" as League, awayTeam: "Baltimore Ravens", homeTeam: "Pittsburgh Steelers", timing: 1860 },
+    { id: "day45-1b", match: "BAL @ PIT", type: "ML BAL", odds: "-140", stake: 600, status: "won", timestamp: baseTime - (45 * 24 * 60 * 60 * 1000) + 1000, payout: 429, platform: "FanDuel", accountName: "Ryan O'Connor", league: "NFL" as League, awayTeam: "Baltimore Ravens", homeTeam: "Pittsburgh Steelers", timing: 2030 },
+    
+    // 60 days ago
+    { id: "day60-1", match: "MIL @ PHX", type: "O 230.5", odds: "-108", stake: 850, status: "won", timestamp: baseTime - (60 * 24 * 60 * 60 * 1000), payout: 787, platform: "BetMGM", accountName: "Michael Chen", league: "NBA" as League, awayTeam: "Milwaukee Bucks", homeTeam: "Phoenix Suns", timing: 1910 },
+    { id: "day60-1a", match: "MIL @ PHX", type: "O 230.5", odds: "-108", stake: 700, status: "won", timestamp: baseTime - (60 * 24 * 60 * 60 * 1000) + 500, payout: 648, platform: "BetMGM", accountName: "Robert Williams", league: "NBA" as League, awayTeam: "Milwaukee Bucks", homeTeam: "Phoenix Suns", timing: 1970 },
+    { id: "day60-1b", match: "MIL @ PHX", type: "O 230.5", odds: "-108", stake: 600, status: "won", timestamp: baseTime - (60 * 24 * 60 * 60 * 1000) + 1000, payout: 556, platform: "BetMGM", accountName: "Lisa Anderson", league: "NBA" as League, awayTeam: "Milwaukee Bucks", homeTeam: "Phoenix Suns", timing: 1840 },
+    
+    // 75 days ago
+    { id: "day75-1", match: "SEA @ SF", type: "ML SF", odds: "-130", stake: 800, status: "won", timestamp: baseTime - (75 * 24 * 60 * 60 * 1000), payout: 615, platform: "Caesars", accountName: "Amanda Wilson", league: "NFL" as League, awayTeam: "Seattle Seahawks", homeTeam: "SF 49ers", timing: 1890 },
+    { id: "day75-1a", match: "SEA @ SF", type: "ML SF", odds: "-130", stake: 650, status: "won", timestamp: baseTime - (75 * 24 * 60 * 60 * 1000) + 500, payout: 500, platform: "Caesars", accountName: "James Lee", league: "NFL" as League, awayTeam: "Seattle Seahawks", homeTeam: "SF 49ers", timing: 2020 },
+    { id: "day75-1b", match: "SEA @ SF", type: "ML SF", odds: "-130", stake: 550, status: "lost", timestamp: baseTime - (75 * 24 * 60 * 60 * 1000) + 1000, platform: "Caesars", accountName: "Patricia Garcia", league: "NFL" as League, awayTeam: "Seattle Seahawks", homeTeam: "SF 49ers", error: "Connection timeout", timing: 3100 },
   ];
 };
 
