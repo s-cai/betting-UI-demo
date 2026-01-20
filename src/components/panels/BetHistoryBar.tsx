@@ -9,6 +9,20 @@ const leagueLogos: Record<"NFL" | "NBA", string> = {
   NBA: "https://upload.wikimedia.org/wikipedia/en/thumb/0/03/National_Basketball_Association_logo.svg/512px-National_Basketball_Association_logo.svg.png",
 };
 
+// Platform logo map - same as OddsComparisonGrid and Accounts
+// Use base URL for GitHub Pages compatibility
+const getLogoPath = (logoName: string) => `${import.meta.env.BASE_URL}resources/${logoName}`;
+const platformLogoMap: Record<string, string> = {
+  "DraftKings": getLogoPath("draftkings-logo.svg"),
+  "FanDuel": getLogoPath("fanduel-logo.svg"),
+  "BetMGM": getLogoPath("betmgm-logo.svg"),
+  "Caesars": getLogoPath("caesars-logo.svg"),
+  "PointsBet": getLogoPath("pointsbet-logo.svg"),
+  "Bet365": getLogoPath("bet365-logo.svg"),
+  "Unibet": getLogoPath("unibet-logo.svg"),
+  "WynnBET": getLogoPath("wynnbet-logo.svg"),
+};
+
 const LeagueLogo = ({ league, className = "w-3 h-3" }: { league?: League; className?: string }) => {
   if (!league) return null;
   
@@ -213,9 +227,19 @@ export function BetHistoryBar() {
                     {trade.status === "pending" && <Clock className="w-3 h-3 text-signal-warning animate-pulse-glow" />}
                   </div>
                   
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    {trade.league && <LeagueLogo league={trade.league} className="w-3 h-3" />}
-                    <span className="text-xs font-medium truncate">{trade.match}</span>
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {trade.league && <LeagueLogo league={trade.league} className="w-3 h-3" />}
+                      <span className="text-xs font-medium truncate">{trade.match}</span>
+                    </div>
+                    {trade.platform && platformLogoMap[trade.platform] && (
+                      <img
+                        src={platformLogoMap[trade.platform]}
+                        alt={`${trade.platform} Logo`}
+                        className="h-3.5 w-auto object-contain shrink-0"
+                        loading="lazy"
+                      />
+                    )}
                   </div>
                   <div className="text-[11px] text-muted-foreground">{trade.type} • {trade.odds}</div>
                   
