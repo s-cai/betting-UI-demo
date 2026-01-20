@@ -152,8 +152,8 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
             {/* Column Headers */}
             <tr className="bg-panel-header">
               <th className="text-left" style={{ width: '14%' }}>Team</th>
-              <th className="text-center" style={{ width: '9%' }}>Best Odds</th>
               <th className="text-center" style={{ width: '9%' }}>Close Odds</th>
+              <th className="text-center" style={{ width: '9%' }}>Best Odds</th>
               {mockBookOdds.map((odds) => (
                 <th key={odds.book} className="text-center px-1" style={{ width: '8.5%' }}>
                   <div className="flex items-center justify-center gap-0.5">
@@ -201,12 +201,12 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
                 {match.awayTeam}
               </td>
               <td className="text-center">
+                <span className="text-xs font-mono text-muted-foreground">+102</span>
+              </td>
+              <td className="text-center">
                 <button className="odds-cell odds-cell-best font-mono text-sm px-3">
                   +123
                 </button>
-              </td>
-              <td className="text-center">
-                <span className="text-xs font-mono text-muted-foreground">+102</span>
               </td>
               {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
@@ -229,12 +229,12 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
                 {match.homeTeam}
               </td>
               <td className="text-center">
+                <span className="text-xs font-mono text-muted-foreground">-126</span>
+              </td>
+              <td className="text-center">
                 <button className="odds-cell font-mono text-sm px-3">
                   -119
                 </button>
-              </td>
-              <td className="text-center">
-                <span className="text-xs font-mono text-muted-foreground">-126</span>
               </td>
               {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
@@ -264,12 +264,12 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
                 {match.awayTeam}
               </td>
               <td className="text-center">
+                <span className="text-xs font-mono text-muted-foreground">+1.5 (-195)</span>
+              </td>
+              <td className="text-center">
                 <button className="odds-cell odds-cell-best font-mono text-xs px-2">
                   +1 (-125)
                 </button>
-              </td>
-              <td className="text-center">
-                <span className="text-xs font-mono text-muted-foreground">+1.5 (-195)</span>
               </td>
               {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
@@ -292,12 +292,12 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
                 {match.homeTeam}
               </td>
               <td className="text-center">
+                <span className="text-xs font-mono text-muted-foreground">-1.5 (+150)</span>
+              </td>
+              <td className="text-center">
                 <button className="odds-cell font-mono text-xs px-2">
                   -1 (+129)
                 </button>
-              </td>
-              <td className="text-center">
-                <span className="text-xs font-mono text-muted-foreground">-1.5 (+150)</span>
               </td>
               {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
@@ -322,12 +322,12 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
             <tr className="hover:bg-accent/30 border-b border-border/30">
               <td className="text-xs font-medium pl-6">Over {match.total.line}</td>
               <td className="text-center">
+                <span className="text-xs font-mono text-muted-foreground">-107</span>
+              </td>
+              <td className="text-center">
                 <button className="odds-cell odds-cell-best font-mono text-xs px-2">
                   -102
                 </button>
-              </td>
-              <td className="text-center">
-                <span className="text-xs font-mono text-muted-foreground">-107</span>
               </td>
               {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
@@ -348,12 +348,12 @@ export function OddsComparisonGrid({ match }: OddsComparisonGridProps) {
             <tr className="hover:bg-accent/30">
               <td className="text-xs font-medium pl-6">Under {match.total.line}</td>
               <td className="text-center">
+                <span className="text-xs font-mono text-muted-foreground">-109</span>
+              </td>
+              <td className="text-center">
                 <button className="odds-cell font-mono text-xs px-2">
                   -105
                 </button>
-              </td>
-              <td className="text-center">
-                <span className="text-xs font-mono text-muted-foreground">-109</span>
               </td>
               {mockBookOdds.map((odds) => (
                 <td key={odds.book} className="text-center">
