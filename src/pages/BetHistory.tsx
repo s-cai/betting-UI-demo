@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { History, CheckCircle, XCircle, Clock, Filter, Search, Calendar, TrendingUp, TrendingDown, ChevronDown } from "lucide-react";
+import { History, Filter, Search, Calendar, TrendingUp, TrendingDown, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBetHistory, type Bet, type League } from "@/contexts/BetHistoryContext";
 import { Input } from "@/components/ui/input";
@@ -325,11 +325,11 @@ export function BetHistory() {
   const getStatusIcon = (status: Bet['status']) => {
     switch (status) {
       case "won":
-        return <CheckCircle className="w-4 h-4 text-[hsl(var(--signal-positive))]" />;
+        return <span className="text-base text-[hsl(var(--signal-positive))]">🏆</span>;
       case "lost":
-        return <XCircle className="w-4 h-4 text-[hsl(var(--signal-negative))]" />;
+        return <span className="text-base text-[hsl(var(--signal-negative))]">💔</span>;
       case "pending":
-        return <Clock className="w-4 h-4 text-[hsl(var(--signal-warning))] animate-pulse" />;
+        return <span className="text-base text-[hsl(var(--signal-warning))] animate-pulse">⏳</span>;
     }
   };
 
@@ -395,7 +395,7 @@ export function BetHistory() {
               <span className="text-xs text-muted-foreground mb-1">Won</span>
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4 text-[hsl(var(--signal-positive))]" />
+                  <span className="text-base text-[hsl(var(--signal-positive))]">🏆</span>
                   <span className="text-lg font-bold font-mono text-[hsl(var(--signal-positive))]">
                     {pastDayPerformance.wonCount}
                   </span>
@@ -409,7 +409,7 @@ export function BetHistory() {
               <span className="text-xs text-muted-foreground mb-1">Lost</span>
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-1">
-                  <XCircle className="w-4 h-4 text-[hsl(var(--signal-negative))]" />
+                  <span className="text-base text-[hsl(var(--signal-negative))]">💔</span>
                   <span className="text-lg font-bold font-mono text-[hsl(var(--signal-negative))]">
                     {pastDayPerformance.lostCount}
                   </span>
@@ -616,11 +616,11 @@ export function BetHistory() {
                   const getBetStatusIcon = (status: Bet['status']) => {
                     switch (status) {
                       case "won":
-                        return '✓✓';
+                        return '🏆';
                       case "lost":
-                        return '✕';
+                        return '💔';
                       case "pending":
-                        return '✓';
+                        return '⏳';
                       default:
                         return '';
                     }

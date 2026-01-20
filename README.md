@@ -184,7 +184,7 @@ This is a professional-grade betting interface designed for arbitrage betting an
     - Grid of account cards showing:
       - Account name and avatar (initials)
       - Individual bet amount
-      - Status icon and text (✓✓ won, ✕ failed, ✓ pending)
+      - Status icon and text (🏆 won, 💔 lost, ⏳ pending)
       - Error screenshots for failed bets
       - Payout information for won bets
   - **Filtering**: Filter batch trades by status (all/pending/won/lost) and search
