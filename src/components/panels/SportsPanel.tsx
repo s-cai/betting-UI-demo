@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type MouseEvent } from "react";
 import { cn } from "@/lib/utils";
+import { BettingDialog } from "./BettingDialog";
 
 type SportCategory = "football" | "basketball";
 type League = "NFL" | "NCAAF" | "NBA" | "NCAAB";
@@ -17,6 +18,12 @@ export interface Match {
   total: { over: string; under: string; line: string; best?: "over" | "under" };
   league: League;
 }
+
+const bestOddsPlatformByMarket: Record<"Spread" | "Moneyline" | "Total", string> = {
+  Spread: "BetMGM",
+  Moneyline: "DraftKings",
+  Total: "BetMGM",
+};
 
 const mockNFLMatches: Match[] = [
   {
@@ -204,6 +211,21 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
     }
     return null;
   });
+  const [bettingDialog, setBettingDialog] = useState<{
+    isOpen: boolean;
+    match: Match | null;
+    platform: string;
+    market: "Spread" | "Moneyline" | "Total";
+    side: string;
+    odds: string;
+  }>({
+    isOpen: false,
+    match: null,
+    platform: "",
+    market: "Spread",
+    side: "",
+    odds: "",
+  });
   
   // Ref for scroll container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -243,6 +265,25 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
     if (scrollContainerRef.current) {
       localStorage.setItem('betting-ui-sports-scroll', scrollContainerRef.current.scrollTop.toString());
     }
+  };
+
+  const handleOddsClick = (
+    event: MouseEvent<HTMLButtonElement>,
+    match: Match,
+    market: "Spread" | "Moneyline" | "Total",
+    side: string,
+    odds: string
+  ) => {
+    event.stopPropagation();
+    onMatchSelect?.(match);
+    setBettingDialog({
+      isOpen: true,
+      match,
+      platform: bestOddsPlatformByMarket[market],
+      market,
+      side,
+      odds,
+    });
   };
   
   const getMatchesForLeague = (league: League): Match[] => {
@@ -465,28 +506,40 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
                     <span className="text-xs font-medium truncate">{match.awayTeam}</span>
                   </div>
                   <div className="col-span-2 flex items-center justify-center">
-                    <div className={cn(
-                      "odds-cell text-center text-[11px] w-full",
-                      match.spread.best === "away" && "odds-cell-best"
-                    )}>
+                    <button
+                      type="button"
+                      onClick={(event) => handleOddsClick(event, match, "Spread", "away", match.spread.away)}
+                      className={cn(
+                        "odds-cell text-center text-[11px] w-full",
+                        match.spread.best === "away" && "odds-cell-best"
+                      )}
+                    >
                       {match.spread.away}
-                    </div>
+                    </button>
                   </div>
                   <div className="col-span-2 flex items-center justify-center">
-                    <div className={cn(
-                      "odds-cell text-center text-[11px] w-full",
-                      match.moneyline.best === "away" && "odds-cell-best"
-                    )}>
+                    <button
+                      type="button"
+                      onClick={(event) => handleOddsClick(event, match, "Moneyline", "away", match.moneyline.away)}
+                      className={cn(
+                        "odds-cell text-center text-[11px] w-full",
+                        match.moneyline.best === "away" && "odds-cell-best"
+                      )}
+                    >
                       {match.moneyline.away}
-                    </div>
+                    </button>
                   </div>
                   <div className="col-span-3 flex items-center justify-center">
-                    <div className={cn(
-                      "odds-cell text-center text-[11px] w-full",
-                      match.total.best === "over" && "odds-cell-best"
-                    )}>
+                    <button
+                      type="button"
+                      onClick={(event) => handleOddsClick(event, match, "Total", "over", match.total.over)}
+                      className={cn(
+                        "odds-cell text-center text-[11px] w-full",
+                        match.total.best === "over" && "odds-cell-best"
+                      )}
+                    >
                       {match.total.over}
-                    </div>
+                    </button>
                   </div>
 
                   {/* Home Team */}
@@ -494,28 +547,40 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
                     <span className="text-xs font-medium truncate">{match.homeTeam}</span>
                   </div>
                   <div className="col-span-2 flex items-center justify-center">
-                    <div className={cn(
-                      "odds-cell text-center text-[11px] w-full",
-                      match.spread.best === "home" && "odds-cell-best"
-                    )}>
+                    <button
+                      type="button"
+                      onClick={(event) => handleOddsClick(event, match, "Spread", "home", match.spread.home)}
+                      className={cn(
+                        "odds-cell text-center text-[11px] w-full",
+                        match.spread.best === "home" && "odds-cell-best"
+                      )}
+                    >
                       {match.spread.home}
-                    </div>
+                    </button>
                   </div>
                   <div className="col-span-2 flex items-center justify-center">
-                    <div className={cn(
-                      "odds-cell text-center text-[11px] w-full",
-                      match.moneyline.best === "home" && "odds-cell-best"
-                    )}>
+                    <button
+                      type="button"
+                      onClick={(event) => handleOddsClick(event, match, "Moneyline", "home", match.moneyline.home)}
+                      className={cn(
+                        "odds-cell text-center text-[11px] w-full",
+                        match.moneyline.best === "home" && "odds-cell-best"
+                      )}
+                    >
                       {match.moneyline.home}
-                    </div>
+                    </button>
                   </div>
                   <div className="col-span-3 flex items-center justify-center">
-                    <div className={cn(
-                      "odds-cell text-center text-[11px] w-full",
-                      match.total.best === "under" && "odds-cell-best"
-                    )}>
+                    <button
+                      type="button"
+                      onClick={(event) => handleOddsClick(event, match, "Total", "under", match.total.under)}
+                      className={cn(
+                        "odds-cell text-center text-[11px] w-full",
+                        match.total.best === "under" && "odds-cell-best"
+                      )}
+                    >
                       {match.total.under}
-                    </div>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -523,6 +588,16 @@ export function SportsPanel({ onMatchSelect, selectedMatchId }: SportsPanelProps
           );
         })}
       </div>
+
+      <BettingDialog
+        isOpen={bettingDialog.isOpen}
+        onClose={() => setBettingDialog({ ...bettingDialog, isOpen: false })}
+        match={bettingDialog.match}
+        platform={bettingDialog.platform}
+        market={bettingDialog.market}
+        side={bettingDialog.side}
+        odds={bettingDialog.odds}
+      />
     </div>
   );
 }
